@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Create Hotel Account — Voddic Hotel Connect</title>
+    <link rel="stylesheet" href="auth.css">
+    <style>
+        .field-error { display: block; color: #ff6b6b; font-size: 11px; margin-top: 4px; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+        input.error { border-color: #e2412c !important; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="logo-container">🏨</div>
+            <div class="role-badge">Hotel Owner</div>
+            <h1 class="hotel-name">Create Your Account</h1>
+            <p class="subtitle">Start managing your hotel in under 2 minutes. Free 14-day trial.</p>
+        </div>
+
+        <div class="error-message" id="formError"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <form id="signupForm" novalidate autocomplete="off">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="firstName" placeholder="John" required>
+                    <span class="field-error" id="firstName-error"></span>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="lastName" placeholder="Smith" required>
+                    <span class="field-error" id="lastName-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <span class="input-icon">📧</span>
+                <input type="email" id="email" placeholder="owner@hotel.com" required autocomplete="off">
+                <span class="field-error" id="email-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Hotel Name</label>
+                <span class="input-icon">🏨</span>
+                <input type="text" id="hotelName" placeholder="Grand Palace Hotel" required>
+                <span class="field-error" id="hotelName-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <span class="input-icon">📱</span>
+                <input type="tel" id="phone" placeholder="+1 (555) 000-0000">
+                <span class="field-error" id="phone-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <span class="input-icon">🔒</span>
+                <input type="password" id="password" placeholder="Min 8 characters" required minlength="8" autocomplete="new-password">
+                <span class="field-error" id="password-error"></span>
+                <div class="password-strength"><div class="password-strength-bar" id="passwordStrength"></div></div>
+            </div>
+
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <span class="input-icon">🔒</span>
+                <input type="password" id="confirmPassword" placeholder="Re-enter password" required>
+                <span class="field-error" id="confirmPassword-error"></span>
+            </div>
+
+            <div class="form-checkbox">
+                <input type="checkbox" id="agreeTerms" required>
+                <label for="agreeTerms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+            </div>
+
+            <button type="submit" class="btn-primary" id="submitBtn">
+                <span id="submitText">Create Account</span>
+                <span id="submitLoader" style="display:none;">Creating...</span>
+            </button>
+        </form>
+
+        <p class="footer-text">
+            Already have an account? <a href="login.html" style="color:var(--gold);">Sign in</a><br><br>
+            🔒 Your data is encrypted and secure<br>
+            Free 14-day trial · No credit card required
+        </p>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Verify Email — Voddic</title>
+    <link rel="stylesheet" href="auth.css">
+    <style>
+        .code-box {
+            background: var(--input-bg);
+            border: 2px dashed var(--gold);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin: 16px 0;
+        }
+        .code-input {
+            width: 100%; padding: 14px; background: transparent;
+            border: none; color: var(--text); font-size: 28px;
+            text-align: center; letter-spacing: 10px;
+            font-family: 'Courier New', monospace; font-weight: bold;
+            outline: none; text-transform: uppercase;
+        }
+        .code-input::placeholder {
+            letter-spacing: 2px; font-size: 14px; color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+        }
+        .verify-btn {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, var(--gold), #b8943a);
+            border: none; border-radius: 12px; color: #000;
+            font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px;
+        }
+        .verify-btn:disabled { opacity: .6; }
+        .email-badge {
+            background: rgba(201,168,106,0.1); padding: 8px 14px;
+            border-radius: 8px; font-size: 13px; color: var(--gold);
+            text-align: center; margin-bottom: 16px; word-break: break-all;
+        }
+        .resend-link { color: var(--gold); cursor: pointer; text-decoration: underline; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="auth-container" style="text-align:center;">
+        <div class="auth-header">
+            <div class="logo-container">📧</div>
+            <h1 class="hotel-name">Verify Your Email</h1>
+            <p class="subtitle">Enter the 8-character code sent to your email</p>
+        </div>
+
+        <div class="email-badge" id="emailBadge" style="display:none;"></div>
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <!-- Auto verify -->
+        <div id="autoStatus" style="display:none;margin-bottom:16px;">
+            <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
+            <p style="color:var(--text-dim);font-size:13px;">Verifying...</p>
+        </div>
+
+        <!-- Manual -->
+        <div id="manualSection">
+            <div class="code-box">
+                <input type="text" class="code-input" id="codeInput" placeholder="XXXXXXXX" maxlength="8" autocomplete="off" autocapitalize="characters">
+            </div>
+            <button class="verify-btn" id="verifyBtn" onclick="verifyCode()">Verify Email</button>
+            <p style="margin-top:14px;font-size:12px;color:var(--text-dim);">
+                Didn't get the code? 
+                <span class="resend-link" id="resendLink" onclick="resendCode()">Resend code</span>
+                <span id="resendStatus" style="display:none;color:var(--gold);">Sending...</span>
+            </p>
+        </div>
+
+        <p style="margin-top:20px;font-size:11px;">
+            <a href="login.html" style="color:var(--text-dim);">← Go to sign in</a>
+        </p>
+    </div>
+
+    <script>
+    const API = 'https://connectapi.voddic.com.ng/api/v1/auth';
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const emailParam = params.get('email');
+    
+    if (emailParam) {
+        const email = decodeURIComponent(emailParam);
+        document.getElementById('emailBadge').textContent = 'Code sent to: ' + email;
+        document.getElementById('emailBadge').style.display = 'block';
+        sessionStorage.setItem('verifyEmail', email);
+    }
+
+    // Auto-verify from URL token
+    if (token) {
+        document.getElementById('manualSection').style.display = 'none';
+        document.getElementById('autoStatus').style.display = 'block';
+        
+        fetch(`${API}/verify-email/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token: token.toUpperCase()})
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('autoStatus').innerHTML = 
+                    '<div style="font-size:48px;">✅</div><h3 style="color:#2fa06a;">Email Verified!</h3><p style="color:var(--text-dim);">Redirecting to sign in...</p>';
+                // Redirect to LOGIN page
+                setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+            } else {
+                document.getElementById('autoStatus').style.display = 'none';
+                document.getElementById('manualSection').style.display = 'block';
+                showError(data.message || 'Invalid or expired code');
+            }
+        })
+        .catch(() => {
+            document.getElementById('autoStatus').style.display = 'none';
+            document.getElementById('manualSection').style.display = 'block';
+        });
+    }
+
+    async function verifyCode() {
+        const code = document.getElementById('codeInput').value.trim().toUpperCase();
+        if (!code || code.length < 4) { showError('Please enter the code'); return; }
+        
+        const btn = document.getElementById('verifyBtn');
+        btn.disabled = true; btn.textContent = 'Verifying...';
+        clearMessages();
+        
+        try {
+            const res = await fetch(`${API}/verify-email/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({token: code})
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                showSuccess('Email verified! Redirecting to sign in...');
+                // Store email for login page
+                if (data.email) sessionStorage.setItem('loginEmail', data.email);
+                // Redirect to LOGIN page
+                setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+            } else {
+                showError(data.message || 'Invalid code');
+            }
+        } catch(e) {
+            showError('Network error');
+        } finally {
+            btn.disabled = false; btn.textContent = 'Verify Email';
+        }
+    }
+
+    async function resendCode() {
+        const email = sessionStorage.getItem('verifyEmail') || decodeURIComponent(emailParam || '');
+        if (!email) { showError('Email not found. Please sign up again.'); return; }
+        
+        document.getElementById('resendLink').style.display = 'none';
+        document.getElementById('resendStatus').style.display = 'inline';
+        
+        try {
+            const res = await fetch(`${API}/resend-verification/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: email})
+            });
+            const data = await res.json();
+            showSuccess(data.message || 'Code sent!');
+        } catch(e) {
+            showError('Network error');
+        } finally {
+            document.getElementById('resendLink').style.display = 'inline';
+            document.getElementById('resendStatus').style.display = 'none';
+        }
+    }
+
+    function showError(msg) {
+        document.getElementById('errorMessage').textContent = msg;
+        document.getElementById('errorMessage').classList.add('show');
+    }
+    function showSuccess(msg) {
+        document.getElementById('successMessage').textContent = msg;
+        document.getElementById('successMessage').classList.add('show');
+    }
+    function clearMessages() {
+        document.getElementById('errorMessage').classList.remove('show');
+        document.getElementById('successMessage').classList.remove('show');
+    }
+
+    document.getElementById('codeInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verifyCode();
+    });
+    </script>
+</body>
+</html>

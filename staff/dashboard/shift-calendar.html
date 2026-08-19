@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Shift Calendar — Voddic Hotel Connect</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{--bg:#0c0c18;--card:#151528;--gold:#e4af3e;--danger:#e2412c;--success:#2fa06a;--warning:#f59e0b;--info:#3b82f6;--text:#eaeaf0;--text-dim:#8a8aa8;--border:rgba(255,255,255,.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+a{text-decoration:none;color:inherit}button{border:none;background:none;cursor:pointer;font-family:inherit;color:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#12121f}::-webkit-scrollbar-thumb{background:#2a2a45;border-radius:3px}
+
+.mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:60px;background:rgba(12,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:1000;align-items:center;justify-content:space-between;padding:0 16px}
+.menu-toggle{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;border-radius:10px;background:rgba(255,255,255,.05)}
+.mobile-title{font-size:1rem;font-weight:700;color:#f0f0f5}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:1100}
+.sidebar-overlay.active{display:block}
+.sidebar{position:fixed;top:0;left:0;width:272px;height:100vh;background:#101020;border-right:1px solid rgba(255,255,255,.06);z-index:1200;display:flex;flex-direction:column;overflow:hidden;transition:transform .35s}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.sidebar-logo{display:flex;align-items:center;gap:12px}.logo-icon{font-size:1.6rem}
+.sidebar-logo h2{font-size:.95rem;font-weight:800;color:#f5f5fa}
+.hotel-name{font-size:.72rem;color:var(--text-dim);margin-top:2px}
+.sidebar-close{display:none;width:32px;height:32px;align-items:center;justify-content:center;font-size:1rem;color:var(--text-dim);border-radius:8px}
+.sidebar-close:hover{background:rgba(255,255,255,.06)}
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 0}
+.nav-section-title{font-size:.62rem;font-weight:700;color:#55556e;letter-spacing:.08em;text-transform:uppercase;padding:14px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:.82rem;font-weight:500;color:#9a9ab8;transition:all .18s;border-left:3px solid transparent}
+.nav-item:hover{color:#e0e0f0;background:rgba(255,255,255,.03)}
+.nav-item.active{color:#f0f0f8;background:rgba(228,175,62,.08);border-left-color:var(--gold)}
+.nav-icon{font-size:.95rem;width:22px;text-align:center}
+.sidebar-footer{padding:16px 18px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#c48a20);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#000}
+.user-name{font-size:.82rem;font-weight:600}.user-role{font-size:.7rem;color:var(--text-dim)}
+.logout-btn{width:100%;padding:9px 14px;font-size:.78rem;font-weight:600;color:#b0b0c8;border-radius:8px;text-align:left}
+.logout-btn:hover{background:rgba(229,69,69,.1);color:#e54545}
+
+.main-content{margin-left:272px;min-height:100vh;padding:28px 32px 40px}
+.page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}
+.page-title{font-size:1.75rem;font-weight:800;color:#f5f5fa}
+.page-actions{display:flex;gap:10px}
+
+.card{background:var(--card);border-radius:14px;padding:20px;border:1px solid var(--border);margin-bottom:16px}
+.card-title{font-size:1rem;font-weight:700;color:#f5f5fa;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px}
+
+.dept-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;flex-wrap:wrap}
+.dept-tab{padding:8px 16px;border-radius:8px;font-size:.78rem;font-weight:600;color:var(--text-dim);background:var(--bg);border:1px solid var(--border);cursor:pointer;transition:all .2s;white-space:nowrap}
+.dept-tab:hover{background:rgba(255,255,255,.05)}
+.dept-tab.active{background:var(--gold);color:#000;border-color:var(--gold)}
+
+.calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.calendar-nav{display:flex;gap:8px;align-items:center}
+.calendar-nav button{padding:6px 12px;border-radius:6px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.8rem}
+.calendar-nav .month-label{font-size:1.1rem;font-weight:700;min-width:150px;text-align:center}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.calendar-grid .day-header{text-align:center;font-size:.7rem;font-weight:700;color:var(--text-dim);padding:8px 0;text-transform:uppercase}
+.calendar-grid .day-cell{min-height:100px;background:var(--bg);border-radius:8px;padding:6px;border:1px solid var(--border);cursor:pointer;transition:all .2s;position:relative}
+.calendar-grid .day-cell:hover{background:rgba(255,255,255,.05);border-color:var(--gold)}
+.calendar-grid .day-cell.empty{background:transparent;border-color:transparent;cursor:default}
+.calendar-grid .day-cell .day-number{font-weight:700;font-size:.85rem;margin-bottom:4px;display:block}
+.calendar-grid .day-cell .day-number.today{color:var(--gold)}
+.calendar-grid .day-cell .shift-indicator{font-size:.55rem;padding:2px 4px;border-radius:3px;margin:2px 0;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.shift-morning{background:rgba(59,130,246,.3);color:#60a5fa;border-left:2px solid #60a5fa}
+.shift-afternoon{background:rgba(245,158,11,.3);color:#fbbf24;border-left:2px solid #fbbf24}
+.shift-night{background:rgba(139,92,246,.3);color:#a78bfa;border-left:2px solid #a78bfa}
+.shift-custom{background:rgba(47,160,106,.3);color:#34d399;border-left:2px solid #34d399}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex !important}
+.modal{background:var(--card);border-radius:16px;border:1px solid var(--border);max-width:500px;width:100%;max-height:90vh;overflow-y:auto;padding:24px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.modal-header h3{font-size:1.1rem;font-weight:700;color:#f5f5fa}
+.modal-close{font-size:1.2rem;color:var(--text-dim);padding:4px 8px;border-radius:6px;cursor:pointer}
+.modal-close:hover{background:rgba(255,255,255,.05)}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:.7rem;font-weight:600;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.form-group select,.form-group input{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.85rem;outline:none;font-family:inherit}
+.form-group select:focus,.form-group input:focus{border-color:var(--gold)}
+.btn{padding:8px 16px;border-radius:6px;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .2s}
+.btn-gold{background:var(--gold);color:#000}
+.btn-gold:hover{opacity:.85}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-dim)}
+.btn-danger{background:rgba(226,65,44,.2);color:var(--danger)}
+.btn-danger:hover{background:rgba(226,65,44,.3)}
+.btn-sm{padding:4px 10px;font-size:.7rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.toast-container{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:6px;font-size:.72rem;font-weight:600;color:#f0f0f8;background:#1e1e38;border:1px solid rgba(255,255,255,.08);animation:slideIn .3s ease;max-width:260px}
+.toast.success{border-left:3px solid #34d399}.toast.info{border-left:3px solid #60a5fa}.toast.error{border-left:3px solid #e54545}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+.shift-detail-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:8px;margin-bottom:6px;border-left:3px solid var(--gold);transition:all .2s}
+.shift-detail-item:hover{background:rgba(255,255,255,.05)}
+.shift-detail-item .shift-actions{display:flex;gap:6px}
+
+@media(max-width:768px){
+    .mobile-header{display:flex}.sidebar{transform:translateX(-100%);width:280px}.sidebar.open{transform:translateX(0)}.sidebar-close{display:flex}
+    .main-content{margin-left:0;padding:76px 16px 32px}.page-title{font-size:1.3rem}
+    .calendar-grid .day-cell{min-height:70px;font-size:.7rem}
+    .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="mobile-header">
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <span class="mobile-title">Shift Calendar</span>
+    <div style="width:42px"></div>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏨</div>
+            <div><h2 id="sidebarHotel">Hotel</h2><p class="hotel-name" id="sidebarDept">Staff</p></div>
+        </div>
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Dashboard</div>
+        <a class="nav-item" href="index.html"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a class="nav-item active" href="#"><span class="nav-icon">📅</span> Shift Calendar</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-info"><div class="user-avatar" id="userAvatar">S</div><div><div class="user-name" id="userName">Staff</div><div class="user-role" id="userRole">Loading...</div></div></div>
+        <button class="logout-btn" onclick="logout()">🚪 Sign Out</button>
+    </div>
+</aside>
+
+<main class="main-content">
+    <div class="page-header">
+        <h1 class="page-title">📅 Shift Calendar</h1>
+        <div class="page-actions">
+            <button class="btn btn-gold" id="addShiftBtn" onclick="openAddShift()"><i class="fas fa-plus"></i> Add Shift</button>
+        </div>
+    </div>
+
+    <div class="dept-tabs" id="deptTabs">
+        <p style="color:var(--text-dim);padding:10px;">Loading departments...</p>
+    </div>
+
+    <div class="card">
+        <div class="calendar-header">
+            <div class="calendar-nav">
+                <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                <span class="month-label" id="monthLabel">January 2026</span>
+                <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <button class="btn btn-gold btn-sm" onclick="goToToday()">Today</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+
+    <div class="card" id="shiftDetails" style="display:none;">
+        <div class="card-title">📋 Shifts for <span id="selectedDateDisplay"></span></div>
+        <div id="shiftList"></div>
+    </div>
+</main>
+
+<!-- Add/Edit Shift Modal -->
+<div class="modal-overlay" id="shiftModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="shiftModalTitle">Add Shift</h3>
+            <button class="modal-close" onclick="closeModal('shiftModal')">✕</button>
+        </div>
+        <div id="shiftForm">
+            <input type="hidden" id="editShiftId">
+            <div class="form-group">
+                <label>Department</label>
+                <select id="shiftDepartment" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label>Staff</label>
+                <select id="shiftStaff" class="form-control"></select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Shift Type</label>
+                    <select id="shiftType" class="form-control">
+                        <option value="morning">Morning</option>
+                        <option value="afternoon">Afternoon</option>
+                        <option value="night">Night</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="shiftDate" class="form-control">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <input type="time" id="shiftStart" class="form-control" value="09:00">
+                </div>
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input type="time" id="shiftEnd" class="form-control" value="17:00">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Title (optional)</label>
+                <input type="text" id="shiftTitle" class="form-control" placeholder="e.g., Front Desk Morning">
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn btn-gold" onclick="saveShift()" style="flex:1;" id="saveShiftBtn">Save Shift</button>
+                <button class="btn btn-outline" onclick="closeModal('shiftModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API = "https://connectapi.voddic.com.ng/api/v1";
+const token = localStorage.getItem("access_token");
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+const staff = JSON.parse(localStorage.getItem("staff") || "{}");
+
+console.log("=== Shift Calendar Debug ===");
+console.log("Token exists:", !!token);
+console.log("User:", user);
+
+if (!token) {
+    console.log("No token, redirecting to login");
+    window.location.href = "/auth/login.html";
+}
+
+var currentDate = new Date();
+var currentMonth = currentDate.getMonth();
+var currentYear = currentDate.getFullYear();
+var selectedDate = null;
+var departments = [];
+var shifts = {};
+var allStaff = [];
+var currentDepartmentId = null;
+var hasShiftPermission = false;
+var shiftsList = [];
+var isInitialLoad = true;
+
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("userName").textContent = user.full_name || user.email || "Staff";
+    document.getElementById("userAvatar").textContent = (user.first_name || "S")[0].toUpperCase();
+    document.getElementById("userRole").textContent = staff.position || staff.department || "Staff";
+    document.getElementById("sidebarHotel").textContent = localStorage.getItem("hotelName") || "Hotel";
+    document.getElementById("sidebarDept").textContent = staff.department || "Staff";
+    
+    loadAllData();
+    
+    // Event delegation for edit and delete buttons
+    document.addEventListener("click", function(e) {
+        var target = e.target.closest('button');
+        if (!target) return;
+        
+        if (target.classList && target.classList.contains('edit-shift-btn')) {
+            var shiftId = target.dataset.shiftId;
+            console.log("Edit button clicked for shift:", shiftId);
+            e.preventDefault();
+            e.stopPropagation();
+            editShift(shiftId);
+        } else if (target.classList && target.classList.contains('delete-shift-btn')) {
+            var shiftId = target.dataset.shiftId;
+            console.log("Delete button clicked for shift:", shiftId);
+            e.preventDefault();
+            e.stopPropagation();
+            deleteShift(shiftId);
+        }
+    });
+});
+
+async function loadAllData() {
+    await checkShiftPermission();
+    await loadDepartments();
+}
+
+async function checkShiftPermission() {
+    try {
+        const res = await fetch(API + "/staff/permissions/check/?feature=Shift%20Roster", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            hasShiftPermission = data.has_permission || false;
+            console.log("Permission check via endpoint:", hasShiftPermission);
+        } else {
+            hasShiftPermission = true;
+            console.log("Permission check failed, defaulting to true");
+        }
+    } catch (e) {
+        console.error("Error checking shift permission:", e);
+        hasShiftPermission = true;
+    }
+    
+    const addBtn = document.getElementById("addShiftBtn");
+    if (addBtn) {
+        addBtn.style.display = hasShiftPermission ? "inline-flex" : "none";
+        if (!hasShiftPermission) {
+            addBtn.title = "You don't have permission to add shifts";
+        }
+    }
+}
+
+async function loadDepartments() {
+    try {
+        console.log("Fetching departments from:", API + "/staff/departments/");
+        const res = await fetch(API + "/staff/departments/", {
+            headers: { 
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            }
+        });
+        
+        console.log("Departments response status:", res.status);
+        
+        if (res.ok) {
+            departments = await res.json();
+            console.log("Departments loaded:", departments);
+            renderDepartmentTabs();
+            populateDepartmentSelects();
+            
+            if (departments.length > 0) {
+                const firstDeptId = departments[0].id;
+                currentDepartmentId = firstDeptId;
+                await Promise.all([
+                    loadStaff(firstDeptId),
+                    loadShiftsForMonth(firstDeptId)
+                ]);
+            }
+        } else {
+            const err = await res.text();
+            console.error("Failed to load departments:", err);
+            document.getElementById("deptTabs").innerHTML = '<p style="color:var(--danger);padding:10px;">Failed to load departments.</p>';
+        }
+    } catch (e) {
+        console.error("Error loading departments:", e);
+        document.getElementById("deptTabs").innerHTML = '<p style="color:var(--danger);padding:10px;">Network error loading departments.</p>';
+    }
+}
+
+async function loadStaff(departmentId) {
+    try {
+        const url = API + "/staff/staff/?department=" + departmentId;
+        console.log("Fetching staff from:", url);
+        const res = await fetch(url, {
+            headers: { 
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            }
+        });
+        
+        console.log("Staff response status:", res.status);
+        
+        if (res.ok) {
+            allStaff = await res.json();
+            console.log("Staff loaded:", allStaff.length, "staff members");
+            populateStaffSelect();
+        } else {
+            const err = await res.text();
+            console.error("Failed to load staff:", err);
+        }
+    } catch (e) {
+        console.error("Error loading staff:", e);
+    }
+}
+
+function renderDepartmentTabs() {
+    const container = document.getElementById("deptTabs");
+    
+    if (departments.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-dim);padding:10px;">No departments found.</p>';
+        return;
+    }
+    
+    container.innerHTML = departments.map(d => `
+        <button class="dept-tab ${d.id === currentDepartmentId ? 'active' : ''}" data-department="${d.id}" onclick="selectDepartment('${d.id}')">
+            ${d.name}
+        </button>
+    `).join("");
+}
+
+function populateDepartmentSelects() {
+    const sel = document.getElementById("shiftDepartment");
+    if (!sel) return;
+    sel.innerHTML = departments.map(d => `
+        <option value="${d.id}">${d.name}</option>
+    `).join("");
+}
+
+function populateStaffSelect() {
+    const sel = document.getElementById("shiftStaff");
+    if (!sel) return;
+    if (allStaff.length === 0) {
+        sel.innerHTML = '<option value="">No staff available</option>';
+        return;
+    }
+    sel.innerHTML = allStaff.map(s => `
+        <option value="${s.id}">${s.display_name || s.email || 'Staff'}</option>
+    `).join("");
+}
+
+function selectDepartment(deptId) {
+    currentDepartmentId = deptId;
+    document.querySelectorAll('.dept-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.department === deptId);
+    });
+    loadShiftsForMonth(deptId);
+    loadStaff(deptId);
+}
+
+async function loadShiftsForMonth(deptId) {
+    try {
+        const url = `${API}/staff/shifts/by_month/?year=${currentYear}&month=${currentMonth+1}&department=${deptId}`;
+        console.log("Fetching shifts from:", url);
+        const res = await fetch(url, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        console.log("Shifts response status:", res.status);
+        
+        if (res.ok) {
+            const data = await res.json();
+            console.log("Shifts loaded:", data.length);
+            
+            shiftsList = data;
+            
+            shifts = {};
+            data.forEach(s => {
+                const date = s.date;
+                if (!shifts[date]) shifts[date] = [];
+                shifts[date].push(s);
+            });
+            
+            console.log("Shifts grouped by date:", Object.keys(shifts).length, "dates have shifts");
+            renderCalendar();
+            
+            if (isInitialLoad && Object.keys(shifts).length > 0) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                if (shifts[todayStr]) {
+                    selectDate(todayStr);
+                } else {
+                    const firstDate = Object.keys(shifts)[0];
+                    if (firstDate) selectDate(firstDate);
+                }
+                isInitialLoad = false;
+            }
+        } else {
+            const err = await res.text();
+            console.error("Failed to load shifts:", err);
+        }
+    } catch (e) {
+        console.error("Error loading shifts:", e);
+    }
+}
+
+function renderCalendar() {
+    const grid = document.getElementById("calendarGrid");
+    const monthLabel = document.getElementById("monthLabel");
+    monthLabel.textContent = new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
+    
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const today = new Date();
+    
+    let html = '';
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    dayNames.forEach(d => {
+        html += `<div class="day-header">${d}</div>`;
+    });
+    
+    for (let i = 0; i < firstDay; i++) {
+        html += `<div class="day-cell empty"></div>`;
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(currentYear, currentMonth, day);
+        const dateStr = dateObj.toISOString().split('T')[0];
+        const isToday = dateObj.toDateString() === today.toDateString();
+        const dayShifts = shifts[dateStr] || [];
+        
+        html += `<div class="day-cell" onclick="selectDate('${dateStr}')">`;
+        html += `<span class="day-number ${isToday ? 'today' : ''}">${day}</span>`;
+        
+        const maxShifts = Math.min(dayShifts.length, 4);
+        for (let i = 0; i < maxShifts; i++) {
+            const s = dayShifts[i];
+            const shiftClass = `shift-${s.shift_type}`;
+            const staffName = s.staff_name || 'Staff';
+            const shortName = staffName.split(' ').slice(0, 2).join(' ');
+            const timeDisplay = s.start_time_formatted ? s.start_time_formatted.replace(/\s/g, '') : '';
+            html += `<span class="shift-indicator ${shiftClass}" title="${staffName} - ${s.shift_type_display || s.shift_type} (${s.start_time_formatted || ''} - ${s.end_time_formatted || ''})">
+                ${shortName} ${timeDisplay}
+            </span>`;
+        }
+        if (dayShifts.length > 4) {
+            html += `<span class="shift-indicator" style="color:var(--text-dim);font-size:.5rem;text-align:center;">+${dayShifts.length - 4} more</span>`;
+        }
+        
+        html += `</div>`;
+    }
+    
+    grid.innerHTML = html;
+}
+
+function selectDate(dateStr) {
+    selectedDate = dateStr;
+    const display = document.getElementById("selectedDateDisplay");
+    const dateObj = new Date(dateStr + 'T00:00:00');
+    display.textContent = dateObj.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    
+    const list = document.getElementById("shiftList");
+    const dayShifts = shifts[dateStr] || [];
+    
+    if (dayShifts.length === 0) {
+        list.innerHTML = `<p style="color:var(--text-dim);text-align:center;padding:20px;">No shifts scheduled for this day.</p>`;
+    } else {
+        list.innerHTML = dayShifts.map(s => {
+            return `
+            <div class="shift-detail-item" style="border-left-color: ${getShiftColor(s.shift_type)};">
+                <div style="flex:1;">
+                    <strong style="font-size:.9rem;">${s.staff_name || 'Staff'}</strong>
+                    <span style="color:var(--text-dim);font-size:.75rem;margin-left:8px;background:rgba(255,255,255,.05);padding:2px 8px;border-radius:4px;">${s.shift_type_display || s.shift_type}</span>
+                    <span style="color:var(--text-dim);font-size:.7rem;margin-left:8px;">
+                        <i class="far fa-clock"></i> ${s.start_time_formatted || s.start_time} - ${s.end_time_formatted || s.end_time}
+                    </span>
+                    ${s.title ? `<span style="color:var(--text-dim);font-size:.7rem;margin-left:8px;">${s.title}</span>` : ''}
+                </div>
+                <div class="shift-actions">
+                    <button class="btn btn-outline btn-sm edit-shift-btn" data-shift-id="${s.id}"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn btn-danger btn-sm delete-shift-btn" data-shift-id="${s.id}"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+    
+    document.getElementById("shiftDetails").style.display = "block";
+    document.getElementById("shiftDate").value = dateStr;
+}
+
+function getShiftColor(type) {
+    const colors = {
+        'morning': '#60a5fa',
+        'afternoon': '#fbbf24',
+        'night': '#a78bfa',
+        'custom': '#34d399'
+    };
+    return colors[type] || '#8a8aa8';
+}
+
+function changeMonth(delta) {
+    currentMonth += delta;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    if (currentDepartmentId) {
+        loadShiftsForMonth(currentDepartmentId);
+    }
+}
+
+function goToToday() {
+    const today = new Date();
+    currentMonth = today.getMonth();
+    currentYear = today.getFullYear();
+    if (currentDepartmentId) {
+        loadShiftsForMonth(currentDepartmentId);
+    }
+}
+
+function openAddShift() {
+    if (!hasShiftPermission) {
+        showToast("You don't have permission to add shifts. Contact your administrator.", "error");
+        return;
+    }
+    document.getElementById("shiftModalTitle").textContent = "Add Shift";
+    document.getElementById("editShiftId").value = "";
+    document.getElementById("shiftTitle").value = "";
+    document.getElementById("shiftType").value = "morning";
+    document.getElementById("shiftStart").value = "09:00";
+    document.getElementById("shiftEnd").value = "17:00";
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("shiftDate").value = selectedDate || today;
+    document.getElementById("saveShiftBtn").textContent = "Save Shift";
+    
+    // Force modal to show using multiple methods
+    var modal = document.getElementById("shiftModal");
+    modal.style.display = "flex";
+    modal.style.visibility = "visible";
+    modal.style.opacity = "1";
+    modal.style.zIndex = "99999";
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+    
+    console.log("Add Shift modal opened");
+}
+
+function editShift(shiftId) {
+    console.log("=== editShift called ===");
+    console.log("Shift ID:", shiftId);
+    
+    if (!hasShiftPermission) {
+        showToast("You don't have permission to edit shifts. Contact your administrator.", "error");
+        return;
+    }
+    
+    const shift = shiftsList.find(s => s.id === shiftId);
+    if (!shift) {
+        showToast("Shift not found. Please refresh and try again.", "error");
+        console.error("Shift not found with ID:", shiftId);
+        return;
+    }
+    
+    console.log("Found shift to edit:", shift);
+    
+    document.getElementById("shiftModalTitle").textContent = "Edit Shift";
+    document.getElementById("editShiftId").value = shift.id;
+    
+    if (shift.department) {
+        document.getElementById("shiftDepartment").value = shift.department;
+    }
+    
+    if (shift.staff) {
+        document.getElementById("shiftStaff").value = shift.staff;
+    }
+    
+    document.getElementById("shiftType").value = shift.shift_type || "morning";
+    document.getElementById("shiftDate").value = shift.date;
+    document.getElementById("shiftStart").value = shift.start_time;
+    document.getElementById("shiftEnd").value = shift.end_time;
+    document.getElementById("shiftTitle").value = shift.title || "";
+    document.getElementById("saveShiftBtn").textContent = "Update Shift";
+    
+    // Force modal to show using multiple methods
+    var modal = document.getElementById("shiftModal");
+    modal.style.display = "flex";
+    modal.style.visibility = "visible";
+    modal.style.opacity = "1";
+    modal.style.zIndex = "99999";
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+    
+    console.log("Edit Shift modal opened");
+}
+
+function closeModal(id) {
+    var modal = document.getElementById(id);
+    if (modal) {
+        modal.style.display = "none";
+        modal.style.visibility = "hidden";
+        modal.style.opacity = "0";
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
+    }
+}
+
+async function saveShift() {
+    if (!hasShiftPermission) {
+        showToast("You don't have permission to save shifts. Contact your administrator.", "error");
+        return;
+    }
+    
+    const editId = document.getElementById("editShiftId").value;
+    const data = {
+        department_id: document.getElementById("shiftDepartment").value,
+        staff_id: document.getElementById("shiftStaff").value,
+        shift_type: document.getElementById("shiftType").value,
+        date: document.getElementById("shiftDate").value,
+        start_time: document.getElementById("shiftStart").value,
+        end_time: document.getElementById("shiftEnd").value,
+        title: document.getElementById("shiftTitle").value || ""
+    };
+    
+    console.log("Saving shift data:", data);
+    
+    if (!data.department_id || !data.staff_id || !data.date) {
+        showToast("Please fill in all required fields", "error");
+        return;
+    }
+    
+    const url = editId ? `${API}/staff/shifts/${editId}/` : `${API}/staff/shifts/`;
+    const method = editId ? "PUT" : "POST";
+    
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+        
+        console.log("Save shift response status:", res.status);
+        
+        if (res.ok) {
+            const result = await res.json();
+            console.log("Shift saved:", result);
+            showToast(editId ? "Shift updated successfully!" : "Shift added successfully!", "success");
+            closeModal("shiftModal");
+            
+            if (currentDepartmentId) {
+                await loadShiftsForMonth(currentDepartmentId);
+            }
+            
+            if (data.date) {
+                selectDate(data.date);
+            }
+        } else {
+            const err = await res.json();
+            console.error("Error saving shift:", err);
+            showToast(err.error || "Failed to save shift", "error");
+        }
+    } catch (e) {
+        console.error("Error saving shift:", e);
+        showToast("Network error: " + e.message, "error");
+    }
+}
+
+async function deleteShift(shiftId) {
+    console.log("=== deleteShift called ===");
+    console.log("Shift ID:", shiftId);
+    
+    if (!hasShiftPermission) {
+        showToast("You don't have permission to delete shifts. Contact your administrator.", "error");
+        return;
+    }
+    
+    if (!confirm("Delete this shift?")) return;
+    
+    try {
+        const res = await fetch(`${API}/staff/shifts/${shiftId}/`, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (res.ok) {
+            showToast("Shift deleted", "info");
+            
+            if (currentDepartmentId) {
+                await loadShiftsForMonth(currentDepartmentId);
+            }
+            
+            if (selectedDate) {
+                selectDate(selectedDate);
+            }
+        } else {
+            const err = await res.json();
+            showToast(err.error || "Failed to delete shift", "error");
+        }
+    } catch (e) {
+        showToast("Network error: " + e.message, "error");
+    }
+}
+
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("sidebarOverlay").classList.toggle("active");
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = "/auth/login.html";
+}
+
+function showToast(msg, type) {
+    const container = document.getElementById("toastContainer");
+    const toast = document.createElement("div");
+    toast.className = "toast " + (type || "info");
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>

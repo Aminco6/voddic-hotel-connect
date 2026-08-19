@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BrightStar - Staff Dashboard</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f0f1a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0c0c18; --card: #151528; --gold: #e4af3e; --danger: #e2412c; --success: #2fa06a; --warning: #f59e0b; --info: #3b82f6; --text: #eaeaf0; --text-dim: #8a8aa8; --border: rgba(255,255,255,0.06); }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; font-family: inherit; color: inherit; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #12121f; }
+        ::-webkit-scrollbar-thumb { background: #2a2a45; border-radius: 3px; }
+
+        /* Mobile Header */
+        .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(12,12,24,.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); z-index: 1000; align-items: center; justify-content: space-between; padding: 0 16px; }
+        .menu-toggle { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; border-radius: 10px; background: rgba(255,255,255,.05); color: var(--text); }
+        .mobile-title { font-size: 1rem; font-weight: 700; color: #f0f0f5; }
+
+        /* Sidebar */
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); z-index: 1100; opacity: 0; transition: opacity .3s; }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        .sidebar { position: fixed; top: 0; left: 0; width: 272px; height: 100vh; background: #101020; border-right: 1px solid var(--border); z-index: 1200; display: flex; flex-direction: column; overflow: hidden; transition: transform .35s cubic-bezier(.4,0,.2,1); }
+        .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 18px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .sidebar-logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 36px; height: 36px; background: var(--gold); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #000; }
+        .sidebar-logo h2 { font-size: .95rem; font-weight: 800; color: #f5f5fa; line-height: 1.2; }
+        .hotel-name { font-size: .72rem; font-weight: 500; color: var(--text-dim); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        .sidebar-close { display: none; width: 32px; height: 32px; align-items: center; justify-content: center; font-size: 1rem; color: var(--text-dim); border-radius: 8px; }
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+        .nav-section-title { font-size: .62rem; font-weight: 700; color: #55556e; letter-spacing: .08em; text-transform: uppercase; padding: 14px 20px 6px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; font-size: .82rem; font-weight: 500; color: #9a9ab8; transition: all .18s; position: relative; border-left: 3px solid transparent; cursor: pointer; }
+        .nav-item:hover { color: #e0e0f0; background: rgba(255,255,255,.03); }
+        .nav-item.active { color: #f0f0f8; background: rgba(228,175,62,.08); border-left-color: var(--gold); }
+        .nav-icon { font-size: .95rem; width: 22px; text-align: center; }
+        .nav-badge { margin-left: auto; font-size: .65rem; font-weight: 700; background: var(--gold); color: #000; padding: 2px 7px; border-radius: 10px; min-width: 20px; text-align: center; }
+        .nav-badge.emergency { background: var(--danger); color: #fff; animation: pulse 1s infinite; }
+        .sidebar-footer { padding: 16px 18px; border-top: 1px solid var(--border); flex-shrink: 0; }
+        .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--gold), #c48a20); display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 800; color: #000; }
+        .user-name { font-size: .82rem; font-weight: 600; color: var(--text); }
+        .user-role { font-size: .7rem; font-weight: 500; color: var(--text-dim); }
+        .notif-btn { width: 100%; padding: 9px 14px; font-size: .78rem; font-weight: 600; border-radius: 8px; text-align: center; margin-bottom: 8px; transition: all .2s; }
+        .notif-off { background: rgba(226,65,44,0.2); color: var(--danger); }
+        .notif-on { background: rgba(47,160,106,0.2); color: var(--success); }
+        .logout-btn { width: 100%; padding: 9px 14px; font-size: .78rem; font-weight: 600; color: #b0b0c8; border-radius: 8px; text-align: center; transition: all .2s; background: rgba(255,255,255,0.03); }
+        .logout-btn:hover { background: rgba(229,69,69,.1); color: var(--danger); }
+
+        /* Main Content */
+        .main-content { margin-left: 272px; min-height: 100vh; padding: 28px 32px 40px; position: relative; }
+        .main-content::before { content: ''; position: fixed; top: -120px; right: -120px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(228,175,62,.06) 0%, transparent 70%); pointer-events: none; z-index: -1; }
+        .page-header { margin-bottom: 24px; }
+        .page-greeting { font-size: .85rem; font-weight: 500; color: var(--text-dim); }
+        .page-title { font-size: 1.75rem; font-weight: 800; color: #f5f5fa; letter-spacing: -0.03em; margin-bottom: 4px; }
+
+        /* Views / Tabs */
+        .view { display: none; animation: fadeIn .3s ease; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .emergency-banner { background: var(--danger); color: white; padding: 15px; border-radius: 12px; text-align: center; font-weight: 700; font-size: 14px; margin-bottom: 16px; display: none; cursor: pointer; }
+        .emergency-banner.active { display: block; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+        .card { background: var(--card); border-radius: 14px; padding: 20px; border: 1px solid var(--border); margin-bottom: 16px; }
+        .card-title { font-size: 1.1rem; font-weight: 700; color: #f5f5fa; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; color: var(--text-dim); font-size: 11px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+        .form-control { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; outline: none; font-family: inherit; }
+        .form-control:focus { border-color: var(--gold); }
+        
+        .btn { padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 13px; width: 100%; transition: transform .1s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-activate { background: var(--success); color: white; }
+        .btn-gold { background: var(--gold); color: #000; }
+        .btn-sm { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; transition: transform .1s; }
+        .btn-sm:active { transform: scale(0.95); }
+        .btn-accept { background: var(--success); color: white; }
+        .btn-resolve { background: var(--info); color: white; }
+        .btn-chat { background: #8b5cf6; color: white; }
+        .btn-danger { background: rgba(226,65,44,0.2); color: var(--danger); }
+
+        /* Work Cards (Rooms, Orders, Requests) */
+        .work-card { background: var(--card); border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .work-info h4 { font-size: 1.1rem; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
+        .work-info p { font-size: 12px; color: var(--text-dim); }
+        .work-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        
+        .room-num { font-size: 18px; font-weight: 800; color: var(--gold); }
+        .countdown-timer { font-size: 12px; font-weight: 700; font-family: monospace; color: var(--gold); margin-top: 4px; }
+        .countdown-warning { color: var(--warning); }
+        .countdown-danger { color: var(--danger); animation: pulse 1s infinite; }
+        .emergency-card { border-left: 4px solid var(--danger); }
+        
+        /* Chat */
+        .chat-messages { display: flex; flex-direction: column; gap: 8px; max-height: 450px; overflow-y: auto; padding: 8px; min-height: 200px; }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 13px; line-height: 1.4; word-wrap: break-word; }
+        .msg-guest { background: var(--gold); color: #000; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-staff { background: var(--bg); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+        .msg-system { background: rgba(59,130,246,0.1); color: var(--info); align-self: center; font-size: 11px; padding: 6px 12px; border-radius: 10px; text-align: center; }
+        .msg-time { font-size: 9px; opacity: 0.6; margin-top: 4px; }
+        .chat-input-row { display: flex; gap: 8px; margin-top: 12px; }
+        .chat-input { flex: 1; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; color: var(--text); font-size: 13px; outline: none; }
+        .chat-send { padding: 12px 20px; background: var(--gold); color: #000; border: none; border-radius: 16px; font-weight: 700; cursor: pointer; font-size: 13px; }
+        .history-item { background: var(--bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
+        .history-item:hover { border-color: var(--gold); }
+        .history-item.active { border-color: var(--gold); background: rgba(228,175,62,0.1); }
+
+        /* Modal Overlay */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(4px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+
+        @media (max-width: 768px) {
+            .mobile-header { display: flex; }
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-close { display: flex; }
+            .main-content { margin-left: 0; padding: 76px 16px 32px; }
+            .page-title { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="mobile-header">
+    <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+    <span class="mobile-title">Staff Dashboard</span>
+    <div style="width:42px"></div>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="logo-icon">⭐</div>
+            <div>
+                <h2>BrightStar Hotel</h2>
+                <p class="hotel-name" id="staffInfo">Staff</p>
+            </div>
+        </div>
+        <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Work Dashboard</div>
+        <a class="nav-item active" data-view="dashboard"><span class="nav-icon">📊</span> Overview</a>
+        
+        <div class="nav-section-title">Operations</div>
+        <a class="nav-item" data-view="rooms"><span class="nav-icon">🚪</span> Rooms</a>
+        <a class="nav-item" data-view="emergencies"><span class="nav-icon">🚨</span> Emergencies <span class="nav-badge emergency" id="emergSidebarBadge" style="display:none;">0</span></a>
+        <a class="nav-item" data-view="chats"><span class="nav-icon">💬</span> Chats</a>
+        <a class="nav-item" data-view="orders"><span class="nav-icon">🍽️</span> Food Orders</a>
+        <a class="nav-item" data-view="requests"><span class="nav-icon">🧹</span> Service Requests</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar" id="staffAvatar">S</div>
+            <div>
+                <div class="user-name" id="staffNameDisplay">Staff Name</div>
+                <div class="user-role" id="staffRoleDisplay">Role</div>
+            </div>
+        </div>
+        <button class="notif-btn notif-off" id="notifBtn" onclick="window.toggleNotifications()">🔕 Notifications Off</button>
+        <button class="logout-btn" onclick="window.logout()">🚪 Sign Out</button>
+    </div>
+</aside>
+
+<main class="main-content">
+    <div class="page-header">
+        <p class="page-greeting">Welcome back,</p>
+        <h1 class="page-title" id="mainTitle">Dashboard</h1>
+    </div>
+
+    <div class="emergency-banner" id="emergBanner" onclick="window.switchView('emergencies')">🚨 NEW EMERGENCY! 🚨</div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="view-dashboard" class="view active">
+        <div class="card">
+            <div class="card-title">Your Work Summary</div>
+            <div id="dashSummary" style="display:flex; gap:16px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:150px; background:var(--bg); padding:16px; border-radius:10px;">
+                    <div style="font-size:2rem; font-weight:800; color:var(--gold);" id="dashActiveRooms">0</div>
+                    <div style="font-size:.8rem; color:var(--text-dim);">Active Rooms</div>
+                </div>
+                <div style="flex:1; min-width:150px; background:var(--bg); padding:16px; border-radius:10px;">
+                    <div style="font-size:2rem; font-weight:800; color:var(--danger);" id="dashActiveEmerg">0</div>
+                    <div style="font-size:.8rem; color:var(--text-dim);">Active Emergencies</div>
+                </div>
+                <div style="flex:1; min-width:150px; background:var(--bg); padding:16px; border-radius:10px;">
+                    <div style="font-size:2rem; font-weight:800; color:var(--info);" id="dashActiveChats">0</div>
+                    <div style="font-size:.8rem; color:var(--text-dim);">Unread Chats</div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">Quick Actions</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px;">
+                <button class="btn btn-activate" onclick="window.switchView('rooms')">Manage Rooms</button>
+                <button class="btn btn-chat" onclick="window.switchView('chats')">Open Chats</button>
+                <button class="btn btn-danger" onclick="window.switchView('emergencies')">View Emergencies</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROOMS VIEW -->
+    <div id="view-rooms" class="view">
+        <div class="card">
+            <div class="card-title">Activate New Room</div>
+            <div class="form-group"><label>Room Number</label><select id="roomSelect" class="form-control"><option>Loading...</option></select></div>
+            <div class="form-row">
+                <div class="form-group"><label>Check-out Date</label><input type="date" id="checkoutDate" class="form-control"></div>
+                <div class="form-group"><label>Time</label><input type="time" id="checkoutTime" class="form-control" value="12:00"></div>
+            </div>
+            <button class="btn btn-activate" onclick="window.activateRoom()">✅ Activate Room</button>
+        </div>
+        <div class="card">
+            <div class="card-title">Active Rooms</div>
+            <div id="roomsList"></div>
+        </div>
+    </div>
+
+    <!-- EMERGENCIES VIEW -->
+    <div id="view-emergencies" class="view">
+        <div class="card">
+            <div class="card-title">Active Emergencies</div>
+            <div id="emergenciesList"></div>
+        </div>
+    </div>
+
+    <!-- CHATS VIEW -->
+    <div id="view-chats" class="view">
+        <div class="card">
+            <div class="card-title">Guest Communications</div>
+            <div class="form-group"><label>Select Room</label><select id="chatRoomSelect" class="form-control" onchange="window.loadChatHistory()"><option value="">Select room...</option></select></div>
+            <div id="sessionList" style="margin-bottom:12px;"></div>
+            <div class="chat-messages" id="staffChatMessages" style="background:var(--bg); border-radius:10px;"><p style="color:var(--text-dim);text-align:center;align-self:center;margin:auto;">Select a room to view chat</p></div>
+            <div class="chat-input-row" id="staffChatInput" style="display:none;">
+                <input type="text" class="chat-input" id="staffChatText" placeholder="Reply..." onkeypress="if(event.key==='Enter')window.sendStaffMessage()">
+                <button class="chat-send" onclick="window.sendStaffMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ORDERS VIEW (For Waiters) -->
+    <div id="view-orders" class="view">
+        <div class="card">
+            <div class="card-title">🍽️ Food Order Queue</div>
+            <div id="ordersList">
+                <!-- Mock Data for UI Demonstration -->
+                <div class="work-card">
+                    <div class="work-info">
+                        <h4>Room 205</h4>
+                        <p>2 × Jollof Rice, 2 × Soft Drink<br><strong style="color:var(--gold)">₦18,000</strong></p>
+                    </div>
+                    <div class="work-actions">
+                        <button class="btn-sm btn-accept">Accept Order</button>
+                    </div>
+                </div>
+                <div class="work-card">
+                    <div class="work-info">
+                        <h4>Room 312</h4>
+                        <p>1 × Continental Breakfast<br><strong style="color:var(--gold)">₦8,500</strong></p>
+                    </div>
+                    <div class="work-actions">
+                        <button class="btn-sm btn-resolve">Mark Preparing</button>
+                        <button class="btn-sm btn-chat">Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REQUESTS VIEW (For Housekeeping/Maintenance) -->
+    <div id="view-requests" class="view">
+        <div class="card">
+            <div class="card-title">🧹 Service & Maintenance Requests</div>
+            <div id="requestsList">
+                <!-- Mock Data for UI Demonstration -->
+                <div class="work-card emergency-card">
+                    <div class="work-info">
+                        <h4>Room 108</h4>
+                        <p>Maintenance: AC not cooling</p>
+                    </div>
+                    <div class="work-actions">
+                        <button class="btn-sm btn-accept">Accept</button>
+                    </div>
+                </div>
+                <div class="work-card">
+                    <div class="work-info">
+                        <h4>Room 205</h4>
+                        <p>Housekeeping: Extra towels requested</p>
+                    </div>
+                    <div class="work-actions">
+                        <button class="btn-sm btn-accept">Accept</button>
+                    </div>
+                </div>
+                <div class="work-card">
+                    <div class="work-info">
+                        <h4>Room 302</h4>
+                        <p>Maintenance: TV remote not working</p>
+                    </div>
+                    <div class="work-actions">
+                        <button class="btn-sm btn-resolve">Mark Completed</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Emergency Chat Overlay -->
+<div id="chatOverlay" style="display:none;position:fixed;inset:0;z-index:200;background:var(--bg);flex-direction:column;">
+    <div style="background:var(--card); padding:12px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border);">
+        <button onclick="window.closeChatOverlay()" style="background:none;border:none;color:var(--gold);font-size:18px;cursor:pointer;">← Back</button>
+        <span style="font-weight:700;font-size:14px;">💬 Room <span id="chatOverlayRoom">---</span></span>
+        <button class="btn-sm btn-resolve" onclick="window.resolveEmergencyChat()">✔ Resolve</button>
+    </div>
+    <div class="chat-messages" id="chatOverlayMessages" style="flex:1;padding:12px;"></div>
+    <div class="chat-input-row" style="padding:10px;">
+        <input type="text" class="chat-input" id="chatOverlayInput" placeholder="Type reply..." onkeypress="if(event.key==='Enter')window.sendOverlayMessage()">
+        <button class="chat-send" onclick="window.sendOverlayMessage()">Send</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore, collection, doc, setDoc, updateDoc, getDocs, getDoc, onSnapshot, query, where, orderBy, addDoc, serverTimestamp, runTransaction } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    const fc={apiKey:"AIzaSyDBZP5I3vjZE6D3tYDfc0eoHRylI51wqm4",authDomain:"wakasafe-498018.firebaseapp.com",projectId:"wakasafe-498018",storageBucket:"wakasafe-498018.firebasestorage.app",messagingSenderId:"401544166955",appId:"1:401544166955:web:8dce604195a8491ae0746e"};
+    const app=initializeApp(fc),auth=getAuth(app),db=getFirestore(app);
+    let currentStaff=null,chatUnsub=null,currentChatRoom=null,currentEmergencyId=null,currentSessionId=null;
+    let roomTimers={};
+
+    // --- SIDEBAR & VIEW LOGIC ---
+    window.toggleSidebar = function() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    };
+
+    window.switchView = function(viewName) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        document.getElementById('view-' + viewName).classList.add('active');
+        const navItem = document.querySelector(`.nav-item[data-view="${viewName}"]`);
+        if(navItem) navItem.classList.add('active');
+        
+        const titles = {
+            dashboard: 'Dashboard',
+            rooms: 'Room Management',
+            emergencies: 'Emergency Center',
+            chats: 'Guest Chats',
+            orders: 'Food Orders',
+            requests: 'Service Requests'
+        };
+        document.getElementById('mainTitle').textContent = titles[viewName];
+        
+        if (window.innerWidth <= 768) toggleSidebar();
+    };
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const viewName = this.getAttribute('data-view');
+            window.switchView(viewName);
+        });
+    });
+
+    // --- ORIGINAL FIREBASE STAFF LOGIC ---
+    window.toggleNotifications=async function(){
+        if(!currentStaff)return;
+        const btn=document.getElementById('notifBtn');
+        if(btn.textContent.includes('On')){btn.textContent='🔕 Notifications Off';btn.className='notif-btn notif-off';await updateDoc(doc(db,'staff',currentStaff.id),{fcmToken:null});}
+        else{const perm=await Notification.requestPermission();if(perm==='granted'){const{getMessaging,getToken}=await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js');const token=await getToken(getMessaging(app),{vapidKey:'BF0OpJzKIW03qB2D45LKESwScE3sITk_b80jT8aLrB4Mo3qXvFi-IQE7bGt0zpP7CVCR4L2tNf1zIuF5XRQn8Uc'});if(token){await updateDoc(doc(db,'staff',currentStaff.id),{fcmToken:token});btn.textContent='🔔 Notifications On';btn.className='notif-btn notif-on';}}}
+    };
+    
+    window.logout=async function(){await signOut(auth);window.location.href='/';};
+
+    onAuthStateChanged(auth,async function(user){
+        if(!user){window.location.href='/';return;}
+        const snap=await getDocs(query(collection(db,'staff'),where('uid','==',user.uid)));
+        if(snap.empty){await signOut(auth);return;}
+        currentStaff={id:user.uid,...snap.docs[0].data()};
+        
+        // Update sidebar info
+        document.getElementById('staffInfo').textContent=currentStaff.name||'Staff';
+        document.getElementById('staffNameDisplay').textContent=currentStaff.name||'Staff';
+        document.getElementById('staffRoleDisplay').textContent=currentStaff.role||'Staff';
+        document.getElementById('staffAvatar').textContent=(currentStaff.name||'S').charAt(0).toUpperCase();
+        
+        if(Notification.permission==='granted'&&currentStaff.fcmToken){document.getElementById('notifBtn').textContent='🔔 Notifications On';document.getElementById('notifBtn').className='notif-btn notif-on';}
+        
+        // Filter sidebar based on role (simple UI logic)
+        const role = (currentStaff.role || '').toLowerCase();
+        if (role.includes('security')) {
+            document.querySelector('.nav-item[data-view="rooms"]').style.display = 'none';
+            document.querySelector('.nav-item[data-view="chats"]').style.display = 'none';
+            document.querySelector('.nav-item[data-view="orders"]').style.display = 'none';
+            document.querySelector('.nav-item[data-view="requests"]').style.display = 'none';
+            window.switchView('emergencies');
+        } else if (role.includes('waiter')) {
+            document.querySelector('.nav-item[data-view="rooms"]').style.display = 'none';
+            document.querySelector('.nav-item[data-view="emergencies"]').style.display = 'none';
+            document.querySelector('.nav-item[data-view="requests"]').style.display = 'none';
+            window.switchView('orders');
+        } else if (role.includes('house') || role.includes('maint')) {
+            document.querySelector('.nav-item[data-view="rooms"]').style.display = 'none';
+            document.querySelector('.nav-item[data-view="emergencies"]').style.display = 'none';
+            document.querySelector('.nav-item[data-view="orders"]').style.display = 'none';
+            window.switchView('requests');
+        }
+
+        listenRooms();listenEmergencies();
+        const params=new URLSearchParams(window.location.search);
+        const emRoom=params.get('emergency'),emId=params.get('id'),autoAccept=params.get('autoAccept');
+        if(emRoom&&emId&&autoAccept==='1'){setTimeout(function(){window.autoAccept(emId,emRoom);},500);}
+    });
+
+    window.autoAccept=async function(emId,roomNumber){
+        try{await runTransaction(db,async function(t){const r=doc(db,'emergencies',emId);const d=await t.get(r);if(d.exists()&&d.data().status==='Waiting'&&!d.data().acceptedBy){t.update(r,{status:'Acknowledged',acceptedBy:currentStaff.id,acceptedByName:currentStaff.name,acceptedAt:new Date().toISOString()});}});}catch(e){}
+        var roomSnap=await getDoc(doc(db,'rooms','room_'+roomNumber));var sid=roomSnap.exists()?roomSnap.data().currentSessionId:null;
+        await addDoc(collection(db,'chats'),{roomNumber:roomNumber,sessionId:sid||'session_default',department:'emergency',from:'staff',type:'system',text:'✅ '+(currentStaff.name||'Staff')+' accepted and is attending',senderName:currentStaff.name||'Staff',timestamp:serverTimestamp()});
+        window.openEmergencyChat(roomNumber,emId);
+    };
+
+    // ROOMS WITH COUNTDOWN TIMERS
+    function listenRooms(){
+        onSnapshot(collection(db,'rooms'),function(snap){
+            var rooms=[];snap.forEach(function(d){rooms.push({id:d.id,...d.data()});});
+            document.getElementById('roomSelect').innerHTML='<option value="">Select room...</option>'+rooms.map(function(r){return'<option value="'+r.roomNumber+'">Room '+r.roomNumber+'</option>';}).join('');
+            document.getElementById('chatRoomSelect').innerHTML='<option value="">Select room...</option>'+rooms.map(function(r){return'<option value="'+r.roomNumber+'">Room '+r.roomNumber+'</option>';}).join('');
+            
+            var activeRooms=rooms.filter(function(r){return r.active;});
+            document.getElementById('dashActiveRooms').textContent = activeRooms.length;
+            document.getElementById('roomsList').innerHTML=activeRooms.map(function(r){
+                var id='room-'+r.roomNumber;
+                return'<div class="work-card" id="'+id+'"><div class="work-info"><div class="room-num">Room '+r.roomNumber+'</div><div style="font-size:10px;color:var(--text-dim);">'+(r.boundDevice?'📱 Bound':'Not bound')+'</div><div class="countdown-timer" id="timer-'+r.roomNumber+'">--:--:--</div></div><div class="work-actions"><button class="btn-sm btn-danger" onclick="window.deactivate(\''+r.roomNumber+'\')">Off</button><button class="btn-sm" style="background:rgba(245,158,11,0.2);color:var(--warning)" onclick="window.transfer(\''+r.roomNumber+'\')">↺</button><button class="btn-sm btn-chat" onclick="window.openChat(\''+r.roomNumber+'\')">💬</button></div></div>';
+            }).join('')||'<p style="color:var(--text-dim);text-align:center;">No active rooms</p>';
+            
+            activeRooms.forEach(function(r){
+                if(r.expiresAt)startRoomTimer(r.roomNumber,new Date(r.expiresAt));
+            });
+        });
+    }
+
+    function startRoomTimer(roomNumber,expiry){
+        if(roomTimers[roomNumber])clearInterval(roomTimers[roomNumber]);
+        var timerEl=document.getElementById('timer-'+roomNumber);
+        if(!timerEl)return;
+        
+        function update(){
+            var now=new Date();
+            var diff=expiry-now;
+            var graceEnd=new Date(expiry.getTime()+10*60*1000);
+            
+            if(now>graceEnd){
+                timerEl.textContent='Expired';
+                timerEl.className='countdown-timer countdown-danger';
+                clearInterval(roomTimers[roomNumber]);
+                updateDoc(doc(db,'rooms','room_'+roomNumber),{active:false,status:'inactive',boundDevice:null,updatedAt:new Date().toISOString()});
+                return;
+            }
+            
+            if(diff<=0){
+                timerEl.textContent='Grace: '+Math.ceil((graceEnd-now)/60000)+'m';
+                timerEl.className='countdown-timer countdown-danger';
+            }else if(diff<3600000){
+                var h=Math.floor(diff/3600000);
+                var m=Math.floor((diff%3600000)/60000);
+                var s=Math.floor((diff%60000)/1000);
+                timerEl.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+                timerEl.className='countdown-timer countdown-warning';
+            }else{
+                var h=Math.floor(diff/3600000);
+                var m=Math.floor((diff%3600000)/60000);
+                var s=Math.floor((diff%60000)/1000);
+                timerEl.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+                timerEl.className='countdown-timer';
+            }
+        }
+        update();
+        roomTimers[roomNumber]=setInterval(update,1000);
+    }
+
+    // EMERGENCIES
+    function listenEmergencies(){
+        var q=query(collection(db,'emergencies'),where('status','in',['Waiting','Acknowledged']),orderBy('timestamp','desc'));
+        onSnapshot(q,function(snap){
+            var items=[];snap.forEach(function(d){items.push({id:d.id,...d.data()});});
+            var waiting=items.filter(function(e){return e.status==='Waiting';});
+            
+            // Update Dashboard and Sidebar badge
+            document.getElementById('dashActiveEmerg').textContent = items.length;
+            const sidebarBadge = document.getElementById('emergSidebarBadge');
+            if(waiting.length > 0){
+                document.getElementById('emergBanner').classList.add('active');
+                sidebarBadge.style.display = 'inline-block';
+                sidebarBadge.textContent = waiting.length;
+                navigator.vibrate&&navigator.vibrate([200,100,200]);
+            } else {
+                document.getElementById('emergBanner').classList.remove('active');
+                sidebarBadge.style.display = 'none';
+            }
+            
+            document.getElementById('emergenciesList').innerHTML=items.map(function(e){
+                var isMine=e.acceptedBy===currentStaff?.id;
+                return'<div class="work-card emergency-card"><div class="work-info"><div class="room-num" style="color:var(--danger)">🚨 Room '+e.roomNumber+(isMine?'<span style="background:rgba(47,160,106,0.2);color:var(--success);padding:2px 8px;border-radius:10px;font-size:9px;margin-left:5px;">✅ You</span>':'')+'</div><div style="font-size:10px;color:var(--text-dim);">'+new Date(e.timestamp).toLocaleTimeString()+'</div></div><div class="work-actions">'+(e.status==='Waiting'?'<button class="btn-sm btn-accept" onclick="window.acceptEmerg(\''+e.id+'\',\''+e.roomNumber+'\')">✅ Accept</button>':'')+(isMine?'<button class="btn-sm btn-resolve" onclick="window.resolveEmerg(\''+e.id+'\')">✔ Resolve</button>':'')+'<button class="btn-sm btn-chat" onclick="window.openEmergencyChat(\''+e.roomNumber+'\',\''+e.id+'\')">💬</button></div></div>';
+            }).join('')||'<p style="color:var(--text-dim);text-align:center;">No active emergencies</p>';
+        });
+    }
+
+    window.acceptEmerg=async function(emId,roomNumber){
+        try{await runTransaction(db,async function(t){const r=doc(db,'emergencies',emId);const d=await t.get(r);if(d.exists()&&d.data().status==='Waiting'&&!d.data().acceptedBy){t.update(r,{status:'Acknowledged',acceptedBy:currentStaff.id,acceptedByName:currentStaff.name,acceptedAt:new Date().toISOString()});}});}catch(e){}
+        var roomSnap=await getDoc(doc(db,'rooms','room_'+roomNumber));var sid=roomSnap.exists()?roomSnap.data().currentSessionId:null;
+        await addDoc(collection(db,'chats'),{roomNumber:roomNumber,sessionId:sid||'session_default',department:'emergency',from:'staff',type:'system',text:'✅ '+(currentStaff.name||'Staff')+' accepted and is attending',senderName:currentStaff.name||'Staff',timestamp:serverTimestamp()});
+        window.openEmergencyChat(roomNumber,emId);
+    };
+    
+    window.resolveEmerg=async function(emId){var note=prompt('Note:');await updateDoc(doc(db,'emergencies',emId),{status:'Resolved',resolvedBy:currentStaff?.id,resolvedByName:currentStaff?.name,resolvedAt:new Date().toISOString(),notes:note||''});alert('✅ Resolved!');};
+
+    // Emergency Chat Overlay
+    window.openEmergencyChat=function(roomNumber,emId){currentChatRoom=roomNumber;currentEmergencyId=emId;document.getElementById('chatOverlayRoom').textContent=roomNumber;document.getElementById('chatOverlay').style.display='flex';loadOverlayChat(roomNumber);};
+    window.closeChatOverlay=function(){document.getElementById('chatOverlay').style.display='none';if(chatUnsub)chatUnsub();};
+    async function loadOverlayChat(rn){if(chatUnsub)chatUnsub();var roomSnap=await getDoc(doc(db,'rooms','room_'+rn));var sid=roomSnap.exists()?roomSnap.data().currentSessionId:null;var q=sid?query(collection(db,'chats'),where('roomNumber','==',rn),where('sessionId','==',sid),orderBy('timestamp','asc')):query(collection(db,'chats'),where('roomNumber','==',rn),orderBy('timestamp','asc'));chatUnsub=onSnapshot(q,function(snap){var html='';snap.forEach(function(doc){var msg=doc.data();var time=msg.timestamp?new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';if(msg.type==='system'){html+='<div class="msg-system">'+msg.text+'</div>';}else if(msg.from==='guest'){html+='<div class="msg msg-guest">'+msg.text+'<div class="msg-time">'+time+'</div></div>';}else{html+='<div class="msg msg-staff"><strong>'+(msg.senderName||'Staff')+':</strong> '+msg.text+'<div class="msg-time">'+time+'</div></div>';}});document.getElementById('chatOverlayMessages').innerHTML=html||'<p style="color:var(--text-dim);text-align:center;">No messages</p>';document.getElementById('chatOverlayMessages').scrollTop=document.getElementById('chatOverlayMessages').scrollHeight;});}
+    window.sendOverlayMessage=async function(){var text=document.getElementById('chatOverlayInput').value.trim();if(!currentChatRoom||!text)return;document.getElementById('chatOverlayInput').value='';var roomSnap=await getDoc(doc(db,'rooms','room_'+currentChatRoom));var sid=roomSnap.exists()?roomSnap.data().currentSessionId:null;await addDoc(collection(db,'chats'),{roomNumber:currentChatRoom,sessionId:sid||'session_default',from:'staff',text:text,senderName:currentStaff?.name||'Staff',timestamp:serverTimestamp()});};
+    window.resolveEmergencyChat=async function(){if(!currentEmergencyId){alert('No active emergency');return;}var note=prompt('Note:');await updateDoc(doc(db,'emergencies',currentEmergencyId),{status:'Resolved',resolvedBy:currentStaff?.id,resolvedByName:currentStaff?.name,resolvedAt:new Date().toISOString(),notes:note||''});var roomSnap=await getDoc(doc(db,'rooms','room_'+currentChatRoom));var sid=roomSnap.exists()?roomSnap.data().currentSessionId:null;await addDoc(collection(db,'chats'),{roomNumber:currentChatRoom,sessionId:sid||'session_default',from:'staff',type:'system',text:'✅ Resolved by '+(currentStaff.name||'Staff'),senderName:currentStaff.name||'Staff',timestamp:serverTimestamp()});window.closeChatOverlay();alert('✅ Resolved!');};
+
+    // Chats Tab
+    window.openChat=function(rn){window.switchView('chats');document.getElementById('chatRoomSelect').value=rn;window.loadChatHistory();};
+    window.loadChatHistory=async function(){var rn=document.getElementById('chatRoomSelect').value;if(!rn)return;currentChatRoom=rn;var q=query(collection(db,'chats'),where('roomNumber','==',rn),orderBy('timestamp','asc'));const snap=await getDocs(q);var sessions={};snap.forEach(function(doc){var msg=doc.data();var sid=msg.sessionId||'unknown';if(!sessions[sid])sessions[sid]={id:sid,count:0,firstTime:msg.timestamp?msg.timestamp.toDate():new Date()};sessions[sid].count++;});var sessionKeys=Object.keys(sessions);var listHtml='<div style="font-size:11px;color:var(--gold);margin-bottom:5px;">Chat Sessions ('+sessionKeys.length+')</div>';sessionKeys.forEach(function(sid,i){var s=sessions[sid];listHtml+='<div class="history-item'+(sid===currentSessionId?' active':'')+'" onclick="window.loadSessionChat(\''+rn+'\',\''+sid+'\')"><strong>Session '+(i+1)+'</strong> - '+s.count+' messages<br><span style="font-size:10px;color:var(--text-dim);">'+s.firstTime.toLocaleDateString()+'</span></div>';});document.getElementById('sessionList').innerHTML=listHtml||'<p style="color:var(--text-dim);">No chats</p>';if(sessionKeys.length>0){window.loadSessionChat(rn,sessionKeys[sessionKeys.length-1]);}};
+    window.loadSessionChat=async function(rn,sid){currentSessionId=sid;currentChatRoom=rn;document.getElementById('staffChatInput').style.display='flex';if(chatUnsub)chatUnsub();var q=query(collection(db,'chats'),where('roomNumber','==',rn),where('sessionId','==',sid),orderBy('timestamp','asc'));chatUnsub=onSnapshot(q,function(snap){var html='';snap.forEach(function(doc){var msg=doc.data();var time=msg.timestamp?new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';if(msg.type==='system'){html+='<div class="msg-system">'+msg.text+'</div>';}else if(msg.from==='guest'){html+='<div class="msg msg-guest">'+msg.text+'<div class="msg-time">'+time+'</div></div>';}else{html+='<div class="msg msg-staff"><strong>'+(msg.senderName||'Staff')+':</strong> '+msg.text+'<div class="msg-time">'+time+'</div></div>';}});document.getElementById('staffChatMessages').innerHTML=html||'<p style="color:var(--text-dim);">No messages</p>';document.getElementById('staffChatMessages').scrollTop=document.getElementById('staffChatMessages').scrollHeight;});};
+    window.sendStaffMessage=async function(){var text=document.getElementById('staffChatText').value.trim();if(!currentChatRoom||!text)return;document.getElementById('staffChatText').value='';await addDoc(collection(db,'chats'),{roomNumber:currentChatRoom,sessionId:currentSessionId||'session_default',from:'staff',text:text,senderName:currentStaff?.name||'Staff',timestamp:serverTimestamp()});};
+
+    window.activateRoom=async function(){var rn=document.getElementById('roomSelect').value,d=document.getElementById('checkoutDate').value,t=document.getElementById('checkoutTime').value;if(!rn||!d){alert('Select room and date');return;}await setDoc(doc(db,'rooms','room_'+rn),{active:true,status:'active',expiresAt:new Date(d+'T'+(t||'12:00')+':00').toISOString(),currentSessionId:'session_'+Date.now(),boundDevice:null},{merge:true});alert('✅ Room '+rn+' activated!');};
+    window.deactivate=async function(rn){if(confirm('Deactivate?')){await setDoc(doc(db,'rooms','room_'+rn),{active:false,status:'inactive',boundDevice:null},{merge:true});if(roomTimers[rn]){clearInterval(roomTimers[rn]);delete roomTimers[rn];}}};
+    window.transfer=async function(rn){if(confirm('Reset?')){await setDoc(doc(db,'rooms','room_'+rn),{boundDevice:null,boundDevices:[],status:"active"},{merge:true});alert('✅ Reset');}};
+</script>
+</body>
+</html>

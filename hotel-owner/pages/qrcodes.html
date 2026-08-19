@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QR Code Room Cards — Voddic Hotel Connect</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%}
+body{font-family:'Plus Jakarta Sans','Segoe UI',Arial,Helvetica,sans-serif;background:#0c0c18;color:#eaeaf0;min-height:100vh;line-height:1.6;font-weight:400;letter-spacing:.01em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:'kern' 1,'liga' 1,'calt' 1;overflow-x:hidden}
+h1,h2,h3,h4,h5,h6,p,span,a,button,label,div,li,td,th,input,textarea,select,option{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:'kern' 1,'liga' 1,'calt' 1}
+a{text-decoration:none;color:inherit}
+button{border:none;background:none;cursor:pointer;font-family:inherit;font-size:inherit;color:inherit}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#12121f}
+::-webkit-scrollbar-thumb{background:#2a2a45;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#3a3a5a}
+
+/* ===== MOBILE HEADER ===== */
+.mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:60px;background:rgba(12,12,24,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06);z-index:1000;align-items:center;justify-content:space-between;padding:0 16px}
+.menu-toggle,.mobile-notif{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;border-radius:10px;background:rgba(255,255,255,.05);color:#eaeaf0;transition:background .2s ease}
+.menu-toggle:active,.mobile-notif:active{background:rgba(255,255,255,.1)}
+.mobile-title{font-size:1rem;font-weight:700;letter-spacing:-.01em;color:#f0f0f5}
+
+/* ===== SIDEBAR OVERLAY ===== */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:1100;opacity:0;transition:opacity .3s ease}
+.sidebar-overlay.active{display:block;opacity:1}
+
+/* ===== SIDEBAR ===== */
+.sidebar{position:fixed;top:0;left:0;width:272px;height:100vh;background:#101020;border-right:1px solid rgba(255,255,255,.06);z-index:1200;display:flex;flex-direction:column;overflow:hidden;transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.sidebar-logo{display:flex;align-items:center;gap:12px}
+.logo-icon{font-size:1.6rem;line-height:1}
+.sidebar-logo h2{font-size:.95rem;font-weight:800;color:#f5f5fa;letter-spacing:-.02em;line-height:1.2}
+.hotel-name{font-size:.72rem;font-weight:500;color:#8a8aa8;line-height:1.3;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.sidebar-close{display:none;width:32px;height:32px;align-items:center;justify-content:center;font-size:1rem;color:#8a8aa8;border-radius:8px;transition:background .2s ease}
+.sidebar-close:hover{background:rgba(255,255,255,.06)}
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 0}
+.nav-section{margin-bottom:4px}
+.nav-section-title{font-size:.62rem;font-weight:700;color:#55556e;letter-spacing:.08em;text-transform:uppercase;padding:14px 20px 6px;line-height:1.3}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:.82rem;font-weight:500;color:#9a9ab8;line-height:1.4;transition:all .18s ease;position:relative;border-left:3px solid transparent}
+.nav-item:hover{color:#e0e0f0;background:rgba(255,255,255,.03)}
+.nav-item.active{color:#f0f0f8;background:rgba(228,175,62,.08);border-left-color:#e4af3e}
+.nav-icon{font-size:.95rem;line-height:1;flex-shrink:0;width:22px;text-align:center}
+.nav-badge{margin-left:auto;font-size:.65rem;font-weight:700;color:#fff;background:#e4af3e;padding:2px 7px;border-radius:10px;line-height:1.4;min-width:20px;text-align:center}
+.nav-badge.emergency{background:#e54545;animation:emergencyPulse 2s ease-in-out infinite}
+@keyframes emergencyPulse{0%,100%{opacity:1}50%{opacity:.6}}
+.sidebar-footer{padding:16px 18px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#e4af3e,#c48a20);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#0c0c18;flex-shrink:0}
+.user-name{font-size:.82rem;font-weight:600;color:#eaeaf0;line-height:1.3}
+.user-role{font-size:.7rem;font-weight:500;color:#6a6a88;line-height:1.3}
+.logout-btn{width:100%;padding:9px 14px;font-size:.78rem;font-weight:600;color:#b0b0c8;border-radius:8px;text-align:left;transition:all .2s ease}
+.logout-btn:hover{background:rgba(229,69,69,.1);color:#e54545}
+
+/* ===== MAIN CONTENT ===== */
+.main-content{margin-left:272px;min-height:100vh;padding:28px 32px 40px;position:relative}
+.main-content::before{content:'';position:fixed;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(228,175,62,.06) 0%,transparent 70%);pointer-events:none;z-index:-1}
+.main-content::after{content:'';position:fixed;bottom:-100px;left:200px;width:350px;height:350px;background:radial-gradient(circle,rgba(96,165,250,.04) 0%,transparent 70%);pointer-events:none;z-index:-1}
+
+/* ===== QR CARD STYLES ===== */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:0 0 20px;flex-wrap:wrap;gap:10px}
+.top-bar h1{font-size:1.3rem;font-weight:800;color:#f5f5fa}
+.top-actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn{padding:8px 16px;font-size:.75rem;font-weight:700;border-radius:8px;cursor:pointer;white-space:nowrap;border:none;transition:.2s}
+.btn-gold{background:linear-gradient(135deg,#e4af3e,#c98e22);color:#0c0c18}
+.btn-gold:hover{transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,.15);color:#9a9ab8}
+.btn-outline:hover{border-color:rgba(255,255,255,.3);color:#e0e0f0}
+.stats-row{display:flex;gap:8px;padding:0 0 12px;flex-wrap:wrap}
+.stat-item{background:#151528;border-radius:8px;padding:8px 16px;text-align:center}
+.stat-val{font-size:1.1rem;font-weight:800;color:#f5f5fa}
+.stat-lbl{font-size:.6rem;font-weight:600;color:#6e6e8c;text-transform:uppercase;margin-top:1px}
+.search-row{display:flex;gap:8px;padding:0 0 16px;flex-wrap:wrap}
+.search-row input,.search-row select{padding:8px 12px;font-size:.78rem;color:#eaeaf0;background:#1a1a34;border:1px solid rgba(255,255,255,.08);border-radius:8px;outline:none;font-family:inherit}
+.search-row input{min-width:180px}
+.search-row input:focus{border-color:rgba(228,175,62,.4)}
+.search-row select{cursor:pointer;color:#c0c0d8}
+.cards-row{display:flex;justify-content:center;gap:24px;padding:0 0 40px;flex-wrap:wrap;max-width:1300px;margin:0 auto}
+@media(max-width:1050px){.cards-row{gap:16px}}
+@media(max-width:650px){.cards-row{flex-direction:column;align-items:center;gap:20px}}
+.card-stand{display:flex;flex-direction:column;align-items:center;flex:0 0 340px;max-width:360px}
+@media(max-width:1050px){.card-stand{flex:0 0 300px}}
+@media(max-width:650px){.card-stand{flex:0 0 auto;width:100%;max-width:380px}}
+.qr-card{width:100%;background:#fff;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}
+.card-brand{padding:18px 16px 2px;display:flex;align-items:center;justify-content:center;gap:8px}
+.card-shield{width:28px;height:28px;color:#f5891f;flex:none}
+.card-shield svg{width:100%;height:100%}
+.card-brand-text{line-height:1;text-align:left}
+.card-hotel-name{font-size:18px;font-weight:800;color:#0d2149;letter-spacing:.2px}
+.card-tag{font-size:7.5px;font-weight:700;letter-spacing:2px;color:#f5891f;margin-top:1px;text-transform:uppercase}
+.card-room{display:inline-block;align-self:center;margin:10px 0 0;background:#0d2149;color:#fff;padding:5px 18px;border-radius:18px;font-size:13px;font-weight:600}
+.card-room b{color:#ffb35c;font-weight:800;margin-left:3px}
+.card-scan{text-align:center;margin-top:10px;color:#0d2149;font-weight:800;font-size:12px;line-height:1.3;padding:0 12px}
+.card-visit{text-align:center;margin-top:4px;color:#5b6478;font-weight:600;font-size:8px;line-height:1.4;padding:0 12px}
+.card-visit-url{color:#f5891f;font-weight:700;font-size:9px;word-break:break-all}
+.card-qr-box{margin:8px auto 0;width:50%;aspect-ratio:1/1;border:2px solid #0d2149;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:4%;background:#fff}
+.card-qr-box canvas,.card-qr-box img{width:100%!important;height:100%!important}
+.card-icons{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;padding:6px 6px 0;margin-top:auto}
+.card-icon-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.card-icon-circle{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#0d2149;font-size:.7rem}
+.card-icon-label{font-size:7px;font-weight:700;color:#0d2149;text-transform:uppercase}
+.card-footer-bar{margin-top:8px;background:linear-gradient(180deg,#132b5e,#0d2149);color:#fff;text-align:center;font-size:10px;font-weight:700;padding:8px}
+.card-base{width:100%;display:flex;justify-content:center;margin-top:-1px}
+.card-base::before{content:"";width:28%;height:10px;background:linear-gradient(180deg,#cfd3d8,#9aa0a8);border-radius:0 0 4px 4px;box-shadow:0 6px 10px rgba(0,0,0,.3)}
+.card-btns{display:flex;gap:4px;justify-content:center;margin-top:6px}
+.card-btns button{font-size:.58rem;padding:4px 8px}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:10px 16px;border-radius:6px;font-size:.75rem;font-weight:600;color:#f0f0f8;background:#1e1e38;border:1px solid rgba(255,255,255,.08);margin-bottom:6px;animation:slide .3s ease;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.toast.success{border-left:3px solid #34d399}
+.toast.info{border-left:3px solid #60a5fa}
+.toast.error{border-left:3px solid #e54545}
+.toast.warning{border-left:3px solid #fbbf24}
+@keyframes slide{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+    .mobile-header{display:flex}
+    .sidebar{transform:translateX(-100%);width:280px;z-index:1200}
+    .sidebar.open{transform:translateX(0)}
+    .sidebar-close{display:flex}
+    .main-content{margin-left:0;padding:76px 16px 32px}
+    .top-bar h1{font-size:1.1rem}
+}
+
+/* ===== FOCUS VISIBLE ===== */
+:focus-visible{outline:2px solid #e4af3e;outline-offset:2px}
+button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
+
+/* ===== REDUCED MOTION ===== */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* ===== PRINT ===== */
+@media print{
+    body{background:#fff}
+    .sidebar,.sidebar-overlay,.mobile-header,.top-bar,.stats-row,.search-row,.card-btns,.toast-container{display:none!important}
+    .main-content{margin-left:0!important;padding:0!important}
+    .main-content::before,.main-content::after{display:none!important}
+    .cards-row{flex-wrap:wrap;justify-content:center;padding:0;gap:8px}
+    .qr-card{box-shadow:none!important;border:1px solid #ddd!important;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile Header -->
+<header class="mobile-header" id="mobileHeader">
+    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Open menu">&#9776;</button>
+    <span class="mobile-title">QR Code Room Cards</span>
+    <button class="mobile-notif" onclick="showToast('No new notifications','info')" aria-label="View notifications">&#128276;</button>
+</header>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="logo-icon">&#127976;</div>
+            <div>
+                <h2>Voddic Connect</h2>
+                <p class="hotel-name" id="sidebarHotelName">Loading...</p>
+            </div>
+        </div>
+        <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Close menu">&#10005;</button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-title">&#127968; DASHBOARD</div>
+            <a href="#" class="nav-item" data-page="overview"><span class="nav-icon">&#128202;</span> Overview</a>
+            <a href="#" class="nav-item" data-page="stats"><span class="nav-icon">&#128200;</span> Statistics</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">&#9881;&#65039; OPERATIONS</div>
+            <a href="#" class="nav-item" data-page="rooms"><span class="nav-icon">&#128682;</span> Rooms <span class="nav-badge" id="roomsBadge">0</span></a>
+            <a href="#" class="nav-item" data-page="guests"><span class="nav-icon">&#128101;</span> Guests / Members <span class="nav-badge" id="guestsBadge">0</span></a>
+            <a href="#" class="nav-item" data-page="bookings"><span class="nav-icon">&#128197;</span> Bookings</a>
+            <a href="#" class="nav-item" data-page="emergencies"><span class="nav-icon">&#128680;</span> Emergencies <span class="nav-badge emergency" id="emergencyBadge" style="display:none;">0</span></a>
+            <a href="#" class="nav-item" data-page="services"><span class="nav-icon">&#128203;</span> Service Requests <span class="nav-badge" id="servicesBadge">0</span></a>
+            <a href="#" class="nav-item" data-page="orders"><span class="nav-icon">&#128274;</span> Orders</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">&#128172; COMMUNICATION</div>
+            <a href="#" class="nav-item" data-page="chat"><span class="nav-icon">&#128172;</span> Live Chat <span class="nav-badge" id="chatBadge">0</span></a>
+            <a href="#" class="nav-item" data-page="calls"><span class="nav-icon">&#128222;</span> Calls / WebRTC</a>
+            <a href="#" class="nav-item" data-page="notifications"><span class="nav-icon">&#128276;</span> Notifications</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">&#127976; HOTEL</div>
+            <a href="#" class="nav-item" data-page="staff"><span class="nav-icon">&#128101;</span> Staff Management</a>
+            <a href="#" class="nav-item" data-page="menu"><span class="nav-icon">&#127869;</span> Menu</a>
+            <a href="#" class="nav-item active" data-page="qrcodes"><span class="nav-icon">&#128241;</span> QR Codes</a>
+            <a href="#" class="nav-item" data-page="settings"><span class="nav-icon">&#9881;&#65039;</span> Hotel Settings</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">&#128176; FINANCE</div>
+            <a href="#" class="nav-item" data-page="payments"><span class="nav-icon">&#128179;</span> Guest Payments</a>
+            <a href="#" class="nav-item" data-page="transactions"><span class="nav-icon">&#128220;</span> Transactions</a>
+            <a href="#" class="nav-item" data-page="revenue"><span class="nav-icon">&#128202;</span> Revenue</a>
+            <a href="#" class="nav-item" data-page="subscription"><span class="nav-icon">&#128260;</span> Subscription</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">&#128202; ANALYTICS</div>
+            <a href="#" class="nav-item" data-page="reports"><span class="nav-icon">&#128200;</span> Reports</a>
+            <a href="#" class="nav-item" data-page="guest-analytics"><span class="nav-icon">&#128100;</span> Guest Analytics</a>
+            <a href="#" class="nav-item" data-page="staff-analytics"><span class="nav-icon">&#128203;</span> Staff Performance</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">&#128272; SYSTEM</div>
+            <a href="#" class="nav-item" data-page="audit"><span class="nav-icon">&#128221;</span> Audit Logs</a>
+            <a href="#" class="nav-item" data-page="system-settings"><span class="nav-icon">&#128295;</span> System Settings</a>
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">?</div>
+            <div>
+                <div class="user-name" id="userName">...</div>
+                <div class="user-role" id="userRole">Hotel Staff</div>
+            </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">&#128682; Sign Out</button>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main class="main-content" id="mainContent">
+
+<div class="top-bar">
+    <h1>QR Code Room Cards</h1>
+    <div class="top-actions">
+        <button class="btn btn-gold" onclick="generateAllQR()">Generate All</button>
+        <button class="btn btn-outline" onclick="downloadAllQR()">Download All</button>
+        <button class="btn btn-outline" onclick="window.print()">Print All</button>
+    </div>
+</div>
+
+<div class="stats-row">
+    <div class="stat-item"><div class="stat-val" id="sumTotal">0</div><div class="stat-lbl">Rooms</div></div>
+    <div class="stat-item"><div class="stat-val" id="sumActive">0</div><div class="stat-lbl">Active</div></div>
+    <div class="stat-item"><div class="stat-val" id="sumQR">0</div><div class="stat-lbl">QR Done</div></div>
+    <div class="stat-item"><div class="stat-val" id="sumVacant">0</div><div class="stat-lbl">Vacant</div></div>
+</div>
+
+<div class="search-row">
+    <input type="text" id="roomSearch" placeholder="Search room..." oninput="filterRooms()">
+    <select id="filterStatus" onchange="filterRooms()">
+        <option value="">All Rooms</option>
+        <option value="ACTIVE_STAY">Active</option>
+        <option value="AVAILABLE">Vacant</option>
+        <option value="CLEANING">Cleaning</option>
+        <option value="MAINTENANCE">Maintenance</option>
+    </select>
+</div>
+
+<div class="cards-row" id="cardsRow"></div>
+
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- JS is in the same folder (pages) -->
+<script src="qrcodes.js"></script>
+
+</body>
+</html>

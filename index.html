@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Voddic Hotel Connect</title>
+    <meta name="theme-color" content="#0c0c18">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background: #0c0c18;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== ANIMATED BACKGROUND ===== */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image: 
+                linear-gradient(rgba(228, 175, 62, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(228, 175, 62, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent 80%);
+        }
+
+        .bg-glow {
+            position: fixed;
+            width: 60vmax;
+            height: 60vmax;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(228, 175, 62, 0.06), transparent 70%);
+            top: -20%;
+            right: -20%;
+            z-index: 0;
+            animation: glowPulse 6s ease-in-out infinite;
+        }
+
+        .bg-glow-2 {
+            position: fixed;
+            width: 50vmax;
+            height: 50vmax;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(87, 201, 189, 0.04), transparent 70%);
+            bottom: -20%;
+            left: -20%;
+            z-index: 0;
+            animation: glowPulse 8s ease-in-out infinite reverse;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+            50% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+        }
+
+        /* ===== SPLASH CONTAINER ===== */
+        .splash-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            width: 100%;
+            max-width: 420px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ===== LOGO ===== */
+        .logo-wrapper {
+            position: relative;
+            margin-bottom: 28px;
+        }
+
+        .logo-ring {
+            position: absolute;
+            inset: -12px;
+            border-radius: 50%;
+            border: 2px solid rgba(228, 175, 62, 0.12);
+            animation: ringSpin 12s linear infinite;
+        }
+
+        .logo-ring::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: rgba(228, 175, 62, 0.25);
+            animation: ringSpin 8s linear infinite reverse;
+        }
+
+        @keyframes ringSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        .logo-icon {
+            width: 76px;
+            height: 76px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #e4af3e, #c48a20);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.4rem;
+            box-shadow: 0 16px 48px rgba(228, 175, 62, 0.25);
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: scale(1.04);
+        }
+
+        /* ===== BRANDING ===== */
+        .brand-name {
+            font-family: 'Fraunces', serif;
+            font-size: clamp(2rem, 7vw, 3.2rem);
+            font-weight: 700;
+            color: #f5f5fa;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .brand-name span {
+            background: linear-gradient(135deg, #e4af3e, #f0c960);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+            color: rgba(250, 246, 236, 0.45);
+            font-weight: 400;
+            letter-spacing: 0.06em;
+            margin-bottom: 32px;
+        }
+
+        /* ===== LOADER ===== */
+        .loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .loader-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(228, 175, 62, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .loader-dot.active {
+            background: #e4af3e;
+            box-shadow: 0 0 20px rgba(228, 175, 62, 0.3);
+            transform: scale(1.2);
+        }
+
+        .loader-dot:nth-child(1) { animation: dotPulse 1.4s ease-in-out infinite 0s; }
+        .loader-dot:nth-child(2) { animation: dotPulse 1.4s ease-in-out infinite 0.2s; }
+        .loader-dot:nth-child(3) { animation: dotPulse 1.4s ease-in-out infinite 0.4s; }
+
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+            40% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* ===== PROGRESS BAR ===== */
+        .progress-bar {
+            width: 140px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 0 auto 16px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #e4af3e, #f0c960);
+            border-radius: 2px;
+            animation: progressFill 3.5s ease-in-out forwards;
+        }
+
+        @keyframes progressFill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        /* ===== TEXT ===== */
+        .redirect-text {
+            font-size: 0.65rem;
+            color: rgba(250, 246, 236, 0.2);
+            font-family: 'Inter', monospace;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            animation: pulseText 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ===== SKIP LINK ===== */
+        .skip-link {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: rgba(250, 246, 236, 0.15);
+            text-decoration: none;
+            z-index: 2;
+            transition: all 0.3s ease;
+            font-family: 'Inter', monospace;
+            letter-spacing: 0.04em;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .skip-link:hover {
+            color: rgba(250, 246, 236, 0.4);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .skip-link:active {
+            transform: translateX(-50%) scale(0.96);
+        }
+
+        /* ===== VERSION ===== */
+        .version {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            font-size: 0.55rem;
+            color: rgba(250, 246, 236, 0.08);
+            font-family: 'Inter', monospace;
+            letter-spacing: 0.05em;
+            z-index: 1;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .logo-icon {
+                width: 64px;
+                height: 64px;
+                font-size: 2rem;
+                border-radius: 16px;
+            }
+
+            .logo-wrapper {
+                margin-bottom: 20px;
+            }
+
+            .logo-ring {
+                inset: -10px;
+            }
+
+            .brand-name {
+                font-size: 1.8rem;
+            }
+
+            .tagline {
+                font-size: 0.7rem;
+                margin-bottom: 24px;
+            }
+
+            .loader-dot {
+                width: 8px;
+                height: 8px;
+                gap: 8px;
+            }
+
+            .progress-bar {
+                width: 100px;
+            }
+
+            .skip-link {
+                bottom: 20px;
+                font-size: 0.6rem;
+                padding: 6px 14px;
+            }
+
+            .version {
+                display: none;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .logo-icon {
+                width: 56px;
+                height: 56px;
+                font-size: 1.6rem;
+                border-radius: 14px;
+            }
+
+            .brand-name {
+                font-size: 1.5rem;
+            }
+
+            .tagline {
+                font-size: 0.6rem;
+            }
+
+            .progress-bar {
+                width: 80px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Height-based adjustments for very short screens */
+        @media (max-height: 600px) {
+            .logo-icon {
+                width: 56px;
+                height: 56px;
+                font-size: 1.6rem;
+            }
+
+            .logo-wrapper {
+                margin-bottom: 12px;
+            }
+
+            .brand-name {
+                font-size: 1.6rem;
+            }
+
+            .tagline {
+                margin-bottom: 16px;
+                font-size: 0.65rem;
+            }
+
+            .loader {
+                margin-bottom: 8px;
+            }
+
+            .progress-bar {
+                width: 100px;
+            }
+
+            .skip-link {
+                bottom: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== ANIMATED BACKGROUND ===== -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+
+    <!-- ===== SPLASH CONTENT ===== -->
+    <div class="splash-container" role="main" aria-label="Loading Voddic Hotel Connect">
+
+        <!-- Logo -->
+        <div class="logo-wrapper">
+            <div class="logo-ring" aria-hidden="true"></div>
+            <div class="logo-icon" role="img" aria-label="Voddic Hotel Connect logo">🏨</div>
+        </div>
+
+        <!-- Brand -->
+        <h1 class="brand-name">Voddic <span>Connect</span></h1>
+        <p class="tagline">Hotel Digital Assistance</p>
+
+        <!-- Loader -->
+        <div class="loader" role="status" aria-label="Loading">
+            <div class="loader-dot" aria-hidden="true"></div>
+            <div class="loader-dot" aria-hidden="true"></div>
+            <div class="loader-dot" aria-hidden="true"></div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-bar" aria-hidden="true">
+            <div class="progress-fill"></div>
+        </div>
+
+        <p class="redirect-text">Redirecting to Guest Directory</p>
+    </div>
+
+    <!-- ===== SKIP LINK ===== -->
+    <a href="/guest/" class="skip-link" aria-label="Skip loading and go to guest directory">
+        Skip →
+    </a>
+
+    <!-- ===== VERSION ===== -->
+    <div class="version">v2.0.0</div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            console.log('🏨 Voddic Connect - Splash Screen');
+            console.log('📱 Redirecting to Guest Directory in 3.5 seconds...');
+
+            // ===== REDIRECT =====
+            const REDIRECT_DELAY = 3500; // milliseconds
+
+            let redirectTimer = setTimeout(function() {
+                window.location.href = '/guest/';
+            }, REDIRECT_DELAY);
+
+            // ===== SKIP LINK =====
+            const skipLink = document.querySelector('.skip-link');
+            if (skipLink) {
+                skipLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    clearTimeout(redirectTimer);
+                    window.location.href = this.getAttribute('href');
+                });
+            }
+
+            // ===== KEYBOARD: Press Enter or Space to skip =====
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    const skip = document.querySelector('.skip-link');
+                    if (skip) {
+                        e.preventDefault();
+                        clearTimeout(redirectTimer);
+                        window.location.href = skip.getAttribute('href');
+                    }
+                }
+            });
+
+            // ===== PREFETCH GUEST PAGE =====
+            // Preload the guest page in the background for faster loading
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = '/guest/';
+            link.as = 'document';
+            document.head.appendChild(link);
+
+            // Also preconnect to the API
+            const preconnect = document.createElement('link');
+            preconnect.rel = 'preconnect';
+            preconnect.href = 'https://connectapi.voddic.com.ng';
+            document.head.appendChild(preconnect);
+
+            console.log('✅ Prefetched guest page and API connection');
+
+        })();
+    </script>
+
+</body>
+</html>

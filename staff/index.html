@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard — Voddic</title>
+    <meta name="theme-color" content="#0f0f1a">
+    <style>
+        :root { --bg: #0f0f1a; --card: #16213e; --gold: #c9a86a; --text: #eef1f4; --text-dim: #9aa4b2; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
+        h1 { color: var(--gold); }
+        a { color: var(--gold); }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>👋 Staff Dashboard</h1>
+        <p style="color:var(--text-dim);">Welcome, <span id="staffName">...</span></p>
+        <p style="color:var(--text-dim);">Full staff dashboard coming soon.</p>
+        <p><a href="/auth/login.html">← Back to login</a></p>
+    </div>
+    <script>
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        document.getElementById('staffName').textContent = user.full_name || user.email || 'Staff';
+    </script>
+</body>
+</html>

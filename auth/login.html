@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sign In — Voddic Hotel Connect</title>
+    <meta name="theme-color" content="#0f0f1a">
+    <link rel="manifest" href="/staff/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Plus Jakarta Sans',sans-serif;background:#0c0c18;color:#eaeaf0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+        .auth-container{background:#151528;border-radius:18px;padding:40px 32px;max-width:400px;width:100%;border:1px solid rgba(255,255,255,.06)}
+        .auth-header{text-align:center;margin-bottom:28px}
+        .logo{font-size:3rem;margin-bottom:8px}
+        .title{font-size:1.5rem;font-weight:800;color:#f5f5fa;margin-bottom:4px}
+        .subtitle{font-size:.82rem;color:#8a8aa8}
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;font-size:.7rem;font-weight:700;color:#8a8aa8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+        .form-group input{width:100%;padding:12px 14px;background:#0c0c18;border:1px solid rgba(255,255,255,.06);border-radius:10px;color:#eaeaf0;font-size:.9rem;outline:none;font-family:inherit}
+        .form-group input:focus{border-color:#e4af3e}
+        .form-group input.error{border-color:#e2412c}
+        .field-error{color:#ff6b6b;font-size:11px;margin-top:4px;display:block}
+        .error-message{display:none;padding:12px;border-radius:10px;font-size:.82rem;background:rgba(226,65,44,.1);border:1px solid rgba(226,65,44,.3);color:#e54545;margin-bottom:16px}
+        .error-message.show{display:block}
+        .btn-primary{width:100%;padding:14px;border:none;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;background:linear-gradient(135deg,#e4af3e,#c48a20);color:#000;transition:all .2s}
+        .btn-primary:hover{opacity:.85}
+        .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+        .footer-text{text-align:center;color:#55556e;font-size:.7rem;margin-top:16px}
+        .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:8px;font-size:.85rem;font-weight:600;color:#fff;z-index:9999;display:none;max-width:90%;text-align:center}
+        .toast.error{background:rgba(226,65,44,.95)}
+        .toast.success{background:rgba(47,160,106,.95)}
+        .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .pwa-install-banner{background:linear-gradient(135deg,#e4af3e,#c98e22);color:#000;padding:12px 16px;border-radius:12px;margin-bottom:16px;display:none;align-items:center;justify-content:space-between}
+        .pwa-install-banner.show{display:flex}
+        .pwa-install-banner button{background:#000;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.75rem}
+        .role-badge{display:inline-block;padding:4px 12px;border-radius:12px;font-size:.65rem;font-weight:700;margin-left:8px}
+        .role-badge.staff{background:rgba(47,160,106,.2);color:#2fa06a}
+        .role-badge.admin{background:rgba(59,130,246,.2);color:#3b82f6}
+        .role-badge.owner{background:rgba(228,175,62,.2);color:#e4af3e}
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="logo">⭐</div>
+            <h1 class="title">Welcome Back</h1>
+            <p class="subtitle">Sign in to access your dashboard</p>
+        </div>
+
+        <!-- PWA Install Banner -->
+        <div class="pwa-install-banner" id="pwaBanner">
+            <span>📱 Install Voddic Staff App</span>
+            <button id="installPwaBtn">Install</button>
+        </div>
+
+        <div class="error-message" id="formError"></div>
+
+        <form id="loginForm" novalidate>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="you@hotel.com" required autocomplete="email" autofocus>
+                <span class="field-error" id="emailError"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+                <span class="field-error" id="passwordError"></span>
+            </div>
+
+            <button type="submit" class="btn-primary" id="submitBtn">
+                Sign In
+            </button>
+        </form>
+
+        <p class="footer-text">Voddic Hotel Connect</p>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ============================================================
+    // AUTH LOGIN - Complete with PWA & Role-based Redirect
+    // ============================================================
+    
+    const API_BASE = 'https://connectapi.voddic.com.ng/api/v1/auth';
+    
+    console.log('🔵 Login page loaded');
+    console.log('🔵 API URL:', API_BASE);
+
+    // DOM Elements
+    const form = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submitBtn');
+    const formError = document.getElementById('formError');
+    const emailError = document.getElementById('emailError');
+    const passwordError = document.getElementById('passwordError');
+    const toast = document.getElementById('toast');
+
+    // ============================================================
+    // PWA Installation
+    // ============================================================
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('pwaBanner').classList.add('show');
+        console.log('📱 PWA installation available');
+    });
+
+    document.getElementById('installPwaBtn')?.addEventListener('click', async function() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const result = await deferredPrompt.userChoice;
+            console.log('User choice:', result.outcome);
+            deferredPrompt = null;
+            document.getElementById('pwaBanner').classList.remove('show');
+        }
+    });
+
+    // Check if running as PWA
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('📱 Running as PWA');
+        document.getElementById('pwaBanner')?.classList.remove('show');
+    }
+
+    // ============================================================
+    // Toast & Error Helpers
+    // ============================================================
+    function showToast(msg, type) {
+        toast.textContent = msg;
+        toast.className = 'toast ' + type;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 5000);
+    }
+
+    function showError(msg) {
+        formError.textContent = msg;
+        formError.className = 'error-message show';
+    }
+
+    function hideError() {
+        formError.className = 'error-message';
+    }
+
+    function clearFieldErrors() {
+        emailInput.classList.remove('error');
+        passwordInput.classList.remove('error');
+        emailError.textContent = '';
+        passwordError.textContent = '';
+    }
+
+    emailInput.addEventListener('input', () => { emailInput.classList.remove('error'); emailError.textContent = ''; hideError(); });
+    passwordInput.addEventListener('input', () => { passwordInput.classList.remove('error'); passwordError.textContent = ''; hideError(); });
+
+    // ============================================================
+    // URL Helpers
+    // ============================================================
+    function getRedirectUrl(role, data) {
+        const roleMap = {
+            'PLATFORM_ADMIN': '/admin/',
+            'HOTEL_OWNER': '/hotel-owner/',
+            'STAFF': '/staff/dashboard/index.html'
+        };
+        
+        // For STAFF, check if PWA is installed or skipped
+        if (role === 'STAFF') {
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+            const pwaSkipped = localStorage.getItem('pwa_skipped') === 'true';
+            
+            if (isPWA) {
+                return '/staff/dashboard/index.html';
+            } else if (!pwaSkipped) {
+                return '/staff/dashboard/install-pwa.html';
+            } else {
+                return '/staff/dashboard/index.html';
+            }
+        }
+        
+        return roleMap[role] || '/dashboard/';
+    }
+
+    // ============================================================
+    // Push Notification Registration
+    // ============================================================
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+
+    async function registerPushNotifications() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            console.log('🔕 Push notifications not supported');
+            return null;
+        }
+
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                console.log('🔕 Notification permission denied');
+                return null;
+            }
+
+            // Register service worker
+            let registration;
+            try {
+                registration = await navigator.serviceWorker.register('/staff/sw.js');
+                console.log('✅ Service Worker registered');
+            } catch(e) {
+                console.log('❌ SW registration failed, trying fallback:', e);
+                registration = await navigator.serviceWorker.register('/sw.js');
+            }
+
+            // Get VAPID public key
+            const pkRes = await fetch('https://connectapi.voddic.com.ng/api/v1/push/vapid-public-key/');
+            if (!pkRes.ok) {
+                console.log('❌ Failed to get VAPID key');
+                return null;
+            }
+            const pkData = await pkRes.json();
+            const applicationServerKey = urlBase64ToUint8Array(pkData.public_key);
+
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: applicationServerKey
+            });
+
+            function getKeyBase64(key) {
+                const buffer = subscription.getKey(key);
+                if (!buffer) return '';
+                return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+            }
+
+            return {
+                endpoint: subscription.endpoint,
+                auth_key: getKeyBase64('auth'),
+                p256dh_key: getKeyBase64('p256dh')
+            };
+        } catch(e) {
+            console.log('❌ Push registration error:', e);
+            return null;
+        }
+    }
+
+    // ============================================================
+    // Login Form Handler
+    // ============================================================
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearFieldErrors();
+        hideError();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email) {
+            emailInput.classList.add('error');
+            emailError.textContent = 'Email is required';
+            return;
+        }
+        if (!password) {
+            passwordInput.classList.add('error');
+            passwordError.textContent = 'Password is required';
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Signing in...';
+
+        try {
+            // Register push notifications before login
+            const pushSubscription = await registerPushNotifications();
+            console.log('📱 Push subscription:', pushSubscription ? 'Obtained' : 'Not available');
+
+            const url = API_BASE + '/staff/login/';
+            console.log('🔵 Sending request to:', url);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    email, 
+                    password,
+                    push_subscription: pushSubscription
+                })
+            });
+
+            console.log('🔵 Response status:', response.status);
+
+            const data = await response.json();
+            console.log('🔵 Response data:', data);
+
+            if (response.ok && data.access) {
+                // Store tokens and user data
+                localStorage.setItem('access_token', data.access);
+                localStorage.setItem('refresh_token', data.refresh);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                if (data.hotel) localStorage.setItem('hotel', JSON.stringify(data.hotel));
+                if (data.staff) localStorage.setItem('staff', JSON.stringify(data.staff));
+
+                // Determine redirect URL based on role
+                const userRole = data.user?.role || 'STAFF';
+                let redirectUrl = data.redirect_url || getRedirectUrl(userRole, data);
+                
+                console.log('🔵 User role:', userRole);
+                console.log('🔵 Redirecting to:', redirectUrl);
+
+                showToast(`Welcome ${data.user?.full_name || 'User'}!`, 'success');
+                
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 500);
+            } else {
+                const msg = data.message || data.error || 'Invalid credentials';
+                showError(msg);
+                showToast(msg, 'error');
+            }
+        } catch (err) {
+            console.error('🔴 Login error:', err);
+            showError('Network error: ' + err.message);
+            showToast('Network error - please try again', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In';
+        }
+    });
+
+    // Auto-fill email from URL
+    const params = new URLSearchParams(window.location.search);
+    const emailParam = params.get('email');
+    if (emailParam) {
+        emailInput.value = decodeURIComponent(emailParam);
+        console.log('🔵 Auto-filled email from URL:', emailInput.value);
+    }
+
+    console.log('✅ Login page initialized');
+    </script>
+</body>
+</html>

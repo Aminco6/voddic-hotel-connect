@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard — Voddic Hotel Connect</title>
+    <meta name="theme-color" content="#0f0f1a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ========================================
+           CSS RESET & BASE — Crystal Clear Text
+           ======================================== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #0c0c18;
+            color: #eaeaf0;
+            line-height: 1.6;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+            /* Critical for crisp text on all browsers */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Force crisp rendering on every text element */
+        h1, h2, h3, h4, h5, h6,
+        p, span, a, button, label,
+        div, li, td, th, input,
+        textarea, select, option {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: inherit;
+            color: inherit;
+        }
+
+        /* ========================================
+           SCROLLBAR
+           ======================================== */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #12121f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a45;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3a3a5a;
+        }
+
+        /* ========================================
+           MOBILE HEADER
+           ======================================== */
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(12, 12, 24, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            z-index: 1000;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+        }
+
+        .menu-toggle,
+        .mobile-notif {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #eaeaf0;
+            transition: background 0.2s ease;
+        }
+
+        .menu-toggle:active,
+        .mobile-notif:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-title {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #f0f0f5;
+        }
+
+        /* ========================================
+           SIDEBAR OVERLAY
+           ======================================== */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* ========================================
+           SIDEBAR
+           ======================================== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 272px;
+            height: 100vh;
+            background: #101020;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 18px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        .sidebar-logo h2 {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #f5f5fa;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        .hotel-name {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: #8a8aa8;
+            line-height: 1.3;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+
+        .sidebar-close {
+            display: none;
+            width: 32px;
+            height: 32px;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: #8a8aa8;
+            border-radius: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .sidebar-close:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 4px;
+        }
+
+        .nav-section-title {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #55556e;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 14px 20px 6px;
+            line-height: 1.3;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 20px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: #9a9ab8;
+            line-height: 1.4;
+            transition: all 0.18s ease;
+            position: relative;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            color: #e0e0f0;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-item.active {
+            color: #f0f0f8;
+            background: rgba(228, 175, 62, 0.08);
+            border-left-color: #e4af3e;
+        }
+
+        .nav-icon {
+            font-size: 0.95rem;
+            line-height: 1;
+            flex-shrink: 0;
+            width: 22px;
+            text-align: center;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: #e4af3e;
+            padding: 2px 7px;
+            border-radius: 10px;
+            line-height: 1.4;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .nav-badge.emergency {
+            background: #e54545;
+            animation: emergencyPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes emergencyPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Sidebar Footer */
+        .sidebar-footer {
+            padding: 16px 18px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #e4af3e, #c48a20);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #0c0c18;
+            flex-shrink: 0;
+        }
+
+        .user-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #eaeaf0;
+            line-height: 1.3;
+        }
+
+        .user-role {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #6a6a88;
+            line-height: 1.3;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 9px 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #b0b0c8;
+            border-radius: 8px;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(229, 69, 69, 0.1);
+            color: #e54545;
+        }
+
+        /* ========================================
+           MAIN CONTENT
+           ======================================== */
+        .main-content {
+            margin-left: 272px;
+            min-height: 100vh;
+            padding: 28px 32px 40px;
+        }
+
+        .back-btn {
+            display: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #e4af3e;
+            margin-bottom: 16px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(228, 175, 62, 0.1);
+        }
+
+        /* ========================================
+           PAGES
+           ======================================== */
+        .page {
+            display: none;
+            animation: pageIn 0.35s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-greeting {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #7a7a98;
+            line-height: 1.4;
+            margin-bottom: 2px;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #f5f5fa;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+        }
+
+        .page-subtitle {
+            font-size: 0.88rem;
+            font-weight: 400;
+            color: #8888a8;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+
+        .date-display {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #7a7a98;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            line-height: 1.4;
+        }
+
+        /* ========================================
+           STATS GRID
+           ======================================== */
+        .stats-grid {
+            display: grid;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .stats-8 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .stats-6 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .stat-card {
+            background: #151528;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 20px 18px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            border-radius: 14px 14px 0 0;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Card color variants */
+        .stat-card.guests::before { background: linear-gradient(90deg, #e4af3e, #f0c960); }
+        .stat-card.rooms-active::before { background: linear-gradient(90deg, #34d399, #6ee7b7); }
+        .stat-card.rooms-vacant::before { background: linear-gradient(90deg, #60a5fa, #93c5fd); }
+        .stat-card.emergency::before { background: linear-gradient(90deg, #e54545, #f87171); }
+        .stat-card.services::before { background: linear-gradient(90deg, #a78bfa, #c4b5fd); }
+        .stat-card.staff::before { background: linear-gradient(90deg, #f472b6, #f9a8d4); }
+        .stat-card.chat::before { background: linear-gradient(90deg, #38bdf8, #7dd3fc); }
+        .stat-card.revenue::before { background: linear-gradient(90deg, #e4af3e, #fbbf24); }
+        .stat-card.checkins::before { background: linear-gradient(90deg, #34d399, #a7f3d0); }
+        .stat-card.checkouts::before { background: linear-gradient(90deg, #fb923c, #fdba74); }
+        .stat-card.orders::before { background: linear-gradient(90deg, #c084fc, #e9d5ff); }
+        .stat-card.calls::before { background: linear-gradient(90deg, #2dd4bf, #99f6e4); }
+        .stat-card.pending::before { background: linear-gradient(90deg, #fbbf24, #fde68a); }
+        .stat-card.response::before { background: linear-gradient(90deg, #818cf8, #a5b4fc); }
+
+        .stat-icon {
+            font-size: 1.3rem;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: #f5f5fa;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #6e6e8c;
+            letter-spacing: 0.02em;
+            line-height: 1.3;
+            text-transform: uppercase;
+        }
+
+        .stat-change {
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-top: 6px;
+            line-height: 1.3;
+        }
+
+        .stat-change.up {
+            color: #34d399;
+        }
+
+        .stat-change.down {
+            color: #e54545;
+        }
+
+        /* ========================================
+           SECTION HEADER
+           ======================================== */
+        .section-header {
+            margin-bottom: 16px;
+        }
+
+        .section-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #e8e8f2;
+            letter-spacing: -0.01em;
+            line-height: 1.3;
+        }
+
+        /* ========================================
+           ACTIVITY LIST
+           ======================================== */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            background: #151528;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            transition: border-color 0.2s ease;
+        }
+
+        .activity-item:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+            flex-shrink: 0;
+            width: 32px;
+            text-align: center;
+        }
+
+        .activity-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-title {
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: #e0e0f0;
+            line-height: 1.35;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .activity-time {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: #6a6a88;
+            line-height: 1.3;
+            margin-top: 2px;
+        }
+
+        .activity-status {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            line-height: 1.3;
+            letter-spacing: 0.01em;
+            text-transform: uppercase;
+        }
+
+        .activity-status.danger {
+            color: #fca5a5;
+            background: rgba(229, 69, 69, 0.15);
+        }
+
+        .activity-status.success {
+            color: #6ee7b7;
+            background: rgba(52, 211, 153, 0.15);
+        }
+
+        .activity-status.warning {
+            color: #fde68a;
+            background: rgba(251, 191, 36, 0.15);
+        }
+
+        .activity-status.info {
+            color: #93c5fd;
+            background: rgba(96, 165, 250, 0.15);
+        }
+
+        /* ========================================
+           PLACEHOLDER PAGES
+           ======================================== */
+        .placeholder-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 50vh;
+            text-align: center;
+            gap: 16px;
+        }
+
+        .placeholder-page h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #e8e8f2;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        .placeholder-page p {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #6a6a88;
+            line-height: 1.5;
+        }
+
+        .btn-primary {
+            padding: 10px 24px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: #0c0c18;
+            background: linear-gradient(135deg, #e4af3e, #d49a28);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            line-height: 1.4;
+            margin-top: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(228, 175, 62, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* ========================================
+           TOAST NOTIFICATION
+           ======================================== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #f0f0f8;
+            line-height: 1.4;
+            background: #1e1e38;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            animation: toastIn 0.35s ease, toastOut 0.35s ease 3s forwards;
+            max-width: 340px;
+        }
+
+        .toast.success { border-left: 3px solid #34d399; }
+        .toast.error { border-left: 3px solid #e54545; }
+        .toast.info { border-left: 3px solid #60a5fa; }
+        .toast.warning { border-left: 3px solid #fbbf24; }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(40px); }
+        }
+
+        /* ========================================
+           LOADING SHIMMER
+           ======================================== */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, #1a1a30 25%, #22223a 50%, #1a1a30 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.8s ease-in-out infinite;
+            border-radius: 6px;
+            color: transparent !important;
+        }
+
+        /* ========================================
+           AMBIENT BACKGROUND GLOW
+           ======================================== */
+        .main-content::before {
+            content: '';
+            position: fixed;
+            top: -120px;
+            right: -120px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(228, 175, 62, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .main-content::after {
+            content: '';
+            position: fixed;
+            bottom: -100px;
+            left: 200px;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.04) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* ========================================
+           RESPONSIVE — TABLET
+           ======================================== */
+        @media (max-width: 1200px) {
+            .stats-8 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stats-6 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* ========================================
+           RESPONSIVE — MOBILE
+           ======================================== */
+        @media (max-width: 768px) {
+            .mobile-header {
+                display: flex;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                z-index: 1200;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-close {
+                display: flex;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 76px 16px 32px;
+            }
+
+            .page-title {
+                font-size: 1.4rem;
+            }
+
+            .stats-8,
+            .stats-6 {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 16px 14px;
+            }
+
+            .stat-value {
+                font-size: 1.35rem;
+            }
+
+            .stat-label {
+                font-size: 0.65rem;
+            }
+
+            .activity-item {
+                padding: 12px 14px;
+                gap: 10px;
+            }
+
+            .activity-title {
+                font-size: 0.78rem;
+            }
+
+            .date-display {
+                display: none;
+            }
+
+            .back-btn.visible {
+                display: inline-flex;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .stats-8,
+            .stats-6 {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* ========================================
+           FOCUS VISIBLE — ACCESSIBILITY
+           ======================================== */
+        :focus-visible {
+            outline: 2px solid #e4af3e;
+            outline-offset: 2px;
+        }
+
+        button:focus:not(:focus-visible),
+        a:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        /* ========================================
+           REDUCED MOTION
+           ======================================== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Header -->
+    <header class="mobile-header" id="mobileHeader">
+        <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Open menu">&#9776;</button>
+        <span class="mobile-title">Voddic Connect</span>
+        <button class="mobile-notif" onclick="viewNotifications()" aria-label="View notifications">&#128276;</button>
+    </header>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="logo-icon">&#127976;</div>
+                <div>
+                    <h2>Voddic Connect</h2>
+                    <p class="hotel-name" id="sidebarHotelName">Loading...</p>
+                </div>
+            </div>
+            <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Close menu">&#10005;</button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- Dashboard -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#127968; DASHBOARD</div>
+                <a href="#" class="nav-item active" data-page="overview">
+                    <span class="nav-icon">&#128202;</span> Overview
+                </a>
+                <a href="#" class="nav-item" data-page="stats">
+                    <span class="nav-icon">&#128200;</span> Statistics
+                </a>
+            </div>
+
+            <!-- Operations -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#9881;&#65039; OPERATIONS</div>
+                <a href="#" class="nav-item" data-page="rooms">
+                    <span class="nav-icon">&#128682;</span> Rooms
+                    <span class="nav-badge" id="roomsBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="guests">
+                    <span class="nav-icon">&#128101;</span> Guests / Members
+                    <span class="nav-badge" id="guestsBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="bookings">
+                    <span class="nav-icon">&#128197;</span> Bookings
+                </a>
+                <a href="#" class="nav-item" data-page="emergencies">
+                    <span class="nav-icon">&#128680;</span> Emergencies
+                    <span class="nav-badge emergency" id="emergencyBadge" style="display:none;">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="services">
+                    <span class="nav-icon">&#128203;</span> Service Requests
+                    <span class="nav-badge" id="servicesBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="orders">
+                    <span class="nav-icon">&#128274;</span> Orders
+                </a>
+            </div>
+
+            <!-- Communication -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#128172; COMMUNICATION</div>
+                <a href="#" class="nav-item" data-page="chat">
+                    <span class="nav-icon">&#128172;</span> Live Chat
+                    <span class="nav-badge" id="chatBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="calls">
+                    <span class="nav-icon">&#128222;</span> Calls / WebRTC
+                </a>
+                <a href="#" class="nav-item" data-page="notifications">
+                    <span class="nav-icon">&#128276;</span> Notifications
+                </a>
+            </div>
+
+            <!-- Hotel -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#127976; HOTEL</div>
+                <a href="#" class="nav-item" data-page="staff">
+                    <span class="nav-icon">&#128101;</span> Staff Management
+                </a>
+                <a href="#" class="nav-item" data-page="menu">
+                    <span class="nav-icon">&#127869;</span> Menu
+                </a>
+                <a href="#" class="nav-item" data-page="qrcodes">
+                    <span class="nav-icon">&#128241;</span> QR Codes
+                </a>
+                <a href="#" class="nav-item" data-page="settings">
+                    <span class="nav-icon">&#9881;&#65039;</span> Hotel Settings
+                </a>
+            </div>
+
+            <!-- Finance -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#128176; FINANCE</div>
+                <a href="#" class="nav-item" data-page="payments">
+                    <span class="nav-icon">&#128179;</span> Guest Payments
+                </a>
+                <a href="#" class="nav-item" data-page="transactions">
+                    <span class="nav-icon">&#128220;</span> Transactions
+                </a>
+                <a href="#" class="nav-item" data-page="revenue">
+                    <span class="nav-icon">&#128202;</span> Revenue
+                </a>
+                <a href="#" class="nav-item" data-page="subscription">
+                    <span class="nav-icon">&#128260;</span> Subscription
+                </a>
+            </div>
+
+            <!-- Analytics -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#128202; ANALYTICS</div>
+                <a href="#" class="nav-item" data-page="reports">
+                    <span class="nav-icon">&#128200;</span> Reports
+                </a>
+                <a href="#" class="nav-item" data-page="guest-analytics">
+                    <span class="nav-icon">&#128100;</span> Guest Analytics
+                </a>
+                <a href="#" class="nav-item" data-page="staff-analytics">
+                    <span class="nav-icon">&#128203;</span> Staff Performance
+                </a>
+            </div>
+
+            <!-- System -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#128272; SYSTEM</div>
+                <a href="#" class="nav-item" data-page="audit">
+                    <span class="nav-icon">&#128221;</span> Audit Logs
+                </a>
+                <a href="#" class="nav-item" data-page="system-settings">
+                    <span class="nav-icon">&#128295;</span> System Settings
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <div>
+                    <div class="user-name" id="userName">...</div>
+                    <div class="user-role">Hotel Owner</div>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">&#128682; Sign Out</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Back button for mobile -->
+        <button class="back-btn" onclick="showPage('overview')" id="backBtn">&#8592; Back to Dashboard</button>
+
+        <!-- Overview Page -->
+        <div class="page active" id="page-overview">
+            <div class="page-header">
+                <div>
+                    <p class="page-greeting" id="greeting">Good morning</p>
+                    <h1 class="page-title" id="ownerName">Welcome back</h1>
+                    <p class="page-subtitle" id="hotelNameDisplay">Your Hotel Dashboard</p>
+                </div>
+                <div class="header-actions">
+                    <span class="date-display" id="currentDate"></span>
+                </div>
+            </div>
+
+            <!-- TOP STATS CARDS - 8 Cards -->
+            <div class="stats-grid stats-8">
+                <div class="stat-card guests">
+                    <div class="stat-icon">&#128101;</div>
+                    <div class="stat-value" id="statGuests">&mdash;</div>
+                    <div class="stat-label">Total Guests</div>
+                    <div class="stat-change up" id="statGuestsChange" style="display:none;"></div>
+                </div>
+                <div class="stat-card rooms-active">
+                    <div class="stat-icon">&#9989;</div>
+                    <div class="stat-value" id="statActiveRooms">&mdash;</div>
+                    <div class="stat-label">Active Rooms</div>
+                </div>
+                <div class="stat-card rooms-vacant">
+                    <div class="stat-icon">&#127976;</div>
+                    <div class="stat-value" id="statVacantRooms">&mdash;</div>
+                    <div class="stat-label">Vacant Rooms</div>
+                </div>
+                <div class="stat-card emergency">
+                    <div class="stat-icon">&#128680;</div>
+                    <div class="stat-value" id="statEmergencies">&mdash;</div>
+                    <div class="stat-label">Active Emergencies</div>
+                </div>
+                <div class="stat-card services">
+                    <div class="stat-icon">&#128203;</div>
+                    <div class="stat-value" id="statServices">&mdash;</div>
+                    <div class="stat-label">Open Service Requests</div>
+                </div>
+                <div class="stat-card staff">
+                    <div class="stat-icon">&#128119;</div>
+                    <div class="stat-value" id="statStaff">&mdash;</div>
+                    <div class="stat-label">Active Staff</div>
+                </div>
+                <div class="stat-card chat">
+                    <div class="stat-icon">&#128172;</div>
+                    <div class="stat-value" id="statChats">&mdash;</div>
+                    <div class="stat-label">Unread Messages</div>
+                </div>
+                <div class="stat-card revenue">
+                    <div class="stat-icon">&#128176;</div>
+                    <div class="stat-value" id="statRevenue">&mdash;</div>
+                    <div class="stat-label">Today's Revenue</div>
+                </div>
+            </div>
+
+            <!-- SECOND ROW - 6 Cards -->
+            <div class="stats-grid stats-6">
+                <div class="stat-card checkins">
+                    <div class="stat-icon">&#127939;</div>
+                    <div class="stat-value" id="statCheckins">&mdash;</div>
+                    <div class="stat-label">Today's Check-ins</div>
+                </div>
+                <div class="stat-card checkouts">
+                    <div class="stat-icon">&#128694;</div>
+                    <div class="stat-value" id="statCheckouts">&mdash;</div>
+                    <div class="stat-label">Today's Check-outs</div>
+                </div>
+                <div class="stat-card orders">
+                    <div class="stat-icon">&#127869;</div>
+                    <div class="stat-value" id="statOrders">&mdash;</div>
+                    <div class="stat-label">Food/Service Orders</div>
+                </div>
+                <div class="stat-card calls">
+                    <div class="stat-icon">&#128222;</div>
+                    <div class="stat-value" id="statCalls">&mdash;</div>
+                    <div class="stat-label">Active Calls</div>
+                </div>
+                <div class="stat-card pending">
+                    <div class="stat-icon">&#9203;</div>
+                    <div class="stat-value" id="statPending">&mdash;</div>
+                    <div class="stat-label">Pending Requests</div>
+                </div>
+                <div class="stat-card response">
+                    <div class="stat-icon">&#9201;&#65039;</div>
+                    <div class="stat-value" id="statResponse">&mdash;</div>
+                    <div class="stat-label">Avg Response Time</div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="section-header">
+                <h3>&#128203; Recent Activity</h3>
+            </div>
+            <div class="activity-list" id="recentActivity">
+                <div class="activity-item">
+                    <div class="activity-icon">&#128680;</div>
+                    <div class="activity-info">
+                        <div class="activity-title">Emergency Alert - Room 205</div>
+                        <div class="activity-time">2 minutes ago</div>
+                    </div>
+                    <span class="activity-status danger">Active</span>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">&#9989;</div>
+                    <div class="activity-info">
+                        <div class="activity-title">Room 102 Checked In</div>
+                        <div class="activity-time">15 minutes ago</div>
+                    </div>
+                    <span class="activity-status success">Completed</span>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">&#128203;</div>
+                    <div class="activity-info">
+                        <div class="activity-title">Housekeeping Request - Room 310</div>
+                        <div class="activity-time">28 minutes ago</div>
+                    </div>
+                    <span class="activity-status warning">Pending</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Placeholder pages -->
+        <div class="page" id="page-rooms"><div class="placeholder-page"><h2>&#128682; Room Management</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-guests"><div class="placeholder-page"><h2>&#128101; Guest Management</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-bookings"><div class="placeholder-page"><h2>&#128197; Bookings</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-staff"><div class="placeholder-page"><h2>&#128101; Staff Management</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-emergencies"><div class="placeholder-page"><h2>&#128680; Emergency Monitor</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-services"><div class="placeholder-page"><h2>&#128203; Service Requests</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-orders"><div class="placeholder-page"><h2>&#128274; Orders</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-chat"><div class="placeholder-page"><h2>&#128172; Live Chat</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-calls"><div class="placeholder-page"><h2>&#128222; Calls / WebRTC</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-notifications"><div class="placeholder-page"><h2>&#128276; Notifications</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-menu"><div class="placeholder-page"><h2>&#127869; Menu</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-qrcodes"><div class="placeholder-page"><h2>&#128241; QR Codes</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-settings"><div class="placeholder-page"><h2>&#9881;&#65039; Hotel Settings</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-payments"><div class="placeholder-page"><h2>&#128179; Guest Payments</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-transactions"><div class="placeholder-page"><h2>&#128220; Transactions</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-revenue"><div class="placeholder-page"><h2>&#128202; Revenue</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-subscription"><div class="placeholder-page"><h2>&#128260; Subscription</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-reports"><div class="placeholder-page"><h2>&#128200; Reports</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-guest-analytics"><div class="placeholder-page"><h2>&#128100; Guest Analytics</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-staff-analytics"><div class="placeholder-page"><h2>&#128203; Staff Performance</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-stats"><div class="placeholder-page"><h2>&#128200; Statistics</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-audit"><div class="placeholder-page"><h2>&#128221; Audit Logs</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+        <div class="page" id="page-system-settings"><div class="placeholder-page"><h2>&#128295; System Settings</h2><p>Coming soon...</p><button class="btn-primary" onclick="showPage('overview')">&#8592; Back to Dashboard</button></div></div>
+    </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        /* ================================================
+           VODDIC HOTEL CONNECT — Dashboard Logic
+           All original functions preserved and enhanced
+           ================================================ */
+
+        // ---- State ----
+        let currentPage = 'overview';
+        let dashboardData = null;
+
+        // ---- Initialization ----
+        document.addEventListener('DOMContentLoaded', function() {
+            initNavigation();
+            setGreeting();
+            setCurrentDate();
+            loadDashboardData();
+            startLiveUpdates();
+        });
+
+        // ---- Sidebar Toggle ----
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            var isOpen = sidebar.classList.contains('open');
+
+            if (isOpen) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        // ---- Navigation ----
+        function initNavigation() {
+            var navItems = document.querySelectorAll('.nav-item[data-page]');
+            navItems.forEach(function(item) {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var page = this.getAttribute('data-page');
+                    showPage(page);
+                    // Close sidebar on mobile after navigation
+                    if (window.innerWidth <= 768) {
+                        toggleSidebar();
+                    }
+                });
+            });
+        }
+
+        // ---- Show Page ----
+        function showPage(pageId) {
+            // Hide all pages
+            var pages = document.querySelectorAll('.page');
+            pages.forEach(function(p) {
+                p.classList.remove('active');
+            });
+
+            // Show target page
+            var target = document.getElementById('page-' + pageId);
+            if (target) {
+                target.classList.add('active');
+            }
+
+            // Update nav active state
+            var navItems = document.querySelectorAll('.nav-item[data-page]');
+            navItems.forEach(function(item) {
+                item.classList.remove('active');
+                if (item.getAttribute('data-page') === pageId) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Back button visibility on mobile
+            var backBtn = document.getElementById('backBtn');
+            if (pageId === 'overview') {
+                backBtn.style.display = 'none';
+                backBtn.classList.remove('visible');
+            } else {
+                if (window.innerWidth <= 768) {
+                    backBtn.style.display = 'inline-flex';
+                    backBtn.classList.add('visible');
+                }
+            }
+
+            currentPage = pageId;
+        }
+
+        // ---- Greeting based on time of day ----
+        function setGreeting() {
+            var hour = new Date().getHours();
+            var greeting = 'Good evening';
+            if (hour >= 5 && hour < 12) {
+                greeting = 'Good morning';
+            } else if (hour >= 12 && hour < 17) {
+                greeting = 'Good afternoon';
+            }
+            document.getElementById('greeting').textContent = greeting;
+        }
+
+        // ---- Current Date Display ----
+        function setCurrentDate() {
+            var now = new Date();
+            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        // ---- Toast Notifications ----
+        function showToast(message, type) {
+            type = type || 'info';
+            var container = document.getElementById('toastContainer');
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            // Auto-remove after animation
+            setTimeout(function() {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3500);
+        }
+
+        // ---- View Notifications ----
+        function viewNotifications() {
+            showPage('notifications');
+        }
+
+        // ---- Logout ----
+        function logout() {
+            showToast('Signing out...', 'info');
+            setTimeout(function() {
+                // Clear session data
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.removeItem('voddic_session');
+                    localStorage.removeItem('voddic_token');
+                }
+                // Redirect to login (in production)
+                // window.location.href = 'index.html';
+                showToast('You have been signed out.', 'success');
+            }, 800);
+        }
+
+        // ---- Load Dashboard Data ----
+        function loadDashboardData() {
+            // Show shimmer loading state
+            setShimmerState(true);
+
+            // Simulate data fetch — in production this would be a real API call
+            setTimeout(function() {
+                // Generate realistic dashboard data
+                dashboardData = {
+                    hotelName: 'The Grand Voddic Suites',
+                    ownerName: 'Alexander Mitchell',
+                    ownerInitial: 'A',
+                    totalGuests: 147,
+                    guestChange: '+12%',
+                    activeRooms: 38,
+                    totalRooms: 52,
+                    vacantRooms: 14,
+                    emergencies: 1,
+                    serviceRequests: 7,
+                    activeStaff: 12,
+                    unreadMessages: 23,
+                    todayRevenue: 18450,
+                    checkins: 6,
+                    checkouts: 4,
+                    orders: 19,
+                    activeCalls: 2,
+                    pendingRequests: 11,
+                    avgResponseTime: '4m 32s',
+                    recentActivity: [
+                        { icon: '\u{1F6A8}', title: 'Emergency Alert - Room 205', time: '2 minutes ago', status: 'danger', statusText: 'Active' },
+                        { icon: '\u2705', title: 'Room 102 Checked In - James Cooper', time: '15 minutes ago', status: 'success', statusText: 'Completed' },
+                        { icon: '\u{1F4CB}', title: 'Housekeeping Request - Room 310', time: '28 minutes ago', status: 'warning', statusText: 'Pending' },
+                        { icon: '\u{1F4B0}', title: 'Payment Received - $320.00 Room 418', time: '35 minutes ago', status: 'success', statusText: 'Completed' },
+                        { icon: '\u{1F4DE}', title: 'Incoming Call - Room 207', time: '42 minutes ago', status: 'info', statusText: 'Missed' },
+                        { icon: '\u{1F6B6}', title: 'Guest Check-out - Room 115 - Sarah Lin', time: '1 hour ago', status: 'success', statusText: 'Completed' }
+                    ]
+                };
+
+                renderDashboard(dashboardData);
+                setShimmerState(false);
+            }, 1200);
+        }
+
+        // ---- Shimmer Loading State ----
+        function setShimmerState(active) {
+            var statValues = document.querySelectorAll('.stat-value');
+            statValues.forEach(function(el) {
+                if (active) {
+                    el.classList.add('loading-shimmer');
+                    el.style.minHeight = '28px';
+                    el.style.minWidth = '60px';
+                } else {
+                    el.classList.remove('loading-shimmer');
+                    el.style.minHeight = '';
+                    el.style.minWidth = '';
+                }
+            });
+        }
+
+        // ---- Render Dashboard ----
+        function renderDashboard(data) {
+            // Hotel & Owner Info
+            document.getElementById('sidebarHotelName').textContent = data.hotelName;
+            document.getElementById('ownerName').textContent = 'Welcome back, ' + data.ownerName.split(' ')[0];
+            document.getElementById('hotelNameDisplay').textContent = data.hotelName;
+            document.getElementById('userName').textContent = data.ownerName;
+            document.getElementById('userAvatar').textContent = data.ownerInitial;
+
+            // Stats Cards
+            document.getElementById('statGuests').textContent = data.totalGuests;
+            document.getElementById('statActiveRooms').textContent = data.activeRooms;
+            document.getElementById('statVacantRooms').textContent = data.vacantRooms;
+            document.getElementById('statEmergencies').textContent = data.emergencies;
+            document.getElementById('statServices').textContent = data.serviceRequests;
+            document.getElementById('statStaff').textContent = data.activeStaff;
+            document.getElementById('statChats').textContent = data.unreadMessages;
+            document.getElementById('statRevenue').textContent = '$' + data.todayRevenue.toLocaleString();
+            document.getElementById('statCheckins').textContent = data.checkins;
+            document.getElementById('statCheckouts').textContent = data.checkouts;
+            document.getElementById('statOrders').textContent = data.orders;
+            document.getElementById('statCalls').textContent = data.activeCalls;
+            document.getElementById('statPending').textContent = data.pendingRequests;
+            document.getElementById('statResponse').textContent = data.avgResponseTime;
+
+            // Guest change indicator
+            var changeEl = document.getElementById('statGuestsChange');
+            changeEl.textContent = data.guestChange + ' vs last week';
+            changeEl.style.display = 'block';
+
+            // Nav Badges
+            document.getElementById('roomsBadge').textContent = data.activeRooms;
+            document.getElementById('guestsBadge').textContent = data.totalGuests;
+            document.getElementById('servicesBadge').textContent = data.serviceRequests;
+            document.getElementById('chatBadge').textContent = data.unreadMessages;
+
+            // Emergency badge — show only if > 0
+            var emergBadge = document.getElementById('emergencyBadge');
+            if (data.emergencies > 0) {
+                emergBadge.textContent = data.emergencies;
+                emergBadge.style.display = 'inline';
+            } else {
+                emergBadge.style.display = 'none';
+            }
+
+            // Recent Activity
+            renderActivityFeed(data.recentActivity);
+        }
+
+        // ---- Render Activity Feed ----
+        function renderActivityFeed(activities) {
+            var container = document.getElementById('recentActivity');
+            container.innerHTML = '';
+
+            activities.forEach(function(item) {
+                var div = document.createElement('div');
+                div.className = 'activity-item';
+                div.innerHTML =
+                    '<div class="activity-icon">' + item.icon + '</div>' +
+                    '<div class="activity-info">' +
+                        '<div class="activity-title">' + item.title + '</div>' +
+                        '<div class="activity-time">' + item.time + '</div>' +
+                    '</div>' +
+                    '<span class="activity-status ' + item.status + '">' + item.statusText + '</span>';
+                container.appendChild(div);
+            });
+        }
+
+        // ---- Live Updates Simulation ----
+        function startLiveUpdates() {
+            // Update greeting every minute
+            setInterval(function() {
+                setGreeting();
+                setCurrentDate();
+            }, 60000);
+
+            // Simulate live stat changes every 8 seconds
+            setInterval(function() {
+                if (!dashboardData) return;
+
+                // Slightly randomize some values to simulate live data
+                var delta = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+                dashboardData.unreadMessages = Math.max(0, dashboardData.unreadMessages + delta);
+                document.getElementById('statChats').textContent = dashboardData.unreadMessages;
+                document.getElementById('chatBadge').textContent = dashboardData.unreadMessages;
+
+                // Occasional order change
+                if (Math.random() > 0.7) {
+                    dashboardData.orders = Math.max(0, dashboardData.orders + (Math.random() > 0.5 ? 1 : -1));
+                    document.getElementById('statOrders').textContent = dashboardData.orders;
+                }
+
+                // Occasional service request change
+                if (Math.random() > 0.8) {
+                    dashboardData.serviceRequests = Math.max(0, dashboardData.serviceRequests + (Math.random() > 0.5 ? 1 : -1));
+                    document.getElementById('statServices').textContent = dashboardData.serviceRequests;
+                    document.getElementById('servicesBadge').textContent = dashboardData.serviceRequests;
+                }
+            }, 8000);
+
+            // Simulate new activity appearing every 15 seconds
+            var activityTemplates = [
+                { icon: '\u{1F4CB}', title: 'New housekeeping request - Room ', status: 'warning', statusText: 'Pending' },
+                { icon: '\u{1F4B0}', title: 'Payment received - $', status: 'success', statusText: 'Completed' },
+                { icon: '\u2705', title: 'Room checked in - ', status: 'success', statusText: 'Completed' },
+                { icon: '\u{1F4DE}', title: 'Front desk call - Room ', status: 'info', statusText: 'Active' },
+                { icon: '\u{1F37D}', title: 'Room service order - Room ', status: 'warning', statusText: 'Preparing' }
+            ];
+
+            setInterval(function() {
+                if (!dashboardData) return;
+                var template = activityTemplates[Math.floor(Math.random() * activityTemplates.length)];
+                var roomNum = 100 + Math.floor(Math.random() * 400);
+
+                var newActivity = {
+                    icon: template.icon,
+                    title: template.title + roomNum,
+                    time: 'Just now',
+                    status: template.status,
+                    statusText: template.statusText
+                };
+
+                // Add to top of list
+                dashboardData.recentActivity.unshift(newActivity);
+
+                // Keep only last 8 items
+                if (dashboardData.recentActivity.length > 8) {
+                    dashboardData.recentActivity = dashboardData.recentActivity.slice(0, 8);
+                }
+
+                // Update "Just now" to actual time after a few seconds
+                setTimeout(function() {
+                    newActivity.time = '1 minute ago';
+                    renderActivityFeed(dashboardData.recentActivity);
+                }, 60000);
+
+                renderActivityFeed(dashboardData.recentActivity);
+            }, 15000);
+        }
+
+        // ---- Handle window resize for back button ----
+        window.addEventListener('resize', function() {
+            var backBtn = document.getElementById('backBtn');
+            if (currentPage === 'overview') {
+                backBtn.style.display = 'none';
+                backBtn.classList.remove('visible');
+            } else if (window.innerWidth <= 768) {
+                backBtn.style.display = 'inline-flex';
+                backBtn.classList.add('visible');
+            } else {
+                backBtn.style.display = 'none';
+                backBtn.classList.remove('visible');
+            }
+        });
+
+        // ---- Keyboard navigation support ----
+        document.addEventListener('keydown', function(e) {
+            // Escape closes sidebar on mobile
+            if (e.key === 'Escape') {
+                var sidebar = document.getElementById('sidebar');
+                if (sidebar.classList.contains('open')) {
+                    toggleSidebar();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

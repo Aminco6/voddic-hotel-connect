@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Install Voddic Staff App</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="manifest" href="/staff/manifest.json">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0c18;--card:#151528;--gold:#e4af3e;--danger:#e2412c;--success:#2fa06a;--text:#eaeaf0;--text-dim:#8a8aa8;--border:rgba(255,255,255,.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.install-container{max-width:420px;width:100%;text-align:center}
+.logo{font-size:4rem;margin-bottom:16px}
+.title{font-size:1.8rem;font-weight:800;color:#f5f5fa;margin-bottom:8px}
+.subtitle{color:var(--text-dim);font-size:.9rem;margin-bottom:32px}
+.install-card{background:var(--card);border-radius:18px;padding:32px 24px;border:1px solid var(--border);margin-bottom:20px}
+.install-card .icon{font-size:3rem;margin-bottom:12px}
+.install-card h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.install-card p{color:var(--text-dim);font-size:.85rem;line-height:1.5}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
+.feature{background:rgba(255,255,255,.03);border-radius:10px;padding:12px;border:1px solid var(--border)}
+.feature .f-icon{font-size:1.5rem;margin-bottom:4px}
+.feature .f-label{font-size:.65rem;color:var(--text-dim);font-weight:600}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#e4af3e,#c98e22);color:#000}
+.btn-primary:hover{transform:scale(1.02)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-dim)}
+.btn-outline:hover{border-color:var(--text)}
+.btn-success{background:var(--success);color:#fff}
+.install-status{display:none;padding:12px;border-radius:10px;margin-top:12px;font-size:.85rem;font-weight:600}
+.install-status.success{display:block;background:rgba(47,160,106,.15);border:1px solid rgba(47,160,106,.3);color:var(--success)}
+.install-status.error{display:block;background:rgba(226,65,44,.15);border:1px solid rgba(226,65,44,.3);color:var(--danger)}
+.install-status.info{display:block;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);color:var(--info)}
+.skip-link{display:block;margin-top:16px;color:var(--text-dim);font-size:.75rem;cursor:pointer;text-decoration:underline}
+.skip-link:hover{color:var(--text)}
+.loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.manual-install{background:rgba(255,255,255,.03);border-radius:10px;padding:16px;margin-top:16px;border:1px dashed var(--border)}
+.manual-install p{color:var(--text-dim);font-size:.8rem;margin-bottom:8px}
+.manual-install .steps{text-align:left;padding-left:20px;font-size:.75rem;color:var(--text-dim);line-height:1.8}
+.manual-install .steps li{list-style:decimal}
+</style>
+</head>
+<body>
+<div class="install-container">
+    <div class="logo">⭐</div>
+    <h1 class="title">Install Voddic Staff</h1>
+    <p class="subtitle">Get the best experience with the mobile app</p>
+
+    <div class="install-card">
+        <div class="icon">📱</div>
+        <h3>Install as App</h3>
+        <p>Get push notifications, faster loading, and a native app experience.</p>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="f-icon">🔔</div>
+                <div class="f-label">Push Notifications</div>
+            </div>
+            <div class="feature">
+                <div class="f-icon">⚡</div>
+                <div class="f-label">Faster Loading</div>
+            </div>
+            <div class="feature">
+                <div class="f-icon">📞</div>
+                <div class="f-label">Call Management</div>
+            </div>
+            <div class="feature">
+                <div class="f-icon">🏨</div>
+                <div class="f-label">Hotel Dashboard</div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="installBtn">
+            📲 Install App
+        </button>
+
+        <div class="install-status" id="installStatus"></div>
+
+        <!-- Manual Install Instructions -->
+        <div class="manual-install" id="manualInstall" style="display:none;">
+            <p>📖 Manual Installation Steps:</p>
+            <ol class="steps">
+                <li>Tap the <strong>Share</strong> icon <span style="font-size:1.2rem;">⬆️</span> in your browser</li>
+                <li>Scroll down and tap <strong>Add to Home Screen</strong></li>
+                <li>Tap <strong>Add</strong> to confirm</li>
+                <li>Open the app from your home screen</li>
+            </ol>
+        </div>
+    </div>
+
+    <a class="skip-link" id="skipLink" onclick="skipInstall()">Skip for now →</a>
+</div>
+
+<script>
+// ============================================================
+// PWA Install Page - Complete Fix
+// ============================================================
+
+const API = "https://connectapi.voddic.com.ng/api/v1";
+const token = localStorage.getItem("access_token");
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+// Check if already installed as PWA
+if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log('📱 Already running as PWA');
+    window.location.href = '/staff/dashboard/index.html';
+}
+
+let deferredPrompt = null;
+let installAttempted = false;
+let promptFired = false;
+
+console.log('📱 PWA Install page loaded');
+
+// ============================================================
+// Check if PWA can be installed
+// ============================================================
+
+function checkInstallability() {
+    const status = document.getElementById('installStatus');
+    
+    // Check if running in a browser that supports PWA
+    if (!('serviceWorker' in navigator)) {
+        status.className = 'install-status error';
+        status.textContent = '⚠️ Your browser does not support PWA installation. Please use Chrome, Edge, or Samsung Internet.';
+        document.getElementById('installBtn').disabled = true;
+        document.getElementById('manualInstall').style.display = 'block';
+        return false;
+    }
+    
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        status.className = 'install-status success';
+        status.textContent = '✅ App is already installed! Redirecting...';
+        setTimeout(function() {
+            window.location.href = '/staff/dashboard/index.html';
+        }, 1500);
+        return false;
+    }
+    
+    // Check if the app is installable
+    if (!deferredPrompt && !promptFired) {
+        status.className = 'install-status info';
+        status.textContent = '⏳ Checking if app can be installed...';
+        
+        // Try to trigger the install prompt via the manifest
+        setTimeout(function() {
+            if (!deferredPrompt) {
+                status.className = 'install-status info';
+                status.textContent = '📱 You can install the app manually using the steps below.';
+                document.getElementById('manualInstall').style.display = 'block';
+                document.getElementById('installBtn').textContent = '📖 View Installation Instructions';
+                document.getElementById('installBtn').disabled = false;
+            }
+        }, 2000);
+    }
+    
+    return true;
+}
+
+// ============================================================
+// Before Install Prompt Event - MUST be on this page
+// ============================================================
+
+window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    promptFired = true;
+    console.log('📱 PWA installation prompt captured on install page');
+    
+    const status = document.getElementById('installStatus');
+    status.className = 'install-status info';
+    status.textContent = '📱 Tap "Install App" to add Voddic Staff to your home screen.';
+    document.getElementById('installBtn').disabled = false;
+    document.getElementById('installBtn').textContent = '📲 Install App';
+    document.getElementById('manualInstall').style.display = 'none';
+});
+
+// ============================================================
+// Install Button Handler - Fix
+// ============================================================
+
+document.getElementById('installBtn').addEventListener('click', async function() {
+    const status = document.getElementById('installStatus');
+    const btn = this;
+    
+    // If no deferredPrompt but we're showing manual instructions
+    if (!deferredPrompt) {
+        // Toggle manual install instructions visibility
+        const manual = document.getElementById('manualInstall');
+        if (manual.style.display === 'none' || manual.style.display === '') {
+            manual.style.display = 'block';
+            btn.textContent = '📖 Hide Instructions';
+            status.className = 'install-status info';
+            status.textContent = '📱 Follow the steps below to install manually.';
+        } else {
+            manual.style.display = 'none';
+            btn.textContent = '📲 Install App';
+            status.className = 'install-status info';
+            status.textContent = '📱 Tap "Install App" to install.';
+        }
+        return;
+    }
+    
+    // Show the install prompt
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spinner"></span> Installing...';
+    status.className = 'install-status info';
+    status.textContent = '⏳ Showing installation prompt...';
+    
+    try {
+        const result = await deferredPrompt.prompt();
+        console.log('Install result:', result);
+        
+        if (result.outcome === 'accepted') {
+            status.className = 'install-status success';
+            status.textContent = '✅ Installation successful! You can now use the app.';
+            document.getElementById('skipLink').textContent = 'Open Dashboard →';
+            
+            // Wait for app to open, then redirect
+            setTimeout(function() {
+                window.location.href = '/staff/dashboard/index.html';
+            }, 2000);
+        } else {
+            status.className = 'install-status error';
+            status.textContent = '❌ Installation was declined. You can install later.';
+            btn.disabled = false;
+            btn.innerHTML = '📲 Install App';
+            document.getElementById('manualInstall').style.display = 'block';
+        }
+        
+        deferredPrompt = null;
+    } catch(e) {
+        console.error('Install error:', e);
+        status.className = 'install-status error';
+        status.textContent = '❌ Error during installation: ' + e.message;
+        btn.disabled = false;
+        btn.innerHTML = '📲 Install App';
+        document.getElementById('manualInstall').style.display = 'block';
+    }
+});
+
+// ============================================================
+// Skip Install
+// ============================================================
+
+function skipInstall() {
+    // Store that user skipped
+    localStorage.setItem('pwa_skipped', 'true');
+    // Redirect to dashboard
+    window.location.href = '/staff/dashboard/index.html';
+}
+
+// ============================================================
+// Check if user already skipped
+// ============================================================
+
+if (localStorage.getItem('pwa_skipped') === 'true') {
+    // If user already skipped, go to dashboard
+    console.log('User already skipped PWA install');
+    window.location.href = '/staff/dashboard/index.html';
+}
+
+// ============================================================
+// Also try to capture the prompt from the dashboard
+// ============================================================
+
+// If the prompt was captured elsewhere, try to get it from the service worker
+document.addEventListener('DOMContentLoaded', function() {
+    // Try to get the install prompt from the service worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(function(registration) {
+            // Send a message to the service worker to check for install
+            registration.active.postMessage({ type: 'check_install' });
+        }).catch(function(err) {
+            console.log('Service worker not ready:', err);
+        });
+    }
+    
+    // If no prompt after 5 seconds, show manual instructions
+    setTimeout(function() {
+        if (!deferredPrompt) {
+            const status = document.getElementById('installStatus');
+            status.className = 'install-status info';
+            status.textContent = '📱 Tap "Install App" to see manual instructions.';
+            document.getElementById('installBtn').textContent = '📖 Installation Instructions';
+            document.getElementById('installBtn').disabled = false;
+        }
+    }, 5000);
+    
+    // Check installability
+    checkInstallability();
+});
+
+// ============================================================
+// Keyboard shortcut - Enter to install
+// ============================================================
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && document.activeElement === document.getElementById('installBtn')) {
+        document.getElementById('installBtn').click();
+    }
+});
+
+console.log('✅ PWA Install page initialized');
+
+// ============================================================
+// Listen for messages from service worker
+// ============================================================
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function(event) {
+        console.log('Message from SW:', event.data);
+        if (event.data && event.data.type === 'install_prompt_available') {
+            deferredPrompt = event.data.prompt;
+            promptFired = true;
+            const status = document.getElementById('installStatus');
+            status.className = 'install-status info';
+            status.textContent = '📱 Tap "Install App" to add Voddic Staff to your home screen.';
+            document.getElementById('installBtn').disabled = false;
+            document.getElementById('installBtn').textContent = '📲 Install App';
+            document.getElementById('manualInstall').style.display = 'none';
+        }
+    });
+}
+</script>
+</body>
+</html>

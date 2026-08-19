@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Finance — Voddic Hotel Connect</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#0c0c18;color:#eaeaf0;min-height:100vh;line-height:1.6}
+a{text-decoration:none;color:inherit}
+button{border:none;background:none;cursor:pointer;font-family:inherit;color:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#12121f}::-webkit-scrollbar-thumb{background:#2a2a45;border-radius:3px}
+
+.mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:60px;background:rgba(12,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06);z-index:1000;align-items:center;justify-content:space-between;padding:0 16px}
+.menu-toggle{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;border-radius:10px;background:rgba(255,255,255,.05)}
+.mobile-title{font-size:1rem;font-weight:700;color:#f0f0f5}
+
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:1100}
+.sidebar-overlay.active{display:block}
+.sidebar{position:fixed;top:0;left:0;width:272px;height:100vh;background:#101020;border-right:1px solid rgba(255,255,255,.06);z-index:1200;display:flex;flex-direction:column;overflow-y:auto;transition:transform .35s}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sidebar-logo{display:flex;align-items:center;gap:12px}
+.logo-icon{font-size:1.6rem}
+.sidebar-logo h2{font-size:.95rem;font-weight:800;color:#f5f5fa}
+.hotel-name{font-size:.72rem;color:#8a8aa8;margin-top:2px}
+.sidebar-close{display:none;width:32px;height:32px;align-items:center;justify-content:center;font-size:1rem;color:#8a8aa8}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section-title{font-size:.62rem;font-weight:700;color:#55556e;letter-spacing:.08em;text-transform:uppercase;padding:14px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:.82rem;font-weight:500;color:#9a9ab8;transition:all .18s;border-left:3px solid transparent}
+.nav-item:hover{color:#e0e0f0;background:rgba(255,255,255,.03)}
+.nav-item.active{color:#f0f0f8;background:rgba(228,175,62,.08);border-left-color:#e4af3e}
+.nav-icon{font-size:.95rem;width:22px;text-align:center}
+.sidebar-footer{padding:16px 18px;border-top:1px solid rgba(255,255,255,.06)}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#e4af3e,#c48a20);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#0c0c18}
+.user-name{font-size:.82rem;font-weight:600}
+.user-role{font-size:.7rem;color:#6a6a88}
+.logout-btn{width:100%;padding:9px 14px;font-size:.78rem;font-weight:600;color:#b0b0c8;border-radius:8px;text-align:left}
+.logout-btn:hover{background:rgba(229,69,69,.1);color:#e54545}
+
+.main-content{margin-left:272px;min-height:100vh;padding:28px 32px 40px}
+.page-header{margin-bottom:24px}
+.page-title{font-size:1.75rem;font-weight:800;color:#f5f5fa}
+.page-subtitle{font-size:.88rem;color:#8888a8;margin-top:4px}
+
+.fin-tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:12px;flex-wrap:wrap}
+.fin-tab{padding:10px 20px;font-size:.85rem;font-weight:600;color:#8a8aa8;border-radius:8px;transition:all .2s}
+.fin-tab.active{background:rgba(228,175,62,.1);color:#e4af3e}
+.fin-tab:hover{color:#e0e0f0}
+.fin-content{display:none;animation:fadeIn .3s ease}
+.fin-content.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.status-badge{padding:4px 10px;border-radius:6px;font-size:.7rem;font-weight:700;text-transform:uppercase;display:inline-block}
+.status-success{color:#6ee7b7;background:rgba(52,211,153,.15)}
+.status-pending{color:#fde68a;background:rgba(251,191,36,.15)}
+.status-failed{color:#fca5a5;background:rgba(229,69,69,.15)}
+.text-gold{color:#e4af3e;font-weight:700}
+
+.btn{padding:10px 16px;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;transition:.2s;border:none;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,#e4af3e,#c98e22);color:#0c0c18}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-secondary{background:rgba(255,255,255,.05);color:#e0e0f0}
+.btn-sm{padding:6px 12px;font-size:.7rem}
+
+.table-card{background:#151528;border:1px solid rgba(255,255,255,.05);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.table-header{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid rgba(255,255,255,.05);flex-wrap:wrap;gap:12px}
+.table-header h3{font-size:1rem;font-weight:700;color:#e8e8f2}
+.table-wrapper{overflow-x:auto}
+.data-table{width:100%;border-collapse:collapse;min-width:700px}
+.data-table th,.data-table td{padding:12px 14px;text-align:left;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.04)}
+.data-table th{color:#6e6e8c;font-weight:600;font-size:.7rem;text-transform:uppercase}
+.data-table td{color:#c0c0d8}
+.data-table tbody tr:hover{background:rgba(255,255,255,.02);cursor:pointer}
+
+.rev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.rev-card{background:#151528;border-radius:14px;padding:20px;border:1px solid rgba(255,255,255,.05)}
+.rev-icon{font-size:1.3rem;margin-bottom:6px}
+.rev-amount{font-size:1.6rem;font-weight:800;color:#f5f5fa}
+.rev-sub{color:#8a8aa8;font-size:.8rem;margin-top:2px}
+
+.sub-card{background:#151528;border-radius:14px;padding:24px;border:1px solid rgba(255,255,255,.05);margin-bottom:20px}
+.card-title{font-size:1.1rem;font-weight:700;color:#f5f5fa;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.06)}
+.form-row{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.form-group{flex:1;min-width:150px;display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:.78rem;color:#8a8aa8;font-weight:600}
+.form-control{width:100%;padding:10px 14px;background:#1a1a34;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#eaeaf0;font-size:.85rem;font-family:inherit;outline:none}
+.form-control:focus{border-color:#e4af3e}
+.total-display{text-align:right;margin-bottom:16px;padding:16px;background:#1a1a34;border-radius:8px}
+.total-amount{font-size:1.8rem;font-weight:800;color:#e4af3e}
+.alert{padding:12px;border-radius:8px;font-size:.82rem;margin-bottom:14px;background:rgba(229,69,69,.15);color:#fca5a5;border:1px solid rgba(229,69,69,.3);display:none}
+.alert.show{display:block}
+.info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.85rem}
+.info-row:last-child{border-bottom:none}
+.info-row span:first-child{color:#8a8aa8}
+.info-row span:last-child{color:#e0e0f0;font-weight:600}
+
+.toast-container{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:6px;font-size:.75rem;font-weight:600;color:#f0f0f8;background:#1e1e38;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 32px rgba(0,0,0,.4);animation:slideIn .3s ease;max-width:280px}
+.toast.success{border-left:3px solid #34d399}
+.toast.info{border-left:3px solid #60a5fa}
+.toast.error{border-left:3px solid #e54545}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+@media(max-width:768px){
+    .mobile-header{display:flex}
+    .sidebar{transform:translateX(-100%);width:280px}
+    .sidebar.open{transform:translateX(0)}
+    .sidebar-close{display:flex}
+    .main-content{margin-left:0;padding:76px 16px 32px}
+    .page-title{font-size:1.4rem}
+    .form-row{flex-direction:column}
+}
+</style>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+<body>
+
+<header class="mobile-header">
+    <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+    <span class="mobile-title">Finance</span>
+    <div style="width:42px"></div>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo"><div class="logo-icon">&#127976;</div><div><h2>Voddic Connect</h2><p class="hotel-name" id="sidebarHotelName">Hotel</p></div></div>
+        <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">&#127968; DASHBOARD</div>
+        <a href="/hotel-owner/" class="nav-item"><span class="nav-icon">&#128202;</span> Overview</a>
+        <div class="nav-section-title">&#128176; FINANCE</div>
+        <a href="#" class="nav-item active" onclick="switchTab('payments')"><span class="nav-icon">&#128179;</span> Payments</a>
+        <a href="#" class="nav-item" onclick="switchTab('transactions')"><span class="nav-icon">&#128220;</span> Transactions</a>
+        <a href="#" class="nav-item" onclick="switchTab('revenue')"><span class="nav-icon">&#128202;</span> Revenue</a>
+        <a href="#" class="nav-item" onclick="switchTab('subscription')"><span class="nav-icon">&#128260;</span> Subscription</a>
+        <div class="nav-section-title">&#127976; HOTEL</div>
+        <a href="settings.html" class="nav-item"><span class="nav-icon">&#9881;</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-info"><div class="user-avatar" id="userAvatar">O</div><div><div class="user-name" id="userName">Owner</div><div class="user-role">Hotel Owner</div></div></div>
+        <button class="logout-btn" onclick="logout()">&#128682; Sign Out</button>
+    </div>
+</aside>
+
+<main class="main-content">
+    <div class="page-header">
+        <div><h1 class="page-title" id="finTitle">Guest Payments</h1><p class="page-subtitle" id="finSubtitle">Track all payments made by guests.</p></div>
+    </div>
+
+    <div class="fin-tabs">
+        <button class="fin-tab active" onclick="switchTab('payments')">Payments</button>
+        <button class="fin-tab" onclick="switchTab('transactions')">Transactions</button>
+        <button class="fin-tab" onclick="switchTab('revenue')">Revenue</button>
+        <button class="fin-tab" onclick="switchTab('subscription')">Subscription</button>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div id="tab-payments" class="fin-content active">
+        <div class="table-card">
+            <div class="table-header"><h3>Payment Records</h3></div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead><tr><th>ID</th><th>Guest</th><th>Room</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody id="paymentsBody"><tr><td colspan="6" style="text-align:center;color:#55556e;padding:40px;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div id="tab-transactions" class="fin-content">
+        <div class="table-card">
+            <div class="table-header"><h3>Financial Ledger</h3></div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead><tr><th>ID</th><th>Source</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody id="transactionsBody"><tr><td colspan="6" style="text-align:center;color:#55556e;padding:40px;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- REVENUE -->
+    <div id="tab-revenue" class="fin-content">
+        <div class="rev-grid">
+            <div class="rev-card"><div class="rev-icon">&#128176;</div><div class="rev-sub">Today</div><div class="rev-amount" id="revToday">₦0</div></div>
+            <div class="rev-card"><div class="rev-icon">&#128197;</div><div class="rev-sub">This Month</div><div class="rev-amount" id="revMonth">₦0</div></div>
+            <div class="rev-card"><div class="rev-icon">&#128202;</div><div class="rev-sub">Total Revenue</div><div class="rev-amount" id="revTotal">₦0</div></div>
+        </div>
+    </div>
+
+    <!-- SUBSCRIPTION -->
+    <div id="tab-subscription" class="fin-content">
+        <div class="alert" id="alertMsg"></div>
+
+        <div class="sub-card">
+            <div class="card-title">Current Plan</div>
+            <div id="subInfo">
+                <div class="info-row"><span>Plan</span><span id="subPlan">Loading...</span></div>
+                <div class="info-row"><span>Status</span><span id="subStatus">—</span></div>
+                <div class="info-row"><span>Room Limit</span><span id="subRoomLimit">—</span></div>
+                <div class="info-row"><span>Current Rooms</span><span id="subCurrentRooms">—</span></div>
+                <div class="info-row"><span>Expires</span><span id="subExpires">—</span></div>
+            </div>
+        </div>
+
+        <div class="sub-card">
+            <div class="card-title">Renew Subscription</div>
+            <div class="form-row">
+                <div class="form-group"><label>Months</label><select id="renewMonths" class="form-control" onchange="calcRenewal()"><option value="1">1 Month</option><option value="3">3 Months</option><option value="6">6 Months (5% off)</option><option value="12">12 Months (10% off)</option></select></div>
+                <div class="form-group"><label>Rooms (current limit)</label><input type="number" id="renewRooms" class="form-control" value="5" min="1" readonly style="opacity:0.7;cursor:not-allowed;"></div>
+            </div>
+            <div class="total-display"><div class="total-amount" id="renewAmount">₦0</div><div style="font-size:11px;color:#6e6e8c;">₦750/room/month · To add rooms, use Upgrade below (₦7,500/room one-time)</div></div>
+            <button class="btn btn-primary" style="width:100%;" onclick="initRenewal()">💳 Pay for Renewal</button>
+        </div>
+
+        <div class="sub-card">
+            <div class="card-title">Upgrade Room Limit</div>
+            <div class="form-group"><label>New Room Limit</label><input type="number" id="upgradeRooms" class="form-control" placeholder="Enter new limit" min="1" onchange="calcUpgrade()"></div>
+            <div class="total-display"><div class="total-amount" id="upgradeAmount">₦0</div><div style="font-size:11px;color:#6e6e8c;">₦7,500 per additional room (one-time)</div></div>
+            <button class="btn btn-primary" style="width:100%;" onclick="initUpgrade()">💳 Pay for Upgrade</button>
+        </div>
+    </div>
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API="https://connectapi.voddic.com.ng/api/v1";
+const token=localStorage.getItem("access_token");
+const user=JSON.parse(localStorage.getItem("user")||"{}");
+const hotel=JSON.parse(localStorage.getItem("hotel")||"{}");
+const headers={"Authorization":"Bearer "+token,"Content-Type":"application/json"};
+if(!token)window.location.href="/auth/login.html";
+
+var subData=null;
+
+document.addEventListener("DOMContentLoaded",function(){
+    document.getElementById("userName").textContent=user.full_name||user.email||"Owner";
+    document.getElementById("userAvatar").textContent=(user.first_name||"O")[0].toUpperCase();
+    document.getElementById("sidebarHotelName").textContent=hotel.name||"Hotel";
+    loadSubscription();
+});
+
+function switchTab(tab){
+    document.querySelectorAll(".fin-tab").forEach(function(t){t.classList.remove("active");});
+    document.querySelectorAll(".fin-content").forEach(function(c){c.classList.remove("active");});
+    document.querySelectorAll(".nav-item").forEach(function(n){n.classList.remove("active");});
+    document.querySelector(".fin-tab[onclick*='"+tab+"']")?.classList.add("active");
+    document.getElementById("tab-"+tab).classList.add("active");
+    var titles={payments:["Guest Payments","Track all payments."],transactions:["Transactions","Financial ledger."],revenue:["Revenue","Overview of revenue."],subscription:["Subscription","Manage your plan."]};
+    document.getElementById("finTitle").textContent=titles[tab][0];
+    document.getElementById("finSubtitle").textContent=titles[tab][1];
+    if(tab==="subscription")loadSubscription();
+    if(window.innerWidth<=768)toggleSidebar();
+}
+
+async function loadSubscription(){
+    try{
+        var r=await fetch(API+"/hotels/subscription/",{headers});
+        if(r.ok){
+            subData=await r.json();
+            document.getElementById("subPlan").textContent=subData.subscription?subData.subscription.plan:"Free";
+            document.getElementById("subStatus").innerHTML='<span class="status-badge status-success">'+(subData.subscription?subData.subscription.status:"Active")+'</span>';
+            document.getElementById("subRoomLimit").textContent=subData.max_rooms+" rooms";
+            document.getElementById("subCurrentRooms").textContent=subData.current_rooms+" rooms";
+            document.getElementById("subExpires").textContent=subData.subscription&&subData.subscription.expires_at?new Date(subData.subscription.expires_at).toLocaleDateString():"N/A";
+            document.getElementById("renewRooms").value=subData.max_rooms||5;document.getElementById("renewRooms").setAttribute("readonly",true);
+            calcRenewal();calcUpgrade();
+        }
+    }catch(e){}
+}
+
+function calcRenewal(){
+    var m=parseInt(document.getElementById("renewMonths").value)||1;
+    // Always use current room limit - user cannot change this during renewal
+    // To add rooms, they must use the Upgrade section (₦7,500/room one-time)
+    var r=subData?subData.max_rooms:5;
+    document.getElementById("renewRooms").value=r;
+    var cost=m*r*750;
+    if(m===6)cost*=0.95;if(m===12)cost*=0.90;
+    var hasSub=subData&&subData.has_active_subscription;
+    document.getElementById("renewAmount").textContent=hasSub?"₦"+cost.toLocaleString():"Upgrade required first";
+    // Update label to show it's auto-calculated
+    var label=document.querySelector("#renewRooms").parentElement.querySelector("label");
+    if(label)label.textContent="Rooms (current limit)";
+}
+
+function calcUpgrade(){
+    var current=subData?subData.max_rooms:5;
+    var nl=parseInt(document.getElementById("upgradeRooms").value)||current;
+    var additional=Math.max(0,nl-current);
+    var cost=additional*7500;
+    document.getElementById("upgradeAmount").textContent=cost>0?"₦"+cost.toLocaleString()+" ("+additional+" room"+((additional!==1)?"s":"")+")":"Enter a higher limit";
+}
+
+async function initRenewal(){
+    if(!subData||!subData.has_active_subscription){showToast("No active subscription to renew. Upgrade first.","error");return;}
+    var m=parseInt(document.getElementById("renewMonths").value)||1;
+    var r=parseInt(document.getElementById("renewRooms").value)||5;
+    try{
+        var res=await fetch(API+"/hotels/subscription/renew/",{method:"POST",headers,body:JSON.stringify({months:m,rooms:r})});
+        var d=await res.json();
+        if(res.ok){
+            if(d.authorization_url){window.location.href=d.authorization_url;}
+            else if(d.paystack_public_key){
+                payWithPaystack(d.reference,d.amount,d.paystack_public_key,user.email,'renewal');
+            }else{showToast("Payment initialized: "+d.reference,"info");}
+        }else{showToast(d.error||"Failed","error");}
+    }catch(e){showToast("Network error","error");}
+}
+
+async function initUpgrade(){
+    var nl=parseInt(document.getElementById("upgradeRooms").value)||0;
+    var current=subData?subData.max_rooms:5;
+    if(!nl||nl<=current){showToast("Enter a room limit greater than "+current,"error");return;}
+    var additional=nl-current;
+    var cost=additional*7500;
+    if(!confirm("Upgrade from "+current+" to "+nl+" rooms?\n\nAdditional rooms: "+additional+"\nOne-time cost: ₦"+cost.toLocaleString()))return;
+    try{
+        var res=await fetch(API+"/hotels/subscription/upgrade/",{method:"POST",headers,body:JSON.stringify({new_room_limit:nl})});
+        var d=await res.json();
+        if(res.ok){
+            if(d.authorization_url){window.location.href=d.authorization_url;}
+            else if(d.paystack_public_key){
+                payWithPaystack(d.reference,d.amount,d.paystack_public_key,user.email,'upgrade');
+            }else{showToast("Payment initialized","info");}
+        }else{showToast(d.error||"Failed","error");}
+    }catch(e){showToast("Network error","error");}
+}
+
+function payWithPaystack(ref,amount,key,email,type){
+    var handler=PaystackPop.setup({
+        key:key,email:email,amount:amount*100,ref:ref,
+        currency:'NGN',
+        callback:function(response){
+            verifyPayment(ref);
+        },
+        onClose:function(){showToast("Payment window closed","info");}
+    });
+    handler.openIframe();
+}
+
+async function verifyPayment(ref){
+    showToast("Verifying payment...","info");
+    try{
+        var res=await fetch(API+"/hotels/subscription/verify/",{method:"POST",headers,body:JSON.stringify({reference:ref})});
+        var d=await res.json();
+        if(res.ok){showToast("Payment verified! Subscription activated.","success");setTimeout(function(){loadSubscription();},1500);}
+        else{showToast(d.error||"Verification failed","error");}
+    }catch(e){showToast("Network error","error");}
+}
+
+// Check URL for payment callback
+(function(){
+    var params=new URLSearchParams(window.location.search);
+    var ref=params.get("ref");
+    var tab=params.get("tab");
+    if(tab==="subscription")switchTab("subscription");
+    if(ref){verifyPayment(ref);window.history.replaceState({},document.title,window.location.pathname);}
+})();
+
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");document.getElementById("sidebarOverlay").classList.toggle("active");}
+function logout(){localStorage.clear();window.location.href="/auth/login.html";}
+function showToast(m,t){var d=document.createElement("div");d.className="toast "+(t||"info");d.textContent=m;document.getElementById("toastContainer").appendChild(d);setTimeout(function(){d.remove();},3000);}
+</script>
+</body>
+</html>

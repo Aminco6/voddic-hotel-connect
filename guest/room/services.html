@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Guest Services — Voddic Hotel Connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+
+<style>
+/* Add call state styles */
+.call-state-dialing { color: #fbbf24; }
+.call-state-ringing { color: #60a5fa; animation: pulse-call 1s infinite; }
+.call-state-connected { color: #34d399; }
+.call-state-ended { color: #e54545; }
+@keyframes pulse-call {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+</style>
+
+
+<style>
+/* ===== RESET & BASE ===== */
+:root{--ink:#0F1727;--ink-2:#182238;--ink-3:#212d4a;--paper:#FAF6EC;--brass:#C9A227;--brass-light:#E4C465;--brick:#C13A2A;--brick-light:#E86A52;--plum:#7A5FB0;--teal:#3E7FA8;--amber:#C9822A;--sage:#4C7A5E;--line:rgba(250,246,236,.14)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Work Sans',sans-serif;background:#05070d;color:var(--paper);-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;padding:20px 0;overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;-webkit-tap-highlight-color:transparent}
+
+.phone-frame{width:390px;max-width:100vw;height:844px;max-height:100vh;background:var(--ink);border-radius:44px;border:10px solid #000;box-shadow:0 40px 80px -30px rgba(0,0,0,.7);overflow:hidden;position:relative}
+@media(max-width:460px){body{padding:0}.phone-frame{width:100vw;height:100vh;max-height:none;border-radius:0;border:none}}
+
+.view{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--ink);transition:transform .38s}
+.view.hidden-right{transform:translateX(100%)}
+
+/* ===== HOME VIEW ===== */
+#view-home{align-items:center;padding:36px 26px 0}
+.grid-bg{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(250,246,236,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(250,246,236,.05) 1px,transparent 1px);background-size:34px 34px}
+.hotel-id{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px}
+.hotel-logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(160deg,var(--brass-light),var(--brass));display:flex;align-items:center;justify-content:center;overflow:hidden}
+.hotel-logo img{width:100%;height:100%;object-fit:cover}
+.hotel-logo span{font-size:28px}
+.hotel-name{font-family:'Fraunces',serif;font-weight:600;font-size:1.5rem}
+.hotel-address{font-size:.78rem;color:rgba(250,246,236,.5);max-width:230px}
+
+.notif-bell{position:absolute;top:12px;right:12px;z-index:10;width:44px;height:44px;border-radius:50%;background:rgba(250,246,236,.08);border:1px solid rgba(250,246,236,.12);display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:all .3s;cursor:pointer}
+.notif-bell:hover{background:rgba(250,246,236,.15)}
+.notif-bell.active{background:rgba(87,201,189,.2);border-color:rgba(87,201,189,.4)}
+.notif-bell .badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:var(--brass);color:#000;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center}
+.notif-bell .badge.show{display:flex}
+.notif-bell .dot{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--teal);display:none;animation:pulse-dot 1.5s ease-in-out infinite}
+.notif-bell .dot.show{display:block}
+@keyframes pulse-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.4}}
+
+.req-wrap{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;margin-top:38px}
+.req-btn{position:relative;width:174px;height:174px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 28%,var(--brass-light),var(--brass) 60%,#8f721b 100%);box-shadow:0 0 0 8px rgba(201,162,39,.08),0 20px 40px -14px rgba(201,162,39,.5);color:#241B02;font-weight:700;font-size:.95rem;letter-spacing:.05em;user-select:none;transition:all .25s}
+.req-btn:active{transform:scale(.97)}
+.req-btn.danger{background:radial-gradient(circle at 35% 28%,#E86A52,var(--brick) 60%,#7c2015 100%);box-shadow:0 0 0 8px rgba(193,58,42,.12),0 20px 40px -14px rgba(193,58,42,.65);color:var(--paper);animation:dangerShake .35s ease infinite}
+@keyframes dangerShake{0%,100%{transform:translate(0,0)}25%{transform:translate(1px,-1px)}75%{transform:translate(-1px,1px)}}
+.req-caption{margin-top:18px;text-align:center}
+.req-caption p{font-size:.82rem;color:rgba(250,246,236,.55);margin-bottom:4px}
+.req-caption p b{color:rgba(250,246,236,.88)}
+.ring{position:absolute;inset:-8px;pointer-events:none}
+.ring circle{fill:none;stroke-width:3;stroke-dasharray:534;stroke-dashoffset:534;transform:rotate(-90deg);transform-origin:50% 50%;stroke:var(--paper);opacity:.9;transition:stroke .25s ease}
+.req-status{position:absolute;top:-30px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--brick-light);opacity:0;transition:opacity .2s ease;white-space:nowrap}
+.req-status.show{opacity:1}
+
+.quick-icons{position:relative;z-index:2;width:100%;height:54px;margin-top:30px}
+.quick-icon{position:absolute;top:0;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:translateX(-50%);box-shadow:0 12px 22px -10px rgba(0,0,0,.5);font-size:1.2rem}
+.quick-icon:active{transform:translateX(-50%) scale(.92)}
+.quick-icon.call{left:80%;background:linear-gradient(160deg,#8fc4a5,var(--sage))}
+.quick-icon.chat{left:20%;background:linear-gradient(160deg,#9b84cf,var(--plum))}
+
+.checkout-timer{position:relative;z-index:2;margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.ct-label{font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(250,246,236,.42)}
+.ct-clock{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:600;color:var(--brass-light)}
+.ct-clock.warning{color:var(--amber)}
+.ct-clock.danger{color:var(--brick-light)}
+.ct-clock.expired{color:var(--brick-light);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.room-info{position:relative;z-index:2;margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.room-type{font-size:.78rem;color:rgba(250,246,236,.5);text-transform:uppercase;letter-spacing:.04em;font-weight:500}
+.room-number{font-family:'Fraunces',serif;font-weight:700;font-size:1.8rem}
+
+.app-footer{position:relative;z-index:2;margin-top:auto;width:100%;padding:14px 20px;text-align:center;border-top:1px solid var(--line);background:var(--ink-2)}
+.powered-by{font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:rgba(250,246,236,.32)}
+.powered-by b{color:rgba(228,196,101,.65)}
+
+/* ===== DEPARTMENTS VIEW ===== */
+.nav-header{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--line);background:var(--ink-2);flex-shrink:0}
+.back-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.back-btn:active{background:rgba(250,246,236,.08)}
+.nav-title{font-weight:600;font-size:1rem}
+
+.dept-grid{flex:1;overflow-y:auto;padding:14px 20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
+.dept-tile{background:var(--ink-2);border:1px solid var(--line);border-radius:16px;padding:18px 14px;display:flex;flex-direction:column;gap:10px;transition:all .2s;text-align:left}
+.dept-tile:active{transform:scale(.97);background:var(--ink-3)}
+.dept-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.dept-tile b{font-size:.88rem;font-weight:600}
+.dept-tile span{font-size:.72rem;color:rgba(250,246,236,.45)}
+.dept-tile .dept-status{font-size:.6rem;color:var(--teal);margin-top:4px}
+
+/* ===== CALL VIEW ===== */
+#view-call .call-container{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;gap:16px}
+.call-status{font-size:1.2rem;font-weight:600;color:var(--brass-light)}
+.call-timer{font-family:'IBM Plex Mono',monospace;font-size:2.5rem;font-weight:700;color:var(--paper)}
+.call-department{font-size:.9rem;color:rgba(250,246,236,.5)}
+.call-actions{display:flex;gap:20px;margin-top:20px}
+.call-btn{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;transition:all .2s}
+.call-btn:active{transform:scale(.92)}
+.call-btn.end-call{background:var(--brick);color:#fff}
+.call-btn.answer-call{background:var(--teal);color:#fff}
+.call-btn.decline-call{background:#444;color:#fff}
+.call-log{width:100%;max-height:150px;overflow-y:auto;font-size:.75rem;color:rgba(250,246,236,.5);text-align:center;margin-top:10px}
+.call-log p{margin:4px 0}
+
+/* ===== CHAT VIEW ===== */
+.chat-body{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:10px;background-image:radial-gradient(rgba(250,246,236,.035) 1px,transparent 1px);background-size:16px 16px}
+.bubble{max-width:76%;padding:10px 13px;border-radius:16px;font-size:.87rem}
+.bubble.in{align-self:flex-start;background:var(--ink-3);border-bottom-left-radius:4px}
+.bubble.out{align-self:flex-end;background:linear-gradient(160deg,var(--brass-light),var(--brass));color:#241B02;border-bottom-right-radius:4px}
+.bubble .meta{font-size:.62rem;opacity:.6;margin-top:4px;text-align:right}
+.chat-input{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--line);background:var(--ink-2)}
+.chat-input input{flex:1;background:rgba(250,246,236,.07);border:1px solid rgba(250,246,236,.14);border-radius:999px;padding:11px 16px;font-size:.88rem;color:var(--paper);outline:none}
+.chat-input input:focus{outline:none;border-color:var(--brass)}
+.send-btn{width:38px;height:38px;border-radius:50%;background:linear-gradient(160deg,var(--brass-light),var(--brass));display:flex;align-items:center;justify-content:center;font-size:1rem}
+
+/* ===== EMERGENCY VIEW ===== */
+#view-emergency{background:linear-gradient(180deg,#7c2015,#4a1109);align-items:center;justify-content:center;text-align:center;padding:40px 32px}
+.emg-icon{width:86px;height:86px;border-radius:50%;background:rgba(250,246,236,.12);display:flex;align-items:center;justify-content:center;margin-bottom:26px;font-size:2.5rem;animation:emgPulse 1.6s ease-in-out infinite}
+@keyframes emgPulse{0%,100%{box-shadow:0 0 0 0 rgba(250,246,236,.18)}50%{box-shadow:0 0 0 16px rgba(250,246,236,0)}}
+#view-emergency h2{font-family:'Fraunces',serif;font-size:1.7rem;margin-bottom:10px}
+#view-emergency p{font-size:.9rem;color:rgba(250,246,236,.75);max-width:280px;margin:0 auto}
+.emg-actions{margin-top:32px;display:flex;flex-direction:column;gap:12px;width:100%;max-width:260px}
+.emg-btn{padding:14px;border-radius:999px;font-weight:600;font-size:.88rem}
+.emg-btn.call{background:var(--paper);color:var(--ink)}
+.emg-btn.cancel{border:1px solid rgba(250,246,236,.35);color:rgba(250,246,236,.85)}
+
+/* ===== EXPIRED OVERLAY ===== */
+.expired-overlay{position:absolute;inset:0;z-index:1000;background:rgba(11,15,22,.92);backdrop-filter:blur(10px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 30px;animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.expired-icon{font-size:64px;margin-bottom:16px}
+.expired-title{font-family:'Fraunces',serif;font-size:24px;font-weight:600;color:var(--brick-light);margin-bottom:8px}
+.expired-sub{font-size:14px;color:rgba(250,246,236,.7);margin-bottom:24px;max-width:300px;line-height:1.5}
+.expired-btn{padding:14px 40px;background:linear-gradient(135deg,var(--brass),var(--brass-light));color:#000;border:none;border-radius:12px;font-weight:700;font-size:16px;cursor:pointer;transition:all .2s}
+.expired-btn:active{transform:scale(.97)}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:6px;font-size:.72rem;font-weight:600;color:#f0f0f8;background:#1e1e38;border:1px solid rgba(255,255,255,.08);animation:slideIn .3s ease;max-width:260px}
+.toast.success{border-left:3px solid #34d399}
+.toast.info{border-left:3px solid #60a5fa}
+.toast.error{border-left:3px solid #e54545}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+</style>
+</head>
+<body>
+
+<div class="phone-frame" id="app">
+    <!-- EXPIRED OVERLAY -->
+    <div class="expired-overlay" id="expiredOverlay" style="display:none;">
+        <div class="expired-icon">⏰</div>
+        <div class="expired-title">Session Expired</div>
+        <div class="expired-sub">Your guest session has expired. Please visit the front desk to extend your stay or check out.</div>
+        <button class="expired-btn" onclick="redirectToHome()">🏨 Return to Directory</button>
+    </div>
+
+    <!-- HOME -->
+    <div class="view" id="view-home">
+        <div class="grid-bg"></div>
+        
+        <button class="notif-bell" id="notifBell" onclick="toggleNotifications()" title="Push Notifications">
+            <span id="bellIcon">🔔</span>
+            <span class="badge" id="bellBadge">!</span>
+            <span class="dot" id="bellDot"></span>
+        </button>
+
+        <div class="hotel-id">
+            <div class="hotel-logo" id="hLogo"><span>🏨</span></div>
+            <h1 class="hotel-name" id="hName">Loading Hotel...</h1>
+            <p class="hotel-address" id="hAddr"></p>
+        </div>
+        <div class="req-wrap">
+            <button class="req-btn" id="reqBtn" aria-label="Tap for services, hold 5s for emergency">
+                <svg class="ring" viewBox="0 0 190 190"><circle cx="95" cy="95" r="88"/></svg>
+                <span style="position:relative;z-index:2;">REQUEST</span>
+            </button>
+            <div class="req-status" id="reqStatus">Keep holding for security</div>
+            <div class="req-caption"><p><b>Tap</b> for services</p><p>Hold <b>5s</b> for emergency</p></div>
+        </div>
+        <div class="quick-icons">
+            <button class="quick-icon chat" id="quickChat">💬</button>
+            <button class="quick-icon call" id="quickCall">📞</button>
+        </div>
+        <div class="checkout-timer">
+            <span class="ct-label">Checkout in</span>
+            <span class="ct-clock" id="checkoutClock">--:--:--</span>
+        </div>
+        <div class="room-info">
+            <span class="room-type" id="rType">Room</span>
+            <span class="room-number">Room <span id="rNum">---</span></span>
+        </div>
+        <div class="app-footer">
+            <div class="powered-by">Powered by <b>Voddic Hotel Connect</b></div>
+        </div>
+    </div>
+
+    <!-- DEPARTMENTS -->
+    <div class="view hidden-right" id="view-departments">
+        <div class="nav-header">
+            <button class="back-btn" id="deptBack">←</button>
+            <div class="nav-title" id="deptTitle">Select Department</div>
+        </div>
+        <div class="dept-grid" id="deptGrid"></div>
+    </div>
+
+    <!-- CALL -->
+    <div class="view hidden-right" id="view-call">
+        <div class="nav-header">
+            <button class="back-btn" id="callBack">←</button>
+            <div class="nav-title" id="callTitle">Calling...</div>
+        </div>
+        <div class="call-container" id="callContainer">
+            <div class="call-department" id="callDepartment">Connecting to department...</div>
+            <div class="call-status" id="callStatus">📞 Ringing...</div>
+            <div class="call-timer" id="callTimer">00:00</div>
+            <div class="call-actions">
+                <button class="call-btn end-call" id="endCallBtn">📞</button>
+            </div>
+            <div class="call-log" id="callLog"></div>
+        </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="view hidden-right" id="view-chat">
+        <div class="nav-header"><button class="back-btn" id="chatBack">←</button><div class="nav-title" id="chatTitle">Chat</div></div>
+        <div class="chat-body" id="chatBody"></div>
+        <div class="chat-input"><input type="text" id="chatInput" placeholder="Message..."><button class="send-btn" id="chatSend">➤</button></div>
+    </div>
+
+    <!-- EMERGENCY -->
+    <div class="view hidden-right" id="view-emergency">
+        <div class="emg-icon">🚨</div>
+        <h2>Emergency Alert Sent</h2>
+        <p>Help is on the way. Stay where you are.</p>
+        <div class="emg-actions"><button class="emg-btn call" id="emgCall">Call Reception</button><button class="emg-btn cancel" id="emgCancel">Cancel</button></div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.1/peerjs.min.js"></script>
+
+
+
+<script>
+// ============================================================
+// Voddic Guest Services - Complete JavaScript
+// ============================================================
+
+const API = "https://connectapi.voddic.com.ng/api/v1";
+var hotelPhone = "";
+var checkoutTarget = null;
+var timerInterval = null;
+var sessionExpired = false;
+var isExpiredOverlayShown = false;
+var isSubscribed = false;
+var subscription = null;
+var isDeviceBound = false;
+
+// WebRTC / PeerJS
+var peer = null;
+var currentCall = null;
+var callStartTime = null;
+var callTimerInterval = null;
+var currentDepartmentId = null;
+var currentDepartmentName = null;
+var isCallMode = false;
+var callState = 'idle'; // idle, dialing, ringing, connected, ended
+
+// Get room and hotel from URL
+var params = new URLSearchParams(window.location.search);
+var roomNumber = params.get("room") || "---";
+var hotelSlug = params.get("hotel") || "";
+var deviceId = params.get("device") || "";
+
+console.log("Services loaded - Room:", roomNumber, "Hotel:", hotelSlug, "Device:", deviceId);
+
+// Try to get session data from localStorage
+var sessionData = null;
+try {
+    var stored = localStorage.getItem("voddic_guest_session");
+    if (stored) {
+        sessionData = JSON.parse(stored);
+        console.log("Session data from localStorage:", sessionData);
+        if (!roomNumber || roomNumber === "---") roomNumber = sessionData.roomNumber || roomNumber;
+        if (!hotelSlug) hotelSlug = sessionData.hotelSlug || hotelSlug;
+        if (!deviceId) deviceId = sessionData.deviceId || deviceId;
+        hotelPhone = sessionData.hotelPhone || "";
+    }
+} catch (e) {}
+
+// ============================================================
+// Core Functions
+// ============================================================
+
+function redirectToHome() {
+    window.location.href = "/guest/";
+}
+
+function showToast(msg, type) {
+    const container = document.getElementById("toastContainer");
+    if (!container) return;
+    const toast = document.createElement("div");
+    toast.className = "toast " + (type || "info");
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function goTo(name) {
+    if (sessionExpired) {
+        showExpiredOverlay();
+        return;
+    }
+    document.querySelectorAll(".view").forEach(function(v) { v.classList.add("hidden-right"); });
+    var targetView = document.getElementById("view-" + name);
+    if (targetView) targetView.classList.remove("hidden-right");
+}
+
+function showExpiredOverlay() {
+    if (isExpiredOverlayShown) return;
+    isExpiredOverlayShown = true;
+    sessionExpired = true;
+    document.getElementById("expiredOverlay").style.display = "flex";
+    document.getElementById("checkoutClock").textContent = "EXPIRED";
+    document.getElementById("checkoutClock").className = "ct-clock expired";
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    localStorage.removeItem("voddic_guest_session");
+}
+
+// ============================================================
+// Device Binding Check
+// ============================================================
+
+async function checkDeviceBound() {
+    try {
+        const res = await fetch(API + "/sessions/verify-device/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                device_id: deviceId,
+                room_number: roomNumber
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            isDeviceBound = data.valid === true;
+            return isDeviceBound;
+        }
+        return false;
+    } catch(e) {
+        console.error("Error checking device bound:", e);
+        return false;
+    }
+}
+
+function showNotBoundScreen() {
+    document.body.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:20px;color:#fff;font-family:sans-serif;background:#0c0c18;">
+            <div>
+                <div style="font-size:48px;">🔒</div>
+                <h2 style="margin:16px 0 8px;">Device Not Bound</h2>
+                <p style="color:#aaa;max-width:320px;margin:0 auto 20px;">Your device is not bound to Room ${roomNumber}. Please scan the QR code or enter your room number to activate.</p>
+                <button onclick="window.location.href='/guest/'" style="margin-top:16px;padding:12px 24px;background:#e4af3e;color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Go to Hotel Directory</button>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// Session Status Check
+// ============================================================
+
+async function checkSessionStatus() {
+    if (sessionExpired) return true;
+    try {
+        var url = API + "/sessions/status/" + roomNumber + "/";
+        var response = await fetch(url);
+        if (response.ok) {
+            var data = await response.json();
+            console.log("Session status check:", data);
+            if (!data.active && data.code === 'SESSION_EXPIRED') {
+                showExpiredOverlay();
+                return true;
+            }
+            if (data.active && data.session && data.session.checkout_time) {
+                var newCheckout = new Date(data.session.checkout_time);
+                if (!isNaN(newCheckout.getTime())) {
+                    checkoutTarget = newCheckout;
+                    if (!timerInterval) startTimer();
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Error checking session status:", e);
+    }
+    return false;
+}
+
+function startTimer() {
+    if (!checkoutTarget) {
+        document.getElementById("checkoutClock").textContent = "--:--:--";
+        return;
+    }
+    if (timerInterval) clearInterval(timerInterval);
+    
+    function updateClock() {
+        var now = new Date();
+        var diff = checkoutTarget - now;
+        var graceEnd = new Date(checkoutTarget.getTime() + 10 * 60 * 1000);
+        var clockEl = document.getElementById("checkoutClock");
+        if (now > graceEnd) {
+            clockEl.textContent = "EXPIRED";
+            clockEl.className = "ct-clock expired";
+            showExpiredOverlay();
+            return;
+        }
+        if (now > checkoutTarget) {
+            var graceMinutes = Math.ceil((graceEnd - now) / 60000);
+            clockEl.textContent = "GRACE: " + graceMinutes + "m";
+            clockEl.className = "ct-clock danger";
+            return;
+        }
+        if (diff > 0) {
+            var hours = Math.floor(diff / 3600000);
+            var minutes = Math.floor((diff % 3600000) / 60000);
+            var seconds = Math.floor((diff % 60000) / 1000);
+            var display = "";
+            if (hours > 0) display += String(hours).padStart(2, '0') + ":";
+            display += String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
+            clockEl.textContent = display;
+            clockEl.className = diff < 3600000 ? "ct-clock warning" : "ct-clock";
+        }
+    }
+    updateClock();
+    timerInterval = setInterval(updateClock, 1000);
+    setInterval(function() { if (!sessionExpired) checkSessionStatus(); }, 30000);
+}
+
+// ============================================================
+// Push Notifications
+// ============================================================
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+async function loadNotificationStatus() {
+    try {
+        const res = await fetch(API + "/push/guest/status/?device_id=" + deviceId + "&room_number=" + roomNumber);
+        if (res.ok) {
+            const data = await res.json();
+            isSubscribed = data.subscribed || false;
+            updateBellIcon();
+        }
+    } catch(e) {
+        console.error("Error loading notification status:", e);
+    }
+}
+
+function updateBellIcon() {
+    const bell = document.getElementById('notifBell');
+    const icon = document.getElementById('bellIcon');
+    const dot = document.getElementById('bellDot');
+    const badge = document.getElementById('bellBadge');
+    if (isSubscribed) {
+        bell.classList.add('active');
+        icon.textContent = '🔔';
+        dot.classList.add('show');
+        badge.classList.remove('show');
+    } else {
+        bell.classList.remove('active');
+        icon.textContent = '🔕';
+        dot.classList.remove('show');
+        badge.classList.add('show');
+    }
+}
+
+async function toggleNotifications() {
+    if (!('Notification' in window)) {
+        showToast("Push notifications are not supported.", "error");
+        return;
+    }
+    if (isSubscribed) {
+        await unsubscribeNotifications();
+    } else {
+        await subscribeNotifications();
+    }
+}
+
+async function subscribeNotifications() {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'denied') {
+            showToast("⚠️ Please allow notifications in the browser popup.", "error");
+            return;
+        }
+        if (permission !== 'granted') {
+            showToast("Please click 'Allow' in the browser popup.", "info");
+            return;
+        }
+
+        const pkRes = await fetch(API + "/push/vapid-public-key/");
+        if (!pkRes.ok) {
+            showToast("Failed to get notification keys.", "error");
+            return;
+        }
+        const pkData = await pkRes.json();
+        const applicationServerKey = urlBase64ToUint8Array(pkData.public_key);
+
+        const registration = await navigator.serviceWorker.register('/guest/sw.js');
+        const sub = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: applicationServerKey
+        });
+
+        function getKeyBase64(key) {
+            const buffer = sub.getKey(key);
+            if (!buffer) return '';
+            return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+        }
+
+        const res = await fetch(API + "/push/guest/subscribe/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                device_id: deviceId,
+                room_number: roomNumber,
+                endpoint: sub.endpoint,
+                auth_key: getKeyBase64('auth'),
+                p256dh_key: getKeyBase64('p256dh'),
+                accept: true
+            })
+        });
+
+        if (res.ok) {
+            isSubscribed = true;
+            subscription = sub;
+            updateBellIcon();
+            showToast("🔔 Notifications enabled!", "success");
+        } else {
+            const data = await res.json();
+            showToast(data.error || "Failed to subscribe.", "error");
+        }
+    } catch(e) {
+        console.error("Subscription error:", e);
+        showToast("Error subscribing: " + e.message, "error");
+    }
+}
+
+async function unsubscribeNotifications() {
+    try {
+        const res = await fetch(API + "/push/guest/subscribe/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                device_id: deviceId,
+                room_number: roomNumber,
+                accept: false,
+                endpoint: subscription ? subscription.endpoint : ''
+            })
+        });
+        if (res.ok) {
+            if (subscription) await subscription.unsubscribe();
+            isSubscribed = false;
+            subscription = null;
+            updateBellIcon();
+            showToast("🔕 Notifications disabled.", "info");
+        }
+    } catch(e) {
+        console.error("Unsubscribe error:", e);
+    }
+}
+
+// ============================================================
+// Load Hotel Data
+// ============================================================
+
+async function loadHotelData() {
+    try {
+        var hotelName = "";
+        var hotelAddr = "";
+        var hotelLogo = "";
+        
+        if (sessionData && sessionData.hotelName) {
+            hotelName = sessionData.hotelName;
+            hotelAddr = sessionData.hotelAddress || "";
+            hotelLogo = sessionData.hotelLogo || "";
+        }
+        
+        if (hotelSlug) {
+            var url = API + "/hotels/slug/" + hotelSlug + "/";
+            console.log("Fetching hotel from:", url);
+            var res = await fetch(url);
+            if (res.ok) {
+                var hotel = await res.json();
+                console.log("Hotel data from API:", hotel);
+                hotelName = hotel.name || hotelName;
+                hotelAddr = hotel.address || hotel.city || hotelAddr;
+                hotelPhone = hotel.phone || hotelPhone;
+                hotelLogo = hotel.logo_url_display || hotel.logo_image || hotelLogo;
+            }
+        }
+        
+        // Get room type
+        try {
+            var roomUrl = API + "/rooms/access/" + hotelSlug + "/room/" + roomNumber + "/";
+            console.log("Fetching room data from:", roomUrl);
+            var roomRes = await fetch(roomUrl);
+            if (roomRes.ok) {
+                var roomData = await roomRes.json();
+                console.log("Room data from API:", roomData);
+                if (roomData.room && roomData.room.room_type) {
+                    document.getElementById("rType").textContent = roomData.room.room_type;
+                }
+            }
+        } catch (e) {
+            console.log("Could not fetch room type, using default");
+        }
+        
+        // Update DOM
+        var hNameEl = document.getElementById("hName");
+        var hAddrEl = document.getElementById("hAddr");
+        var rNumEl = document.getElementById("rNum");
+        if (hNameEl) hNameEl.textContent = hotelName || "Hotel";
+        if (hAddrEl) hAddrEl.textContent = hotelAddr || "";
+        if (rNumEl) rNumEl.textContent = roomNumber;
+        
+        var logoEl = document.getElementById("hLogo");
+        if (logoEl && hotelLogo) {
+            logoEl.innerHTML = '<img src="' + hotelLogo + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML=\'<span>🏨</span>\'">';
+        } else if (logoEl) {
+            logoEl.innerHTML = '<span>🏨</span>';
+        }
+        
+        await loadCheckoutTime();
+        await loadNotificationStatus();
+    } catch (e) {
+        console.error("Error loading hotel data:", e);
+    }
+}
+
+async function loadCheckoutTime() {
+    try {
+        var expired = await checkSessionStatus();
+        if (expired) return;
+        var url = API + "/sessions/status/" + roomNumber + "/";
+        console.log("Fetching session status from:", url);
+        var res = await fetch(url);
+        if (res.ok) {
+            var data = await res.json();
+            console.log("Session status:", data);
+            if (!data.active && data.code === 'SESSION_EXPIRED') {
+                showExpiredOverlay();
+                return;
+            }
+            if (data.active && data.session && data.session.checkout_time) {
+                checkoutTarget = new Date(data.session.checkout_time);
+                console.log("Checkout time from server:", checkoutTarget);
+                startTimer();
+            }
+        }
+    } catch (e) {
+        console.error("Error loading checkout time:", e);
+    }
+}
+
+// ============================================================
+// Load Departments from Backend - With Device Validation
+// ============================================================
+
+async function loadDepartments() {
+    try {
+        // Use the public endpoint with hotel_slug, device_id, room_number
+        var url = API + "/staff/public-departments/?hotel_slug=" + hotelSlug + "&device_id=" + deviceId + "&room_number=" + roomNumber;
+        console.log("📡 Fetching departments from:", url);
+        var res = await fetch(url);
+        
+        if (!res.ok) {
+            console.error("❌ Failed to load departments:", res.status, res.statusText);
+            
+            if (res.status === 401 || res.status === 403) {
+                showToast("Please scan the QR code to access hotel services.", "error");
+                // Redirect to room access
+                setTimeout(function() {
+                    window.location.href = "/guest/room/?hotel=" + hotelSlug + "&room=" + roomNumber;
+                }, 2000);
+                return;
+            }
+            
+            showToast("Could not load hotel services. Please refresh.", "error");
+            
+            var grid = document.getElementById("deptGrid");
+            if (grid) {
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(250,246,236,.5);">
+                        <div style="font-size:48px;margin-bottom:12px;">📡</div>
+                        <p>Could not load hotel services.<br>Please refresh the page.</p>
+                        <button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:#C9A227;color:#000;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                `;
+            }
+            return;
+        }
+        
+        var departments = await res.json();
+        console.log("✅ Departments loaded:", departments);
+        
+        if (!departments || !departments.length) {
+            console.warn("⚠️ No departments found for this hotel");
+            var grid = document.getElementById("deptGrid");
+            if (grid) {
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(250,246,236,.5);">
+                        <div style="font-size:48px;margin-bottom:12px;">🏢</div>
+                        <p>No services configured for this hotel.<br>Please contact the hotel management.</p>
+                    </div>
+                `;
+            }
+            return;
+        }
+        
+        renderDepartments(departments);
+        
+    } catch(e) {
+        console.error("❌ Error loading departments:", e);
+        showToast("Failed to load hotel services. Please refresh.", "error");
+        
+        var grid = document.getElementById("deptGrid");
+        if (grid) {
+            grid.innerHTML = `
+                <div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(250,246,236,.5);">
+                    <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+                    <p>Network error loading services.<br>Please check your connection.</p>
+                    <button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:#C9A227;color:#000;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+                        🔄 Refresh
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+function renderDepartments(departments) {
+    var grid = document.getElementById("deptGrid");
+    if (!grid) return;
+    
+    grid.innerHTML = "";
+    
+    departments.forEach(function(d, i) {
+        var t = document.createElement("button");
+        t.className = "dept-tile";
+        var color = d.color || '#e4af3e';
+        var icon = d.icon || '📌';
+        var modeText = isCallMode ? "📞 Call" : "💬 Chat";
+        t.innerHTML = `
+            <div class="dept-icon" style="background:${color}">${icon}</div>
+            <b>${d.name}</b>
+            <span>${modeText} ${d.name}</span>
+        `;
+        t.onclick = function(e) {
+            if (sessionExpired) {
+                e.preventDefault();
+                showExpiredOverlay();
+                return;
+            }
+            if (isCallMode) {
+                startCallToDepartment(d.id, d.name);
+            } else {
+                openChat(d);
+            }
+        };
+        grid.appendChild(t);
+    });
+}
+
+// ============================================================
+// WebRTC Call System with Proper States
+// ============================================================
+
+async function initPeer() {
+    if (peer) return peer;
+    
+    try {
+        var configRes = await fetch(API + "/webrtc/config/");
+        var config = configRes.ok ? await configRes.json() : { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+        
+        peer = new Peer({
+            debug: 2,
+            config: config
+        });
+        
+        peer.on('open', function(id) {
+            console.log('Peer ID:', id);
+        });
+        
+        peer.on('error', function(err) {
+            console.error('Peer error:', err);
+            showToast('Connection error. Please try again.', 'error');
+        });
+        
+        peer.on('call', function(call) {
+            console.log('Incoming call from:', call.peer);
+            // Auto-answer for guest
+            call.answer();
+            currentCall = call;
+            setCallState('connected');
+            document.getElementById("callLog").innerHTML += "<p>✅ Call connected</p>";
+            showToast("Call connected", "success");
+            
+            call.on('close', function() {
+                console.log('Call ended');
+                endCall();
+            });
+        });
+        
+        return peer;
+    } catch(e) {
+        console.error('Error initializing peer:', e);
+        return null;
+    }
+}
+
+function setCallState(state) {
+    callState = state;
+    var statusEl = document.getElementById("callStatus");
+    var timerEl = document.getElementById("callTimer");
+    
+    switch(state) {
+        case 'dialing':
+            statusEl.textContent = "📞 Dialing...";
+            statusEl.className = "call-state-dialing";
+            timerEl.textContent = "00:00";
+            break;
+        case 'ringing':
+            statusEl.textContent = "📞 Ringing...";
+            statusEl.className = "call-state-ringing";
+            timerEl.textContent = "00:00";
+            break;
+        case 'connected':
+            statusEl.textContent = "📞 Connected";
+            statusEl.className = "call-state-connected";
+            // Start timer only when connected
+            callStartTime = new Date();
+            if (callTimerInterval) clearInterval(callTimerInterval);
+            callTimerInterval = setInterval(updateCallTimer, 1000);
+            break;
+        case 'ended':
+            statusEl.textContent = "📞 Call ended";
+            statusEl.className = "call-state-ended";
+            if (callTimerInterval) {
+                clearInterval(callTimerInterval);
+                callTimerInterval = null;
+            }
+            break;
+        default:
+            statusEl.textContent = "📞 " + state;
+            statusEl.className = "";
+    }
+}
+
+function startCallToDepartment(departmentId, departmentName) {
+    if (sessionExpired) {
+        showExpiredOverlay();
+        return;
+    }
+    
+    currentDepartmentId = departmentId;
+    currentDepartmentName = departmentName;
+    
+    // Navigate to call view
+    document.getElementById("callTitle").textContent = "Calling " + departmentName;
+    document.getElementById("callDepartment").textContent = "Connecting to " + departmentName + "...";
+    setCallState('dialing');
+    document.getElementById("callLog").innerHTML = "";
+    goTo("call");
+    
+    // Initialize peer and start call
+    initPeer().then(function(p) {
+        if (!p) {
+            showToast("Failed to initialize connection.", "error");
+            setCallState('ended');
+            return;
+        }
+        
+        // Create a call request to the backend
+        fetch(API + "/calls/initiate/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                room_number: roomNumber,
+                department_id: departmentId,
+                device_id: deviceId,
+                caller_name: "Room " + roomNumber
+            })
+        })
+        .then(function(res) { 
+            if (!res.ok) {
+                throw new Error('Server returned ' + res.status);
+            }
+            return res.json(); 
+        })
+        .then(function(data) {
+            console.log("Call initiated:", data);
+            if (data.call_id) {
+                // Change to ringing state
+                setCallState('ringing');
+                document.getElementById("callLog").innerHTML = "<p>📞 Calling " + departmentName + "...</p>";
+                document.getElementById("callLog").innerHTML += "<p>🔔 Waiting for staff to answer...</p>";
+                showToast("Calling " + departmentName + "...", "info");
+                
+                // Poll for call status
+                var pollAttempts = 0;
+                var maxAttempts = 30; // 30 * 2 seconds = 60 seconds
+                
+                var pollInterval = setInterval(function() {
+                    pollAttempts++;
+                    
+                    // Stop polling after max attempts
+                    if (pollAttempts > maxAttempts) {
+                        clearInterval(pollInterval);
+                        if (callState !== 'connected' && callState !== 'ended') {
+                            setCallState('ended');
+                            document.getElementById("callLog").innerHTML += "<p>⏰ Call timed out. No one answered.</p>";
+                            showToast("No one answered. Please try again.", "error");
+                            setTimeout(function() {
+                                goTo("home");
+                            }, 2000);
+                        }
+                        return;
+                    }
+                    
+                    var statusUrl = API + "/calls/status/" + data.call_id + "/";
+                    console.log("📡 Polling call status:", statusUrl);
+                    
+                    fetch(statusUrl, {
+                        headers: { "Content-Type": "application/json" }
+                    })
+                    .then(function(r) {
+                        if (!r.ok) {
+                            console.warn("⚠️ Status endpoint returned:", r.status);
+                            return null;
+                        }
+                        return r.json();
+                    })
+                    .then(function(statusData) {
+                        if (!statusData) return;
+                        
+                        console.log("📞 Call status data:", statusData);
+                        
+                        if (statusData.status === 'connected') {
+                            clearInterval(pollInterval);
+                            setCallState('connected');
+                            document.getElementById("callLog").innerHTML += "<p>✅ Connected to " + departmentName + "</p>";
+                            document.getElementById("callDepartment").textContent = "Connected to " + departmentName;
+                            showToast("Connected to " + departmentName, "success");
+                            
+                            // Send push notification to staff about answered call
+                            fetch(API + "/push/staff/notify/", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    call_id: data.call_id,
+                                    department_id: departmentId,
+                                    room_number: roomNumber,
+                                    status: 'connected'
+                                })
+                            }).catch(function(e) { console.error("Error sending notification:", e); });
+                            
+                        } else if (statusData.status === 'ended' || statusData.status === 'declined' || statusData.status === 'missed') {
+                            clearInterval(pollInterval);
+                            setCallState('ended');
+                            document.getElementById("callLog").innerHTML += "<p>❌ Call was " + statusData.status + "</p>";
+                            showToast("Call was " + statusData.status, "error");
+                            setTimeout(function() {
+                                goTo("home");
+                            }, 2000);
+                        }
+                    })
+                    .catch(function(err) {
+                        console.error("❌ Error polling call status:", err);
+                    });
+                }, 2000);
+                
+            } else {
+                setCallState('ended');
+                showToast("Failed to initiate call.", "error");
+                setTimeout(function() {
+                    goTo("home");
+                }, 2000);
+            }
+        })
+        .catch(function(err) {
+            console.error("❌ Call initiation error:", err);
+            setCallState('ended');
+            showToast("Failed to initiate call: " + err.message, "error");
+            document.getElementById("callLog").innerHTML = "<p>❌ Error: " + err.message + "</p>";
+            setTimeout(function() {
+                goTo("home");
+            }, 3000);
+        });
+    });
+}
+
+function updateCallTimer() {
+    if (!callStartTime || callState !== 'connected') return;
+    var elapsed = Math.floor((new Date() - callStartTime) / 1000);
+    var mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    var secs = String(elapsed % 60).padStart(2, '0');
+    document.getElementById("callTimer").textContent = mins + ":" + secs;
+}
+
+function endCall() {
+    if (callTimerInterval) {
+        clearInterval(callTimerInterval);
+        callTimerInterval = null;
+    }
+    
+    if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+    }
+    
+    var duration = "00:00";
+    var durationSeconds = 0;
+    if (callStartTime && callState === 'connected') {
+        durationSeconds = Math.floor((new Date() - callStartTime) / 1000);
+        var mins = String(Math.floor(durationSeconds / 60)).padStart(2, '0');
+        var secs = String(durationSeconds % 60).padStart(2, '0');
+        duration = mins + ":" + secs;
+        
+        fetch(API + "/calls/end/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                room_number: roomNumber,
+                department_id: currentDepartmentId,
+                device_id: deviceId,
+                duration: duration
+            })
+        }).catch(function(e) { console.error("Error saving call record:", e); });
+    }
+    
+    setCallState('ended');
+    document.getElementById("callTimer").textContent = duration;
+    document.getElementById("callLog").innerHTML += "<p>⏱️ Call duration: " + duration + "</p>";
+    showToast("Call ended. Duration: " + duration, "info");
+    
+    callStartTime = null;
+    
+    setTimeout(function() {
+        goTo("home");
+    }, 2000);
+}
+
+// ============================================================
+// Chat System
+// ============================================================
+
+function openChat(dept) {
+    if (sessionExpired) {
+        showExpiredOverlay();
+        return;
+    }
+    currentDepartmentId = dept.id;
+    currentDepartmentName = dept.name;
+    document.getElementById("chatTitle").textContent = dept.name + " Chat";
+    document.getElementById("chatBody").innerHTML = '<div class="bubble in">Welcome! How can ' + dept.name + ' help you today?</div>';
+    goTo("chat");
+}
+
+function initChat() {
+    document.getElementById("chatBack").addEventListener("click", function(e) {
+        if (sessionExpired) {
+            e.preventDefault();
+            showExpiredOverlay();
+            return;
+        }
+        goTo("departments");
+    });
+    
+    function sendMsg() {
+        if (sessionExpired) {
+            showExpiredOverlay();
+            return;
+        }
+        var inp = document.getElementById("chatInput");
+        var t = inp.value.trim();
+        if (!t) return;
+        var b = document.getElementById("chatBody");
+        b.innerHTML += '<div class="bubble out">' + t + '<div class="meta">Just now</div></div>';
+        inp.value = "";
+        b.scrollTop = b.scrollHeight;
+        
+        if (currentDepartmentId) {
+            fetch(API + "/services/request/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    room_number: roomNumber,
+                    department_id: currentDepartmentId,
+                    request_type: "Service Request",
+                    description: t,
+                    device_id: deviceId
+                })
+            }).catch(function(e) { console.error("Error creating service request:", e); });
+        }
+        
+        setTimeout(function() {
+            if (sessionExpired) return;
+            b.innerHTML += '<div class="bubble in">Thank you! Someone will attend to you shortly.</div>';
+            b.scrollTop = b.scrollHeight;
+        }, 1000);
+    }
+    
+    document.getElementById("chatSend").addEventListener("click", sendMsg);
+    document.getElementById("chatInput").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") sendMsg();
+    });
+}
+
+// ============================================================
+// Emergency System
+// ============================================================
+
+function initEmergencyButton() {
+    var reqBtn = document.getElementById("reqBtn");
+    var reqStatus = document.getElementById("reqStatus");
+    if (!reqBtn || !reqStatus) return;
+    
+    var startTime = 0;
+    var emergencyFired = false;
+    var raf = null;
+    
+    function ringEl() { return reqBtn.querySelector('.ring circle'); }
+    
+    function frame() {
+        if (sessionExpired) {
+            if (raf) cancelAnimationFrame(raf);
+            return;
+        }
+        var elapsed = Date.now() - startTime;
+        var progress = Math.min(elapsed / 5000, 1);
+        if (ringEl()) ringEl().style.strokeDashoffset = String(534 * (1 - progress));
+        if (elapsed >= 3000 && !emergencyFired) {
+            reqBtn.classList.add('danger');
+            reqStatus.classList.add('show');
+        }
+        if (elapsed >= 5000 && !emergencyFired) {
+            emergencyFired = true;
+            fireEmergency();
+            return;
+        }
+        raf = requestAnimationFrame(frame);
+    }
+    
+    function resetButton() {
+        if (raf) cancelAnimationFrame(raf);
+        reqBtn.classList.remove('danger');
+        reqStatus.classList.remove('show');
+        if (ringEl()) ringEl().style.strokeDashoffset = '534';
+        emergencyFired = false;
+    }
+    
+    function fireEmergency() {
+        if (sessionExpired) { showExpiredOverlay(); return; }
+        reqBtn.classList.remove('danger');
+        reqStatus.classList.remove('show');
+        if (ringEl()) ringEl().style.strokeDashoffset = '534';
+        if (navigator.vibrate) navigator.vibrate([50, 80, 50, 80, 50]);
+        goTo('emergency');
+        
+        fetch(API + "/emergency/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                room_number: roomNumber,
+                device_id: deviceId || "unknown",
+                type: "EMERGENCY",
+                hotel_id: sessionData ? sessionData.hotelId : ""
+            })
+        }).catch(function(e) { console.error("Emergency alert error:", e); });
+    }
+    
+    reqBtn.addEventListener("mousedown", function(e) {
+        if (sessionExpired) { e.preventDefault(); showExpiredOverlay(); return; }
+        e.preventDefault();
+        startTime = Date.now();
+        emergencyFired = false;
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(frame);
+    });
+    
+    reqBtn.addEventListener("touchstart", function(e) {
+        if (sessionExpired) { e.preventDefault(); showExpiredOverlay(); return; }
+        e.preventDefault();
+        startTime = Date.now();
+        emergencyFired = false;
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(frame);
+    }, { passive: false });
+    
+    reqBtn.addEventListener("mouseup", function() {
+        if (sessionExpired) return;
+        var held = Date.now() - startTime;
+        if (raf) cancelAnimationFrame(raf);
+        if (emergencyFired) return;
+        if (held < 500) { resetButton(); goTo("departments"); }
+        else { resetButton(); }
+    });
+    
+    reqBtn.addEventListener("touchend", function() {
+        if (sessionExpired) return;
+        var held = Date.now() - startTime;
+        if (raf) cancelAnimationFrame(raf);
+        if (emergencyFired) return;
+        if (held < 500) { resetButton(); goTo("departments"); }
+        else { resetButton(); }
+    });
+    
+    reqBtn.addEventListener("mouseleave", function() {
+        if (sessionExpired) return;
+        if (raf) cancelAnimationFrame(raf);
+        if (!emergencyFired) resetButton();
+    });
+    
+    document.getElementById("emgCancel").addEventListener("click", function() {
+        if (sessionExpired) { showExpiredOverlay(); return; }
+        goTo("home");
+    });
+    
+    document.getElementById("emgCall").addEventListener("click", function() {
+        if (sessionExpired) { showExpiredOverlay(); return; }
+        var phone = hotelPhone || "";
+        if (phone) window.location.href = "tel:" + phone.replace(/\s/g, "");
+        else alert("Reception phone not available");
+    });
+}
+
+// ============================================================
+// Initialize Everything
+// ============================================================
+
+document.addEventListener("DOMContentLoaded", async function() {
+    const isBound = await checkDeviceBound();
+    if (!isBound) {
+        showNotBoundScreen();
+        return;
+    }
+    
+    loadHotelData();
+    loadDepartments();
+    initChat();
+    initEmergencyButton();
+    
+    // Call button - opens departments in CALL mode
+    document.getElementById("quickCall").addEventListener("click", function(e) {
+        if (sessionExpired) {
+            e.preventDefault();
+            showExpiredOverlay();
+            return;
+        }
+        isCallMode = true;
+        document.getElementById("deptTitle").textContent = "📞 Select Department to Call";
+        goTo("departments");
+        loadDepartments();
+    });
+    
+    // Chat button - opens departments in CHAT mode
+    document.getElementById("quickChat").addEventListener("click", function(e) {
+        if (sessionExpired) {
+            e.preventDefault();
+            showExpiredOverlay();
+            return;
+        }
+        isCallMode = false;
+        document.getElementById("deptTitle").textContent = "💬 Select Department to Chat";
+        goTo("departments");
+        loadDepartments();
+    });
+    
+    // Department back button
+    document.getElementById("deptBack").addEventListener("click", function(e) {
+        if (sessionExpired) {
+            e.preventDefault();
+            showExpiredOverlay();
+            return;
+        }
+        goTo("home");
+    });
+    
+    // Call back button
+    document.getElementById("callBack").addEventListener("click", function() {
+        if (callState === 'connected' || callState === 'ringing' || callState === 'dialing') {
+            endCall();
+        } else {
+            goTo("home");
+        }
+    });
+    
+    // End call button
+    document.getElementById("endCallBtn").addEventListener("click", function() {
+        endCall();
+    });
+    
+    // Check session periodically
+    setInterval(function() {
+        if (!sessionExpired) checkSessionStatus();
+    }, 15000);
+});
+</script>
+</body>
+</html>

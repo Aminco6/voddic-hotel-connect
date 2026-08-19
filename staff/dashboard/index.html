@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Staff Dashboard — Voddic Hotel Connect</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="manifest" href="/staff/manifest.json">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- ... rest of head ... -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0c18;--card:#151528;--gold:#e4af3e;--danger:#e2412c;--success:#2fa06a;--warning:#f59e0b;--info:#3b82f6;--text:#eaeaf0;--text-dim:#8a8aa8;--border:rgba(255,255,255,.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+a{text-decoration:none;color:inherit}button{border:none;background:none;cursor:pointer;font-family:inherit;color:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#12121f}::-webkit-scrollbar-thumb{background:#2a2a45;border-radius:3px}
+
+.mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:60px;background:rgba(12,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:1000;align-items:center;justify-content:space-between;padding:0 16px}
+.menu-toggle{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;border-radius:10px;background:rgba(255,255,255,.05)}
+.mobile-title{font-size:1rem;font-weight:700;color:#f0f0f5}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:1100}
+.sidebar-overlay.active{display:block}
+.sidebar{position:fixed;top:0;left:0;width:272px;height:100vh;background:#101020;border-right:1px solid var(--border);z-index:1200;display:flex;flex-direction:column;overflow-y:auto;transition:transform .35s}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo{display:flex;align-items:center;gap:12px}.logo-icon{font-size:1.6rem}
+.sidebar-logo h2{font-size:.95rem;font-weight:800;color:#f5f5fa}
+.hotel-name{font-size:.72rem;color:var(--text-dim);margin-top:2px}
+.sidebar-close{display:none;width:32px;height:32px;align-items:center;justify-content:center;font-size:1rem;color:var(--text-dim)}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section-title{font-size:.62rem;font-weight:700;color:#55556e;letter-spacing:.08em;text-transform:uppercase;padding:14px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:.82rem;font-weight:500;color:#9a9ab8;transition:all .18s;border-left:3px solid transparent;cursor:pointer}
+.nav-item:hover{color:#e0e0f0;background:rgba(255,255,255,.03)}
+.nav-item.active{color:#f0f0f8;background:rgba(228,175,62,.08);border-left-color:var(--gold)}
+.nav-icon{font-size:.95rem;width:22px;text-align:center}
+.nav-badge{margin-left:auto;font-size:.65rem;font-weight:700;background:var(--gold);color:#000;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center}
+.nav-badge.emergency{background:var(--danger);color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.sidebar-footer{padding:16px 18px;border-top:1px solid var(--border)}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#c48a20);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#000}
+.user-name{font-size:.82rem;font-weight:600}.user-role{font-size:.7rem;color:var(--text-dim)}
+.logout-btn{width:100%;padding:9px 14px;font-size:.78rem;font-weight:600;color:#b0b0c8;border-radius:8px;text-align:left}
+.logout-btn:hover{background:rgba(229,69,69,.1);color:#e54545}
+
+.main-content{margin-left:272px;min-height:100vh;padding:28px 32px 40px}
+.page-header{margin-bottom:24px}
+.page-title{font-size:1.75rem;font-weight:800;color:#f5f5fa}
+
+.tab-bar{display:flex;gap:4px;background:#13132a;border-radius:14px;padding:4px;margin-bottom:20px;overflow-x:auto;border:1px solid var(--border)}
+.tab-btn{padding:10px 18px;font-size:.78rem;font-weight:600;color:#7a7a98;border-radius:11px;white-space:nowrap;transition:all .25s}
+.tab-btn.active{background:linear-gradient(135deg,#e4af3e,#c98e22);color:#0c0c18;font-weight:700}
+.tab-panel{display:none;animation:fadeIn .3s ease}.tab-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--card);border-radius:14px;padding:20px;border:1px solid var(--border);margin-bottom:16px}
+.card-title{font-size:1rem;font-weight:700;color:#f5f5fa;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-group{margin-bottom:10px}.form-group label{display:block;color:var(--text-dim);font-size:10px;text-transform:uppercase;margin-bottom:4px;font-weight:600}
+.form-control{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+.form-control:focus{border-color:var(--gold)}
+.guest-field{margin-bottom:8px}
+.guest-field input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+.guest-field input:focus{border-color:var(--gold)}
+
+.btn{padding:10px 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:12px;transition:all .2s}
+.btn-gold{background:var(--gold);color:#000}
+.btn-success{background:var(--success);color:#fff}
+.btn-danger{background:rgba(226,65,44,.2);color:var(--danger)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-dim)}
+.btn-sm{padding:6px 10px;font-size:10px;border-radius:6px}
+
+.rooms-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:1100px){.rooms-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.rooms-grid{grid-template-columns:1fr}}
+
+.room-card{background:var(--card);border-radius:14px;padding:18px;border:1px solid var(--border);position:relative;overflow:hidden}
+.room-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.room-card.active::before{background:var(--success)}
+.room-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px}
+.room-number{font-size:1.4rem;font-weight:800;color:var(--gold)}
+.room-type{font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);background:rgba(255,255,255,.05);padding:3px 10px;border-radius:10px}
+.room-details{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.rd-label{font-size:.55rem;font-weight:600;color:#55556e;text-transform:uppercase}
+.rd-value{font-size:.75rem;font-weight:600;color:#c0c0d8;margin-top:1px}
+.countdown{font-size:.85rem;font-weight:700;font-family:monospace;color:var(--gold);text-align:center;padding:8px;background:var(--bg);border-radius:8px;margin-bottom:10px}
+.countdown.warning{color:var(--warning)}.countdown.danger{color:var(--danger)}
+.device-icons{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.device-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem}
+.device-bound{background:rgba(52,211,153,.2);color:var(--success)}
+.device-unbound{background:rgba(255,255,255,.05);color:var(--text-dim)}
+.device-info{font-size:.6rem;color:var(--text-dim);text-align:center}
+.room-actions{display:flex;gap:4px;justify-content:center;margin-top:8px}
+
+.emergency-banner{background:var(--danger);color:#fff;padding:12px;border-radius:10px;text-align:center;font-weight:700;margin-bottom:14px;display:none;cursor:pointer}
+.emergency-banner.active{display:block;animation:pulse 1s infinite}
+
+.toast-container{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:6px;font-size:.72rem;font-weight:600;color:#f0f0f8;background:#1e1e38;border:1px solid rgba(255,255,255,.08);animation:slideIn .3s ease;max-width:260px}
+.toast.success{border-left:3px solid #34d399}.toast.info{border-left:3px solid #60a5fa}.toast.error{border-left:3px solid #e54545}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+@media(max-width:768px){
+    .mobile-header{display:flex}.sidebar{transform:translateX(-100%);width:280px}.sidebar.open{transform:translateX(0)}.sidebar-close{display:flex}
+    .main-content{margin-left:0;padding:76px 16px 32px}.page-title{font-size:1.3rem}
+}
+</style>
+</head>
+<body>
+
+<header class="mobile-header">
+    <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+    <span class="mobile-title">Staff Dashboard</span>
+    <div style="width:42px"></div>
+</header>
+
+
+
+
+<!-- Main Content -->
+<main class="main-content">
+    <!-- PWA Install Banner - INSIDE MAIN CONTENT -->
+    <div class="pwa-install-banner" id="pwaInstallBanner" style="display:none;background:linear-gradient(135deg,#e4af3e,#c98e22);color:#000;padding:12px 16px;border-radius:12px;margin-bottom:16px;align-items:center;justify-content:space-between;">
+        <span>📱 Install Voddic Staff App for better experience</span>
+        <button id="installPwaBtn" style="background:#000;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Install</button>
+    </div>
+    
+
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="sidebar-logo"><div class="logo-icon">&#127976;</div><div><h2 id="sidebarHotel">Hotel</h2><p class="hotel-name" id="sidebarDept">Staff</p></div></div><button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button></div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Dashboard</div>
+        <a class="nav-item active" data-tab="rooms" href="#"><span class="nav-icon">&#128682;</span> Rooms</a>
+        <a class="nav-item" data-tab="shift" href="shift-calendar.html"><span class="nav-icon">&#128197;</span> Shift Calendar</a>
+        <a class="nav-item" data-tab="shiftmgmt" href="shift-management.html"><span class="nav-icon">&#128203;</span> Shift Management</a>
+        <a class="nav-item" data-tab="promotional" href="promotional.html"><span class="nav-icon">&#128227;</span> Promotional Messages</a>
+        <a class="nav-item" data-tab="chat" href="#"><span class="nav-icon">&#128172;</span> Chat</a>
+       <!-- In the sidebar-nav section, add this item -->
+<a class="nav-item" href="call.html"><span class="nav-icon">&#128222;</span> Calls</a>
+        <a class="nav-item" data-tab="emergency" href="#"><span class="nav-icon">&#128680;</span> Emergencies <span class="nav-badge emergency" id="emergBadge" style="display:none">0</span></a>
+    <!-- PWA Install link - hidden if already installed -->
+        <a class="nav-item" id="pwaInstallNav" href="install-pwa.html" style="display:none;"><span class="nav-icon">📱</span> Install App</a>
+
+    
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-info"><div class="user-avatar" id="userAvatar">S</div><div><div class="user-name" id="userName">Staff</div><div class="user-role" id="userRole">Loading...</div></div></div>
+        <button class="logout-btn" onclick="logout()">&#128682; Sign Out</button>
+    </div>
+</aside>
+
+
+
+
+
+
+
+
+<main class="main-content">
+    <div class="page-header"><h1 class="page-title">Staff Dashboard</h1></div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="rooms">&#128682; Room Management</button>
+        <button class="tab-btn" data-tab="shift" onclick="window.location.href='shift-calendar.html'">&#128197; Shift Calendar</button>
+        <button class="tab-btn" data-tab="shiftmgmt" onclick="window.location.href='shift-management.html'">&#128203; Shift Management</button>
+        <button class="tab-btn" data-tab="promotional" onclick="window.location.href='promotional.html'">&#128227; Promotional</button>
+        <button class="tab-btn" data-tab="chat">&#128172; Chat</button>
+       <!-- In the tab-bar section, add this button -->
+<button class="tab-btn" data-tab="calls" onclick="window.location.href='call.html'">&#128222; Calls</button>
+        <button class="tab-btn" data-tab="emergency">&#128680; Emergencies</button>
+    </div>
+
+    <div class="emergency-banner" id="emergBanner" onclick="switchTab('emergency')">&#128680; NEW EMERGENCY! Click to view</div>
+
+    <!-- ROOMS TAB -->
+    <div class="tab-panel active" id="panel-rooms">
+        <div class="card">
+            <div class="card-title">Activate Room</div>
+            <div class="form-group"><label>Room Number</label><select id="roomSelect" class="form-control" onchange="updateGuestFields()"><option value="">Loading rooms...</option></select></div>
+            <div class="form-row">
+                <div class="form-group"><label>Check-out Date</label><input type="date" id="checkoutDate" class="form-control"></div>
+                <div class="form-group"><label>Check-out Time</label><input type="time" id="checkoutTime" class="form-control" value="12:00"></div>
+            </div>
+            <div id="guestFields"></div>
+            <button class="btn btn-gold" onclick="activateRoom()" style="width:100%;margin-top:8px;">&#9989; Activate Room</button>
+        </div>
+        <div class="card">
+            <div class="card-title">Active Rooms</div>
+            <div class="rooms-grid" id="activeRoomsGrid"></div>
+        </div>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div class="tab-panel" id="panel-chat">
+        <div class="card"><div class="card-title">Guest Chat</div><p style="color:var(--text-dim);text-align:center;padding:40px;">Chat feature coming soon.</p></div>
+    </div>
+
+    <!-- CALLS TAB -->
+    <div class="tab-panel" id="panel-calls">
+        <div class="card"><div class="card-title">Active Calls</div><p style="color:var(--text-dim);text-align:center;padding:40px;">Calls feature coming soon.</p></div>
+    </div>
+
+    <!-- EMERGENCY TAB -->
+    <div class="tab-panel" id="panel-emergency">
+        <div class="card"><div class="card-title">Active Emergencies</div><div id="emergenciesList"><p style="color:var(--text-dim);text-align:center;padding:40px;">No active emergencies</p></div></div>
+    </div>
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="staff.js"></script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Voddic — Hotel Directory</title>
+<link rel="manifest" href="/guest/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0b0f16;--card:#1a2332;--brass:#c9a86a;--teal:#57C9BD;--ivory:#eef1f4;--muted:#9aa4b2;--muted-2:#6b7280;--line:rgba(238,241,244,.08);--line-strong:rgba(238,241,244,.14);--radius:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(1200px 600px at 50% -5%,rgba(201,168,106,.08),transparent 60%),var(--ink);color:var(--ivory);font-family:'Inter',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer}
+
+.hero{text-align:center;padding:max(36px,7vh) 20px 28px}
+.hero-container{max-width:520px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,106,.14);border:1px solid rgba(201,168,106,.35);padding:5px 14px;border-radius:999px;font-family:'IBM Plex Mono';font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);margin-bottom:18px}
+.hero-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.hero-title{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(24px,5vw,40px);line-height:1.05;margin-bottom:6px}
+.hero-title span{background:linear-gradient(135deg,var(--brass),#e2c87a);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-subtitle{font-size:12px;color:var(--muted);line-height:1.5;max-width:380px;margin:0 auto 16px}
+.hero-stats{display:flex;justify-content:center;gap:20px;padding-top:12px;border-top:1px dashed var(--line-strong)}
+.hero-stat{text-align:center}.hero-stat-num{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--brass)}.hero-stat-lbl{font-family:'IBM Plex Mono';font-size:8.5px;color:var(--muted-2);text-transform:uppercase;margin-top:2px}
+
+.search-section{text-align:center;padding:0 20px 20px}
+.search-container{max-width:400px;margin:0 auto}
+.section-label{font-family:'Fraunces',serif;font-weight:500;font-size:14px;color:var(--ivory);margin-bottom:10px}
+.section-label .count{color:var(--muted-2);font-family:'IBM Plex Mono';font-size:9px;margin-left:4px}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--line-strong);border-radius:10px;padding:10px 14px}
+.search-box input{background:none;border:none;outline:none;color:var(--ivory);font-size:13px;width:100%;font-family:'Inter'}
+.search-box input::placeholder{color:var(--muted-2)}
+.nearby-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;max-width:400px;margin:0 auto 6px;padding:10px 16px;background:rgba(87,201,189,.1);border:1.5px solid rgba(87,201,189,.3);border-radius:10px;color:var(--teal);font-size:12px;font-weight:600;cursor:pointer}
+.nearby-btn:hover{background:rgba(87,201,189,.18)}
+.nearby-status{text-align:center;font-size:9px;color:var(--muted);margin-bottom:4px;min-height:14px}
+
+.grid-section{padding:0 20px 50px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:1100px;margin:0 auto}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr);gap:10px}}
+@media(max-width:420px){.grid{grid-template-columns:1fr}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;opacity:0;transform:translateY(10px);animation:rise .4s forwards;animation-delay:var(--d)}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+.room-avail{position:absolute;top:7px;left:7px;z-index:2;padding:3px 8px;border-radius:999px;font-family:'IBM Plex Mono';font-size:8.5px;font-weight:600;backdrop-filter:blur(6px)}
+.avail-many{background:rgba(47,160,106,.2);color:#2fa06a;border:1px solid rgba(47,160,106,.3)}
+.avail-few{background:rgba(245,158,11,.2);color:#f59e0b;border:1px solid rgba(245,158,11,.3)}
+.avail-none{background:rgba(226,65,44,.2);color:#e2412c;border:1px solid rgba(226,65,44,.3)}
+.card-media{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(140deg,#2a2f38,#1a1d23)}
+.card-media img{width:100%;height:100%;object-fit:cover;display:block}
+.card-rating{position:absolute;top:7px;right:7px;display:flex;align-items:center;gap:3px;background:rgba(11,15,22,.75);backdrop-filter:blur(6px);padding:3px 7px;border-radius:999px;font-family:'IBM Plex Mono';font-size:9.5px;color:var(--brass)}
+.card-loc{position:absolute;left:9px;bottom:9px;font-family:'IBM Plex Mono';font-size:8.5px;color:var(--muted);display:flex;align-items:center;gap:3px}
+.card-body{padding:10px 12px 0}.card-name{font-family:'Fraunces',serif;font-size:14px;font-weight:600;line-height:1.2}
+.card-addr{font-size:9px;color:var(--muted-2);padding:3px 12px 6px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-actions{margin-top:auto;display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--line)}
+.card-actions button{background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px 10px;font-size:8px;letter-spacing:.04em;text-transform:uppercase;font-family:'IBM Plex Mono';border-right:1px solid var(--line)}
+.card-actions button:last-child{border-right:none}
+
+.overlay{position:fixed;inset:0;z-index:60;background:rgba(9,10,13,.8);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.overlay.open{opacity:1;pointer-events:auto}
+@media(min-width:720px){.overlay{align-items:center;padding:20px}}
+.modal{background:#111827;border:1px solid var(--line-strong);width:100%;max-width:440px;max-height:82vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;transform:translateY(20px);transition:transform .3s}
+.overlay.open .modal{transform:translateY(0)}@media(min-width:720px){.modal{border-radius:14px}}
+.modal-head{display:flex;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.modal-head h3{font-family:'Fraunces',serif;font-weight:600;font-size:16px}
+.modal-close{background:var(--card);border:1px solid var(--line-strong);color:var(--muted);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer}
+.modal-body{padding:14px 16px 18px;overflow-y:auto}
+.scan-area{text-align:center;padding:8px}.scan-area h4{color:var(--brass);margin-bottom:8px;font-size:14px}
+.scan-area .qr-box{width:200px;height:200px;margin:0 auto 12px;border:2px solid var(--line-strong);border-radius:12px;overflow:hidden;background:#000}
+.scan-area .qr-box video{width:100%;height:100%;object-fit:cover}
+.scan-area .or-text{color:var(--muted-2);font-size:9px;margin:8px 0}
+.scan-area input{width:100%;max-width:200px;padding:9px 12px;background:var(--card);border:1px solid var(--line-strong);border-radius:7px;color:var(--ivory);font-size:12px;text-align:center;outline:none;font-family:'Inter';margin-bottom:8px}
+.scan-area input:focus{border-color:var(--brass)}
+.scan-area button{width:100%;max-width:200px;padding:9px;background:var(--brass);color:#000;border:none;border-radius:7px;font-weight:700;font-size:12px;cursor:pointer}
+
+footer{text-align:center;padding:16px 20px 30px;font-family:'IBM Plex Mono';font-size:9px;color:var(--muted-2)}footer span{color:var(--brass)}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-container">
+    <div class="hero-badge"><span class="dot"></span> Guest Directory — Live</div>
+    <h1 class="hero-title">Voddic<br><span>Hotel Digital Assistance</span></h1>
+    <p class="hero-subtitle">One scan connects you to everything your hotel offers.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num" id="statProps">—</div><div class="hero-stat-lbl">Properties</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="statRooms">—</div><div class="hero-stat-lbl">Rooms Available</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">1m 40s</div><div class="hero-stat-lbl">Avg Response</div></div>
+    </div>
+  </div>
+</header>
+
+<section class="search-section">
+  <div class="search-container">
+    <button class="nearby-btn" id="nearbyBtn" onclick="findNearbyHotels()">📍 Hotels Near Me</button>
+    <div class="nearby-status" id="nearbyStatus"></div>
+  </div>
+  <div class="search-container">
+  <div class="search-container">
+    </div><div class="search-container" style="margin-top:12px;"><div class="section-label">Find your hotel <span class="count" id="resultCount"></span></div>
+    <div class="search-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="Search by name or city..." autocomplete="off">
+    </div>
+  </div>
+</section>
+
+<section class="grid-section"><div class="grid" id="grid"></div></section>
+
+<footer>VODDIC HOTEL DIGITAL ASSISTANCE · <span>GUEST DIRECTORY</span></footer>
+
+
+
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <h3>Scan QR Code</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="scan-area">
+        <div id="currentHotelDisplay" style="background:rgba(201,168,106,0.1);padding:8px 12px;border-radius:8px;margin-bottom:12px;font-size:12px;color:#c9a86a;">
+          🏨 Current Hotel: <span id="currentHotelName">None selected</span>
+        </div>
+        <div class="qr-box"><video id="qrVideo" autoplay playsinline></video></div>
+        <div id="scanStatus" style="font-size:10px;color:var(--teal);margin-bottom:8px;">Position QR code in frame</div>
+        <div class="or-text">— OR enter room number —</div>
+        <input type="text" id="scanRoomInput" placeholder="Room number...">
+        <button onclick="enterRoomFromScan()">Enter Room →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="js/app_fixed.js?v=3"></script>
+</body>
+</html>

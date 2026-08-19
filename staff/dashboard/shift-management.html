@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Shift Management — Voddic Hotel Connect</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- PDF & Excel libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{--bg:#0c0c18;--card:#151528;--gold:#e4af3e;--danger:#e2412c;--success:#2fa06a;--warning:#f59e0b;--info:#3b82f6;--text:#eaeaf0;--text-dim:#8a8aa8;--border:rgba(255,255,255,.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+a{text-decoration:none;color:inherit}button{border:none;background:none;cursor:pointer;font-family:inherit;color:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#12121f}::-webkit-scrollbar-thumb{background:#2a2a45;border-radius:3px}
+
+.mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:60px;background:rgba(12,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:1000;align-items:center;justify-content:space-between;padding:0 16px}
+.menu-toggle{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;border-radius:10px;background:rgba(255,255,255,.05)}
+.mobile-title{font-size:1rem;font-weight:700;color:#f0f0f5}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:1100}
+.sidebar-overlay.active{display:block}
+.sidebar{position:fixed;top:0;left:0;width:272px;height:100vh;background:#101020;border-right:1px solid rgba(255,255,255,.06);z-index:1200;display:flex;flex-direction:column;overflow:hidden;transition:transform .35s}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.sidebar-logo{display:flex;align-items:center;gap:12px}.logo-icon{font-size:1.6rem}
+.sidebar-logo h2{font-size:.95rem;font-weight:800;color:#f5f5fa}
+.hotel-name{font-size:.72rem;color:var(--text-dim);margin-top:2px}
+.sidebar-close{display:none;width:32px;height:32px;align-items:center;justify-content:center;font-size:1rem;color:var(--text-dim);border-radius:8px}
+.sidebar-close:hover{background:rgba(255,255,255,.06)}
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 0}
+.nav-section-title{font-size:.62rem;font-weight:700;color:#55556e;letter-spacing:.08em;text-transform:uppercase;padding:14px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:.82rem;font-weight:500;color:#9a9ab8;transition:all .18s;border-left:3px solid transparent}
+.nav-item:hover{color:#e0e0f0;background:rgba(255,255,255,.03)}
+.nav-item.active{color:#f0f0f8;background:rgba(228,175,62,.08);border-left-color:var(--gold)}
+.nav-icon{font-size:.95rem;width:22px;text-align:center}
+.sidebar-footer{padding:16px 18px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#c48a20);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#000}
+.user-name{font-size:.82rem;font-weight:600}.user-role{font-size:.7rem;color:var(--text-dim)}
+.logout-btn{width:100%;padding:9px 14px;font-size:.78rem;font-weight:600;color:#b0b0c8;border-radius:8px;text-align:left}
+.logout-btn:hover{background:rgba(229,69,69,.1);color:#e54545}
+
+.main-content{margin-left:272px;min-height:100vh;padding:28px 32px 40px}
+.page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.page-title{font-size:1.75rem;font-weight:800;color:#f5f5fa}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap}
+.page-subtitle{font-size:.85rem;color:var(--text-dim);margin-top:4px}
+.download-btn{padding:6px 12px;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg);color:var(--text-dim);transition:all .2s}
+.download-btn:hover{border-color:var(--gold);color:var(--text)}
+.download-btn.pdf:hover{border-color:#e54545;color:#e54545}
+.download-btn.excel:hover{border-color:#34d399;color:#34d399}
+.download-btn.print:hover{border-color:#60a5fa;color:#60a5fa}
+
+.card{background:var(--card);border-radius:14px;padding:20px;border:1px solid var(--border);margin-bottom:16px}
+.card-title{font-size:1rem;font-weight:700;color:#f5f5fa;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px}
+
+.dept-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;flex-wrap:wrap}
+.dept-tab{padding:8px 16px;border-radius:8px;font-size:.78rem;font-weight:600;color:var(--text-dim);background:var(--bg);border:1px solid var(--border);cursor:pointer;transition:all .2s;white-space:nowrap}
+.dept-tab:hover{background:rgba(255,255,255,.05)}
+.dept-tab.active{background:var(--gold);color:#000;border-color:var(--gold)}
+
+.filter-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-row select,.filter-row input{padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;outline:none;font-family:inherit}
+.filter-row select:focus,.filter-row input:focus{border-color:var(--gold)}
+
+.shifts-table{width:100%;border-collapse:collapse}
+.shifts-table th{text-align:left;padding:10px 12px;font-size:.7rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
+.shifts-table td{padding:10px 12px;font-size:.8rem;color:var(--text);border-bottom:1px solid rgba(255,255,255,.04)}
+.shifts-table tr:hover td{background:rgba(255,255,255,.02)}
+.shift-badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:.65rem;font-weight:600}
+.shift-badge.morning{background:rgba(59,130,246,.2);color:#60a5fa}
+.shift-badge.afternoon{background:rgba(245,158,11,.2);color:#fbbf24}
+.shift-badge.night{background:rgba(139,92,246,.2);color:#a78bfa}
+.shift-badge.custom{background:rgba(47,160,106,.2);color:#34d399}
+.shift-actions{display:flex;gap:4px}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999999;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex !important}
+.modal{background:#1a1a34;border-radius:16px;border:1px solid rgba(255,255,255,.1);max-width:500px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.modal-header h3{font-size:1.1rem;font-weight:700;color:#f5f5fa}
+.modal-close{font-size:1.2rem;color:#8a8aa8;padding:4px 8px;border-radius:6px;cursor:pointer;background:transparent}
+.modal-close:hover{background:rgba(255,255,255,.05)}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:.7rem;font-weight:600;color:#8a8aa8;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.form-group select,.form-group input{width:100%;padding:8px 12px;background:#0c0c18;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#eaeaf0;font-size:.85rem;outline:none;font-family:inherit}
+.form-group select:focus,.form-group input:focus{border-color:#e4af3e}
+.btn{padding:8px 16px;border-radius:6px;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .2s}
+.btn-gold{background:#e4af3e;color:#000}
+.btn-gold:hover{opacity:.85}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,.1);color:#8a8aa8}
+.btn-danger{background:rgba(226,65,44,.2);color:#e54545}
+.btn-danger:hover{background:rgba(226,65,44,.3)}
+.btn-sm{padding:4px 10px;font-size:.7rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-actions{display:flex;gap:8px;margin-top:12px}
+
+.toast-container{position:fixed;top:16px;right:16px;z-index:9999999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:6px;font-size:.72rem;font-weight:600;color:#f0f0f8;background:#1e1e38;border:1px solid rgba(255,255,255,.08);animation:slideIn .3s ease;max-width:260px}
+.toast.success{border-left:3px solid #34d399}.toast.info{border-left:3px solid #60a5fa}.toast.error{border-left:3px solid #e54545}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+.empty-state{text-align:center;padding:40px;color:#55556e}
+.empty-state .icon{font-size:2.5rem;margin-bottom:12px;opacity:.5}
+.empty-state p{font-size:.9rem}
+
+/* Print Styles */
+@media print {
+    .sidebar, .mobile-header, .page-actions, .dept-tabs, .filter-row, .toast-container, .modal-overlay { display: none !important; }
+    .main-content { margin-left: 0 !important; padding: 20px !important; }
+    .shifts-table th { background: #1a1a34 !important; color: #000 !important; }
+    .shifts-table td { color: #000 !important; }
+    body { background: #fff !important; color: #000 !important; }
+    .card { background: #fff !important; border: 1px solid #ddd !important; }
+    .shift-badge { color: #000 !important; }
+}
+
+@media(max-width:768px){
+    .mobile-header{display:flex}.sidebar{transform:translateX(-100%);width:280px}.sidebar.open{transform:translateX(0)}.sidebar-close{display:flex}
+    .main-content{margin-left:0;padding:76px 16px 32px}.page-title{font-size:1.3rem}
+    .shifts-table,.shifts-table tbody,.shifts-table tr,.shifts-table td{display:block;width:100%}
+    .shifts-table tr{margin-bottom:12px;background:var(--card);border-radius:10px;padding:10px}
+    .shifts-table th{display:none}
+    .shifts-table td{border:none;padding:4px 0;display:flex;justify-content:space-between}
+    .shifts-table td::before{content:attr(data-label);font-weight:600;color:var(--text-dim);font-size:.7rem}
+    .shifts-table td:last-child{border-top:1px solid var(--border);padding-top:8px;margin-top:4px}
+    .page-actions{width:100%;justify-content:flex-start}
+}
+</style>
+</head>
+<body>
+
+<header class="mobile-header">
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <span class="mobile-title">Shift Management</span>
+    <div style="width:42px"></div>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏨</div>
+            <div><h2 id="sidebarHotel">Hotel</h2><p class="hotel-name" id="sidebarDept">Staff</p></div>
+        </div>
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Dashboard</div>
+        <a class="nav-item" href="index.html"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a class="nav-item" href="shift-calendar.html"><span class="nav-icon">📅</span> Shift Calendar</a>
+        <a class="nav-item active" href="#"><span class="nav-icon">📋</span> Shift Management</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-info"><div class="user-avatar" id="userAvatar">S</div><div><div class="user-name" id="userName">Staff</div><div class="user-role" id="userRole">Loading...</div></div></div>
+        <button class="logout-btn" onclick="logout()">🚪 Sign Out</button>
+    </div>
+</aside>
+
+<main class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">📋 Shift Management</h1>
+            <p class="page-subtitle">View, add, edit and delete all shifts in one place</p>
+        </div>
+        <div class="page-actions">
+            <button class="download-btn print" onclick="printShifts()"><i class="fas fa-print"></i> Print</button>
+            <button class="download-btn pdf" onclick="downloadPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+            <button class="download-btn excel" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+            <button class="btn btn-gold" onclick="openAddShift()"><i class="fas fa-plus"></i> Add Shift</button>
+        </div>
+    </div>
+
+    <div class="dept-tabs" id="deptTabs">
+        <p style="color:var(--text-dim);padding:10px;">Loading departments...</p>
+    </div>
+
+    <div class="card" id="printableArea">
+        <div class="card-title" id="reportTitle">All Shifts</div>
+        <div class="filter-row">
+            <input type="date" id="filterDate" onchange="loadShifts()" style="flex:1;min-width:150px;">
+            <select id="filterDepartment" onchange="loadShifts()" style="flex:1;min-width:150px;">
+                <option value="">All Departments</option>
+            </select>
+            <select id="filterStaff" onchange="loadShifts()" style="flex:1;min-width:150px;">
+                <option value="">All Staff</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="clearFilters()"><i class="fas fa-undo"></i> Reset</button>
+        </div>
+        <div id="shiftsList"></div>
+    </div>
+</main>
+
+<!-- Add/Edit Shift Modal -->
+<div class="modal-overlay" id="shiftModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalTitle">Add Shift</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div>
+            <input type="hidden" id="editShiftId">
+            <div class="form-group">
+                <label>Department</label>
+                <select id="shiftDepartment" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label>Staff</label>
+                <select id="shiftStaff" class="form-control"></select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Shift Type</label>
+                    <select id="shiftType" class="form-control">
+                        <option value="morning">Morning</option>
+                        <option value="afternoon">Afternoon</option>
+                        <option value="night">Night</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="shiftDate" class="form-control">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <input type="time" id="shiftStart" class="form-control" value="09:00">
+                </div>
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input type="time" id="shiftEnd" class="form-control" value="17:00">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Title (optional)</label>
+                <input type="text" id="shiftTitle" class="form-control" placeholder="e.g., Front Desk Morning">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-gold" onclick="saveShift()" style="flex:1;" id="saveBtn">Save Shift</button>
+                <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API = "https://connectapi.voddic.com.ng/api/v1";
+const token = localStorage.getItem("access_token");
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+const staff = JSON.parse(localStorage.getItem("staff") || "{}");
+const hotel = JSON.parse(localStorage.getItem("hotel") || "{}");
+
+console.log("=== Shift Management Debug ===");
+console.log("Token exists:", !!token);
+console.log("User:", user);
+console.log("Hotel:", hotel);
+
+if (!token) {
+    window.location.href = "/auth/login.html";
+}
+
+var departments = [];
+var allStaff = [];
+var shiftsList = [];
+var currentDepartmentId = null;
+var hasShiftPermission = false;
+var allStaffList = [];
+var hotelId = null;
+var filteredShifts = [];
+
+document.addEventListener("DOMContentLoaded", function() {
+    hotelId = hotel.id || null;
+    if (!hotelId) {
+        try {
+            const staffData = JSON.parse(localStorage.getItem("staff") || "{}");
+            if (staffData.hotel_id) hotelId = staffData.hotel_id;
+        } catch(e) {}
+    }
+    if (!hotelId) {
+        try {
+            const userData = JSON.parse(localStorage.getItem("user") || "{}");
+            if (userData.hotel_id) hotelId = userData.hotel_id;
+        } catch(e) {}
+    }
+    console.log("Hotel ID from localStorage:", hotelId);
+    
+    document.getElementById("userName").textContent = user.full_name || user.email || "Staff";
+    document.getElementById("userAvatar").textContent = (user.first_name || "S")[0].toUpperCase();
+    document.getElementById("userRole").textContent = staff.position || staff.department || "Staff";
+    document.getElementById("sidebarHotel").textContent = hotel.name || localStorage.getItem("hotelName") || "Hotel";
+    document.getElementById("sidebarDept").textContent = staff.department || "Staff";
+    
+    loadAllData();
+});
+
+async function loadAllData() {
+    await checkShiftPermission();
+    await loadDepartments();
+}
+
+async function checkShiftPermission() {
+    try {
+        const res = await fetch(API + "/staff/permissions/check/?feature=Shift%20Roster", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            hasShiftPermission = data.has_permission || false;
+        } else {
+            hasShiftPermission = true;
+        }
+    } catch (e) {
+        hasShiftPermission = true;
+    }
+    console.log("Has shift permission:", hasShiftPermission);
+}
+
+async function loadDepartments() {
+    try {
+        const res = await fetch(API + "/staff/departments/", {
+            headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" }
+        });
+        if (res.ok) {
+            departments = await res.json();
+            renderDepartmentTabs();
+            populateSelects();
+            
+            if (departments.length > 0) {
+                currentDepartmentId = departments[0].id;
+                await Promise.all([
+                    loadAllStaff(),
+                    loadShifts()
+                ]);
+            }
+        }
+    } catch (e) {
+        console.error("Error loading departments:", e);
+        document.getElementById("deptTabs").innerHTML = '<p style="color:var(--danger);padding:10px;">Error loading departments. Please refresh.</p>';
+    }
+}
+
+function renderDepartmentTabs() {
+    const container = document.getElementById("deptTabs");
+    if (!departments.length) {
+        container.innerHTML = '<p style="color:var(--text-dim);padding:10px;">No departments found.</p>';
+        return;
+    }
+    container.innerHTML = departments.map(d => `
+        <button class="dept-tab ${d.id === currentDepartmentId ? 'active' : ''}" data-department="${d.id}" onclick="selectDepartment('${d.id}')">
+            ${d.name}
+        </button>
+    `).join("");
+}
+
+function selectDepartment(deptId) {
+    currentDepartmentId = deptId;
+    document.querySelectorAll('.dept-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.department === deptId);
+    });
+    loadShifts();
+}
+
+async function loadAllStaff() {
+    try {
+        const res = await fetch(API + "/staff/staff/", {
+            headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" }
+        });
+        if (res.ok) {
+            allStaffList = await res.json();
+            populateStaffFilter();
+        }
+    } catch (e) {
+        console.error("Error loading all staff:", e);
+    }
+}
+
+function populateSelects() {
+    const deptSel = document.getElementById("shiftDepartment");
+    deptSel.innerHTML = departments.map(d => `<option value="${d.id}">${d.name}</option>`).join("");
+    
+    const filterDept = document.getElementById("filterDepartment");
+    filterDept.innerHTML = '<option value="">All Departments</option>' + departments.map(d => `<option value="${d.id}">${d.name}</option>`).join("");
+}
+
+function populateStaffFilter() {
+    const filterStaff = document.getElementById("filterStaff");
+    filterStaff.innerHTML = '<option value="">All Staff</option>' + allStaffList.map(s => 
+        `<option value="${s.id}">${s.display_name || s.email || 'Staff'}</option>`
+    ).join("");
+    
+    const staffSel = document.getElementById("shiftStaff");
+    staffSel.innerHTML = allStaffList.map(s => 
+        `<option value="${s.id}">${s.display_name || s.email || 'Staff'}</option>`
+    ).join("");
+}
+
+async function loadShifts() {
+    try {
+        const deptId = currentDepartmentId || '';
+        const url = API + "/staff/shifts/by_month/?year=" + new Date().getFullYear() + "&month=" + (new Date().getMonth() + 1) + "&department=" + deptId;
+        console.log("Loading shifts from:", url);
+        const res = await fetch(url, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+            shiftsList = await res.json();
+            console.log("Shifts loaded:", shiftsList.length);
+            renderShifts();
+        } else {
+            console.error("Failed to load shifts:", await res.text());
+        }
+    } catch (e) {
+        console.error("Error loading shifts:", e);
+    }
+}
+
+function getFilteredShifts() {
+    const filterDate = document.getElementById("filterDate").value;
+    const filterDept = document.getElementById("filterDepartment").value;
+    const filterStaff = document.getElementById("filterStaff").value;
+    
+    let filtered = shiftsList;
+    if (filterDate) filtered = filtered.filter(s => s.date === filterDate);
+    if (filterDept) filtered = filtered.filter(s => s.department === filterDept);
+    if (filterStaff) filtered = filtered.filter(s => s.staff === filterStaff);
+    
+    filtered.sort((a, b) => a.date > b.date ? -1 : 1);
+    filteredShifts = filtered;
+    return filtered;
+}
+
+function renderShifts() {
+    const container = document.getElementById("shiftsList");
+    const filtered = getFilteredShifts();
+    
+    if (!filtered.length) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>No shifts found. Click "Add Shift" to create one.</p></div>`;
+        return;
+    }
+    
+    let html = `<table class="shifts-table" id="shiftsTable">
+        <thead><tr>
+            <th>Date</th>
+            <th>Staff</th>
+            <th>Department</th>
+            <th>Shift</th>
+            <th>Time</th>
+            <th>Title</th>
+            <th>Actions</th>
+        </tr></thead><tbody>`;
+    
+    filtered.forEach(s => {
+        const deptName = departments.find(d => d.id === s.department)?.name || s.department_name || '';
+        const staffName = s.staff_name || 'Unknown';
+        const shiftClass = s.shift_type || 'custom';
+        const shiftLabel = s.shift_type_display || s.shift_type || 'Custom';
+        const dateFormatted = s.date_formatted || s.date;
+        const timeStr = (s.start_time_formatted || s.start_time || '') + ' - ' + (s.end_time_formatted || s.end_time || '');
+        
+        html += `<tr>
+            <td data-label="Date">${dateFormatted}</td>
+            <td data-label="Staff"><strong>${staffName}</strong></td>
+            <td data-label="Department">${deptName}</td>
+            <td data-label="Shift"><span class="shift-badge ${shiftClass}">${shiftLabel}</span></td>
+            <td data-label="Time">${timeStr}</td>
+            <td data-label="Title">${s.title || '—'}</td>
+            <td data-label="Actions">
+                <div class="shift-actions">
+                    <button class="btn btn-outline btn-sm" onclick="editShift('${s.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteShift('${s.id}')"><i class="fas fa-trash"></i></button>
+                </div>
+            </td>
+        </tr>`;
+    });
+    
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+function clearFilters() {
+    document.getElementById("filterDate").value = "";
+    document.getElementById("filterDepartment").value = "";
+    document.getElementById("filterStaff").value = "";
+    loadShifts();
+}
+
+function openAddShift() {
+    if (!hasShiftPermission) {
+        showToast("You don't have permission to add shifts.", "error");
+        return;
+    }
+    document.getElementById("modalTitle").textContent = "Add Shift";
+    document.getElementById("editShiftId").value = "";
+    document.getElementById("shiftTitle").value = "";
+    document.getElementById("shiftType").value = "morning";
+    document.getElementById("shiftStart").value = "09:00";
+    document.getElementById("shiftEnd").value = "17:00";
+    document.getElementById("shiftDate").value = new Date().toISOString().split('T')[0];
+    document.getElementById("saveBtn").textContent = "Save Shift";
+    document.getElementById("shiftModal").classList.add("active");
+}
+
+function editShift(shiftId) {
+    if (!hasShiftPermission) {
+        showToast("You don't have permission to edit shifts.", "error");
+        return;
+    }
+    
+    const shift = shiftsList.find(s => s.id === shiftId);
+    if (!shift) {
+        showToast("Shift not found.", "error");
+        return;
+    }
+    
+    console.log("Editing shift:", shift);
+    
+    document.getElementById("modalTitle").textContent = "Edit Shift";
+    document.getElementById("editShiftId").value = shift.id;
+    document.getElementById("shiftDepartment").value = shift.department;
+    document.getElementById("shiftStaff").value = shift.staff;
+    document.getElementById("shiftType").value = shift.shift_type || "morning";
+    document.getElementById("shiftDate").value = shift.date;
+    document.getElementById("shiftStart").value = shift.start_time;
+    document.getElementById("shiftEnd").value = shift.end_time;
+    document.getElementById("shiftTitle").value = shift.title || "";
+    document.getElementById("saveBtn").textContent = "Update Shift";
+    document.getElementById("shiftModal").classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("shiftModal").classList.remove("active");
+}
+
+async function saveShift() {
+    if (!hasShiftPermission) {
+        showToast("You don't have permission to save shifts.", "error");
+        return;
+    }
+    
+    const editId = document.getElementById("editShiftId").value;
+    
+    let shiftHotelId = hotelId;
+    if (editId) {
+        const shift = shiftsList.find(s => s.id === editId);
+        if (shift && shift.hotel) shiftHotelId = shift.hotel;
+    }
+    if (!shiftHotelId && shiftsList.length > 0) {
+        shiftHotelId = shiftsList[0].hotel;
+    }
+    
+    console.log("Hotel ID being used:", shiftHotelId);
+    
+    var data = {
+        hotel: shiftHotelId,
+        department: document.getElementById("shiftDepartment").value,
+        staff: document.getElementById("shiftStaff").value,
+        shift_type: document.getElementById("shiftType").value,
+        date: document.getElementById("shiftDate").value,
+        start_time: document.getElementById("shiftStart").value,
+        end_time: document.getElementById("shiftEnd").value,
+        title: document.getElementById("shiftTitle").value || ""
+    };
+    
+    console.log("Saving shift data:", data);
+    
+    if (!data.hotel) {
+        showToast("Hotel ID is missing. Please refresh and try again.", "error");
+        return;
+    }
+    if (!data.department || !data.staff || !data.date || !data.start_time || !data.end_time) {
+        showToast("Please fill in all required fields.", "error");
+        return;
+    }
+    
+    const url = editId ? `${API}/staff/shifts/${editId}/` : `${API}/staff/shifts/`;
+    const method = editId ? "PUT" : "POST";
+    
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+        
+        console.log("Response status:", res.status);
+        const result = await res.json();
+        console.log("Response data:", result);
+        
+        if (res.ok) {
+            showToast(editId ? "Shift updated!" : "Shift added!", "success");
+            closeModal();
+            await loadShifts();
+        } else {
+            let errorMsg = "Failed to save shift.";
+            if (result.error) {
+                errorMsg = result.error;
+            } else if (result.detail) {
+                errorMsg = result.detail;
+            } else if (typeof result === 'object') {
+                const errors = Object.keys(result).map(key => `${key}: ${result[key].join(', ')}`).join('; ');
+                errorMsg = errors || JSON.stringify(result);
+            }
+            showToast(errorMsg, "error");
+        }
+    } catch (e) {
+        console.error("Error saving shift:", e);
+        showToast("Network error: " + e.message, "error");
+    }
+}
+
+async function deleteShift(shiftId) {
+    if (!hasShiftPermission) {
+        showToast("You don't have permission to delete shifts.", "error");
+        return;
+    }
+    if (!confirm("Delete this shift?")) return;
+    
+    try {
+        const res = await fetch(`${API}/staff/shifts/${shiftId}/`, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+            showToast("Shift deleted.", "info");
+            await loadShifts();
+        } else {
+            const err = await res.json();
+            showToast(err.error || "Failed to delete shift.", "error");
+        }
+    } catch (e) {
+        showToast("Network error: " + e.message, "error");
+    }
+}
+
+// ==================== PRINT, PDF, EXCEL ====================
+
+function getReportData() {
+    const filtered = getFilteredShifts();
+    const hotelName = hotel.name || localStorage.getItem("hotelName") || "Hotel";
+    const reportDate = new Date().toLocaleDateString();
+    
+    const rows = filtered.map(s => {
+        const deptName = departments.find(d => d.id === s.department)?.name || s.department_name || '';
+        const staffName = s.staff_name || 'Unknown';
+        const shiftLabel = s.shift_type_display || s.shift_type || 'Custom';
+        const dateFormatted = s.date_formatted || s.date;
+        const timeStr = (s.start_time_formatted || s.start_time || '') + ' - ' + (s.end_time_formatted || s.end_time || '');
+        return [dateFormatted, staffName, deptName, shiftLabel, timeStr, s.title || ''];
+    });
+    
+    return { hotelName, reportDate, rows, count: rows.length };
+}
+
+function printShifts() {
+    const data = getReportData();
+    if (data.count === 0) {
+        showToast("No shifts to print.", "error");
+        return;
+    }
+    window.print();
+}
+
+function downloadPDF() {
+    const data = getReportData();
+    if (data.count === 0) {
+        showToast("No shifts to export.", "error");
+        return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape', 'mm', 'a4');
+    
+    // Title
+    doc.setFontSize(16);
+    doc.text(`Shift Report - ${data.hotelName}`, 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Generated: ${data.reportDate}`, 14, 28);
+    doc.text(`Total Shifts: ${data.count}`, 14, 34);
+    
+    // Table
+    doc.autoTable({
+        startY: 40,
+        head: [['Date', 'Staff', 'Department', 'Shift Type', 'Time', 'Title']],
+        body: data.rows,
+        theme: 'striped',
+        headStyles: { fillColor: [201, 168, 106], textColor: [0, 0, 0] },
+        styles: { fontSize: 8 },
+        columnStyles: {
+            0: { cellWidth: 25 },
+            1: { cellWidth: 30 },
+            2: { cellWidth: 30 },
+            3: { cellWidth: 22 },
+            4: { cellWidth: 30 },
+            5: { cellWidth: 30 }
+        }
+    });
+    
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.text(`Voddic Hotel Connect - Shift Report - Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
+    }
+    
+    doc.save(`Shift_Report_${data.hotelName}_${new Date().toISOString().split('T')[0]}.pdf`);
+    showToast("PDF downloaded!", "success");
+}
+
+function downloadExcel() {
+    const data = getReportData();
+    if (data.count === 0) {
+        showToast("No shifts to export.", "error");
+        return;
+    }
+    
+    const wbData = [
+        ['Shift Report'],
+        [`Hotel: ${data.hotelName}`],
+        [`Generated: ${data.reportDate}`],
+        [`Total Shifts: ${data.count}`],
+        [],
+        ['Date', 'Staff', 'Department', 'Shift Type', 'Time', 'Title'],
+        ...data.rows
+    ];
+    
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(wbData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Shifts');
+    
+    XLSX.writeFile(wb, `Shift_Report_${data.hotelName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showToast("Excel downloaded!", "success");
+}
+
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("sidebarOverlay").classList.toggle("active");
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = "/auth/login.html";
+}
+
+function showToast(msg, type) {
+    const container = document.getElementById("toastContainer");
+    const toast = document.createElement("div");
+    toast.className = "toast " + (type || "info");
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>

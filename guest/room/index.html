@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Room Access — Voddic Hotel Connect</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0c18;--card:#151528;--gold:#e4af3e;--danger:#e2412c;--success:#2fa06a;--text:#eaeaf0;--text-dim:#8a8aa8;--border:rgba(255,255,255,.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{width:100%;max-width:420px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px 24px;text-align:center}
+.hotel-logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--gold),#c48a20);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;overflow:hidden}
+.hotel-logo img{width:100%;height:100%;object-fit:cover}
+.hotel-name{font-size:1.3rem;font-weight:800;color:var(--gold);margin-bottom:4px}
+.hotel-addr{font-size:.75rem;color:var(--text-dim);margin-bottom:16px}
+.room-badge{display:inline-block;background:var(--gold);color:#000;padding:8px 20px;border-radius:20px;font-size:1.1rem;font-weight:800;margin-bottom:12px}
+.room-detail{font-size:.78rem;color:var(--text-dim);margin-bottom:16px}
+.room-price{display:inline-block;background:rgba(228,175,62,.15);border:1px solid rgba(228,175,62,.3);padding:6px 16px;border-radius:10px;font-size:.9rem;font-weight:700;color:var(--gold);margin-bottom:14px}
+.room-price span{font-size:.65rem;font-weight:400;color:var(--text-dim)}
+
+.session-info{background:rgba(47,160,106,.1);border:1px solid rgba(47,160,106,.3);border-radius:10px;padding:12px;margin-bottom:14px;font-size:.78rem}
+.device-dots{display:flex;gap:8px;justify-content:center;margin:8px 0}
+.device-dot{width:12px;height:12px;border-radius:50%}
+.dot-bound{background:var(--success)}.dot-free{background:rgba(255,255,255,.2)}
+
+.form-group{margin-bottom:14px;text-align:left}
+.form-label{display:block;font-size:.68rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.form-input{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.9rem;outline:none;font-family:inherit}
+.form-input:focus{border-color:var(--gold)}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#c48a20);color:#000}
+.btn-gold:disabled{opacity:.5}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-dim);margin-top:8px}
+
+.error-msg,.success-msg{padding:12px;border-radius:10px;font-size:.8rem;margin-bottom:14px;display:none}
+.error-msg.show{display:block;background:rgba(226,65,44,.1);border:1px solid rgba(226,65,44,.3);color:var(--danger)}
+.success-msg.show{display:block;background:rgba(47,160,106,.1);border:1px solid rgba(47,160,106,.3);color:var(--success)}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div class="hotel-logo" id="hotelLogo">🏨</div>
+        <h1 class="hotel-name" id="hotelName">Loading...</h1>
+        <p class="hotel-addr" id="hotelAddr"></p>
+        <div class="room-badge">Room <span id="roomNum">---</span></div>
+        <div class="room-price">₦<span id="priceAmount">0</span> <span>/ night</span></div>
+        <div class="room-detail" id="roomDetail"></div>
+
+        <div class="session-info" id="sessionInfo" style="display:none;">
+            <strong id="sessionStatus">Active</strong>
+            <div class="device-dots" id="deviceDots"></div>
+            <small style="color:var(--text-dim);" id="deviceCount">0/2 devices</small>
+        </div>
+
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg"></div>
+
+        <div id="stepVerify">
+            <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:14px;">Enter your name or phone to activate this device</p>
+            <div class="form-group"><label class="form-label">Name or Phone *</label><input type="text" class="form-input" id="guestIdentifier" placeholder="Name or phone from check-in"></div>
+            <button class="btn btn-gold" id="verifyBtn" onclick="verifyGuest()">Verify & Activate Room</button>
+        </div>
+
+        <div id="stepDone" style="display:none;">
+            <div style="font-size:48px;margin-bottom:12px;">✅</div>
+            <h3 style="color:var(--success);margin-bottom:8px;" id="doneTitle">Ready!</h3>
+            <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:16px;" id="doneMsg"></p>
+            <button class="btn btn-gold" onclick="goToServices()">🚀 Go to Hotel Services</button>
+            <button class="btn btn-outline" onclick="callReception()">📞 Call Reception</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// FIXED: Properly parse URL parameters
+var params = new URLSearchParams(window.location.search);
+var roomNumber = params.get("room") || "";
+var hotelSlug = params.get("hotel") || params.get("h") || "";
+
+console.log("🔍 Room Access - Hotel Slug:", hotelSlug, "Room:", roomNumber);
+
+// If no hotel slug in URL, try to extract from path
+if (!hotelSlug) {
+    var pathParts = window.location.pathname.split('/');
+    // Check if path is like /hotel-slug/room/101
+    for (var i = 0; i < pathParts.length; i++) {
+        if (pathParts[i] === 'room' && i > 0) {
+            hotelSlug = pathParts[i-1];
+            break;
+        }
+    }
+}
+
+// If still no hotel slug, try to find from localStorage
+if (!hotelSlug) {
+    var sessionData = localStorage.getItem("voddic_guest_session");
+    if (sessionData) {
+        try {
+            var data = JSON.parse(sessionData);
+            if (data && data.hotelSlug) {
+                hotelSlug = data.hotelSlug;
+                console.log("📦 Found hotel slug in localStorage:", hotelSlug);
+            }
+        } catch(e) {}
+    }
+}
+
+var API = "https://connectapi.voddic.com.ng/api/v1";
+var hotelData = null;
+var roomData = null;
+var sessionData = null;
+var hotelPhone = "";
+var deviceId = localStorage.getItem("voddic_device_id") || "DEV_" + Math.random().toString(36).substr(2, 9).toUpperCase();
+localStorage.setItem("voddic_device_id", deviceId);
+
+console.log("📍 Accessing:", hotelSlug, "Room:", roomNumber);
+
+if (!roomNumber) {
+    document.getElementById("hotelName").textContent = "No room specified";
+    document.getElementById("stepVerify").style.display = "none";
+    showError("No room number provided in URL");
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    if (roomNumber && hotelSlug) {
+        loadRoomData();
+    } else {
+        showError("Missing hotel or room information");
+    }
+});
+
+async function loadRoomData() {
+    try {
+        // Use the public access endpoint
+        var url = API + "/rooms/access/" + hotelSlug + "/room/" + roomNumber + "/";
+        console.log("📡 Fetching room data from:", url);
+        
+        var res = await fetch(url);
+        console.log("📡 Response status:", res.status);
+        
+        if (!res.ok) {
+            var errorData = await res.json();
+            console.error("❌ Error response:", errorData);
+            showError(errorData.error || "Room not found");
+            return;
+        }
+        
+        var data = await res.json();
+        console.log("✅ Room data loaded:", data);
+        
+        hotelData = data.hotel;
+        roomData = data.room;
+        sessionData = data.session;
+        
+        displayRoomInfo();
+        checkSession();
+        
+    } catch (e) {
+        console.error("❌ Error loading room:", e);
+        showError("Could not load room data. Please check your connection.");
+    }
+}
+
+function displayRoomInfo() {
+    if (!hotelData) {
+        document.getElementById("hotelName").textContent = "Hotel not found";
+        return;
+    }
+    
+    document.getElementById("hotelName").textContent = hotelData.name || "Hotel";
+    var address = [];
+    if (hotelData.address) address.push(hotelData.address);
+    if (hotelData.city) address.push(hotelData.city);
+    if (hotelData.state) address.push(hotelData.state);
+    if (hotelData.country) address.push(hotelData.country);
+    document.getElementById("hotelAddr").textContent = address.join(", ") || "Address not available";
+    
+    if (roomData) {
+        document.getElementById("roomNum").textContent = roomData.room_number || roomNumber;
+        document.getElementById("roomDetail").textContent = (roomData.room_type || "Standard") + " · Floor " + (roomData.floor || "—") + " · Capacity: " + (roomData.capacity || 2) + " guests";
+        
+        var priceEl = document.getElementById("priceAmount");
+        if (roomData.price) {
+            var price = parseFloat(roomData.price);
+            priceEl.textContent = price.toLocaleString('en-NG', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        } else {
+            priceEl.textContent = "0";
+        }
+    }
+    
+    if (hotelData.phone) hotelPhone = hotelData.phone;
+    
+    var logoEl = document.getElementById("hotelLogo");
+    var logoUrl = hotelData.logo_image || hotelData.logo_url || "";
+    if (logoUrl) {
+        logoEl.innerHTML = '<img src="' + logoUrl + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML=\'🏨\'">';
+    } else {
+        logoEl.innerHTML = "🏨";
+    }
+}
+
+function checkSession() {
+    if (!sessionData) {
+        document.getElementById("stepVerify").style.display = "none";
+        document.getElementById("stepDone").style.display = "block";
+        document.getElementById("doneTitle").textContent = "Room Not Active";
+        document.getElementById("doneMsg").textContent = "This room hasn't been activated. Please visit reception.";
+        return;
+    }
+    
+    if (sessionData.active) {
+        document.getElementById("sessionInfo").style.display = "block";
+        var maxDevices = sessionData.max_devices || 2;
+        var boundCount = sessionData.devices_bound || 0;
+        
+        var dots = "";
+        for (var i = 0; i < maxDevices; i++) {
+            dots += '<div class="device-dot ' + (i < boundCount ? 'dot-bound' : 'dot-free') + '"></div>';
+        }
+        document.getElementById("deviceDots").innerHTML = dots;
+        document.getElementById("deviceCount").textContent = boundCount + "/" + maxDevices + " devices";
+        document.getElementById("sessionStatus").textContent = sessionData.can_bind ? "Room Active · Space Available" : "Room Full";
+        
+        if (!sessionData.can_bind) {
+            document.getElementById("stepVerify").style.display = "none";
+            document.getElementById("stepDone").style.display = "block";
+            document.getElementById("doneTitle").textContent = "Device Limit Reached";
+            document.getElementById("doneMsg").textContent = "All " + maxDevices + " device slots are filled.";
+        }
+    } else {
+        document.getElementById("stepVerify").style.display = "none";
+        document.getElementById("stepDone").style.display = "block";
+        document.getElementById("doneTitle").textContent = "Room Not Active";
+        document.getElementById("doneMsg").textContent = "This room hasn't been activated. Please visit reception.";
+    }
+}
+
+async function verifyGuest() {
+    var identifier = document.getElementById("guestIdentifier").value.trim();
+    if (!identifier) {
+        showError("Please enter your name or phone number");
+        return;
+    }
+    
+    var btn = document.getElementById("verifyBtn");
+    btn.disabled = true;
+    btn.textContent = "Verifying...";
+    hideErrors();
+    
+    try {
+        var res = await fetch(API + "/sessions/bind-device/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                room_number: roomNumber,
+                device_id: deviceId,
+                guest_identifier: identifier,
+                public_key: "pk_" + deviceId,
+                device_name: "Guest Device"
+            })
+        });
+        
+        var data = await res.json();
+        
+        if (res.ok) {
+            localStorage.setItem("voddic_session_" + roomNumber, JSON.stringify({
+                deviceId: deviceId,
+                roomNumber: roomNumber,
+                hotelId: hotelData ? hotelData.id : "",
+                hotelSlug: hotelSlug,
+                boundAt: new Date().toISOString()
+            }));
+            
+            document.getElementById("stepVerify").style.display = "none";
+            document.getElementById("stepDone").style.display = "block";
+            document.getElementById("doneTitle").textContent = "✅ Device Bound!";
+            var hotelName = hotelData ? hotelData.name : "Hotel";
+            document.getElementById("doneMsg").textContent = "Your device is now securely connected to " + hotelName + " Room " + roomNumber;
+            
+            showSuccess("Device connected successfully!");
+            
+            setTimeout(function() {
+                goToServices();
+            }, 2000);
+            
+        } else {
+            showError(data.error || "Verification failed. Please check your room number.");
+        }
+    } catch (e) {
+        console.error("Error binding device:", e);
+        showError("Network error. Please try again.");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Verify & Activate Room";
+    }
+}
+
+function goToServices() {
+    var sessionDataObj = {
+        roomNumber: roomNumber,
+        hotelSlug: hotelSlug,
+        hotelId: hotelData ? hotelData.id : "",
+        deviceId: deviceId,
+        hotelName: hotelData ? hotelData.name : "",
+        hotelAddress: hotelData ? hotelData.address : "",
+        hotelPhone: hotelPhone,
+        hotelLogo: hotelData ? (hotelData.logo_image || hotelData.logo_url) : ""
+    };
+    localStorage.setItem("voddic_guest_session", JSON.stringify(sessionDataObj));
+    window.location.href = "/guest/room/services.html?room=" + roomNumber + "&hotel=" + hotelSlug + "&device=" + deviceId;
+}
+
+function callReception() {
+    var phone = hotelPhone || "";
+    if (phone) {
+        window.location.href = "tel:" + phone.replace(/\s/g, "");
+    } else {
+        alert("Reception phone not available");
+    }
+}
+
+function showError(msg) {
+    var el = document.getElementById("errorMsg");
+    el.textContent = msg;
+    el.classList.add("show");
+    setTimeout(function() { el.classList.remove("show"); }, 5000);
+}
+
+function hideErrors() {
+    document.getElementById("errorMsg").classList.remove("show");
+}
+
+function showSuccess(msg) {
+    var el = document.getElementById("successMsg");
+    el.textContent = msg;
+    el.classList.add("show");
+    setTimeout(function() { el.classList.remove("show"); }, 3000);
+}
+</script>
+</body>
+</html>

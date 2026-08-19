@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Call Management — Voddic Hotel Connect</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.1/peerjs.min.js"></script>
+<style>
+:root{--bg:#0c0c18;--card:#151528;--gold:#e4af3e;--danger:#e2412c;--success:#2fa06a;--warning:#f59e0b;--info:#3b82f6;--text:#eaeaf0;--text-dim:#8a8aa8;--border:rgba(255,255,255,.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+a{text-decoration:none;color:inherit}button{border:none;background:none;cursor:pointer;font-family:inherit;color:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#12121f}::-webkit-scrollbar-thumb{background:#2a2a45;border-radius:3px}
+
+.mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:60px;background:rgba(12,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:1000;align-items:center;justify-content:space-between;padding:0 16px}
+.menu-toggle{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;border-radius:10px;background:rgba(255,255,255,.05)}
+.mobile-title{font-size:1rem;font-weight:700;color:#f0f0f5}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:1100}
+.sidebar-overlay.active{display:block}
+.sidebar{position:fixed;top:0;left:0;width:272px;height:100vh;background:#101020;border-right:1px solid var(--border);z-index:1200;display:flex;flex-direction:column;overflow-y:auto;transition:transform .35s}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo{display:flex;align-items:center;gap:12px}.logo-icon{font-size:1.6rem}
+.sidebar-logo h2{font-size:.95rem;font-weight:800;color:#f5f5fa}
+.hotel-name{font-size:.72rem;color:var(--text-dim);margin-top:2px}
+.sidebar-close{display:none;width:32px;height:32px;align-items:center;justify-content:center;font-size:1rem;color:var(--text-dim)}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section-title{font-size:.62rem;font-weight:700;color:#55556e;letter-spacing:.08em;text-transform:uppercase;padding:14px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:.82rem;font-weight:500;color:#9a9ab8;transition:all .18s;border-left:3px solid transparent;cursor:pointer}
+.nav-item:hover{color:#e0e0f0;background:rgba(255,255,255,.03)}
+.nav-item.active{color:#f0f0f8;background:rgba(228,175,62,.08);border-left-color:var(--gold)}
+.nav-icon{font-size:.95rem;width:22px;text-align:center}
+.nav-badge{margin-left:auto;font-size:.65rem;font-weight:700;background:var(--gold);color:#000;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center}
+.nav-badge.emergency{background:var(--danger);color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.sidebar-footer{padding:16px 18px;border-top:1px solid var(--border)}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#c48a20);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#000}
+.user-name{font-size:.82rem;font-weight:600}.user-role{font-size:.7rem;color:var(--text-dim)}
+.logout-btn{width:100%;padding:9px 14px;font-size:.78rem;font-weight:600;color:#b0b0c8;border-radius:8px;text-align:left}
+.logout-btn:hover{background:rgba(229,69,69,.1);color:#e54545}
+
+.main-content{margin-left:272px;min-height:100vh;padding:28px 32px 40px}
+@media(max-width:768px){
+    .mobile-header{display:flex}.sidebar{transform:translateX(-100%);width:280px}.sidebar.open{transform:translateX(0)}.sidebar-close{display:flex}
+    .main-content{margin-left:0;padding:76px 16px 32px}
+}
+
+.page-header{margin-bottom:24px}
+.page-title{font-size:1.75rem;font-weight:800;color:#f5f5fa}
+.page-sub{font-size:.85rem;color:var(--text-dim)}
+
+.card{background:var(--card);border-radius:14px;padding:20px;border:1px solid var(--border);margin-bottom:16px}
+.card-title{font-size:1rem;font-weight:700;color:#f5f5fa;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+
+.btn{padding:10px 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:12px;transition:all .2s}
+.btn-gold{background:var(--gold);color:#000}
+.btn-success{background:var(--success);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-dim)}
+.btn-sm{padding:6px 12px;font-size:10px;border-radius:6px}
+
+/* Incoming Call Alert */
+.incoming-call-alert{background:var(--danger);color:#fff;padding:20px;border-radius:12px;margin-bottom:16px;display:none;animation:pulse 1s infinite}
+.incoming-call-alert.active{display:block}
+.incoming-call-alert .caller{font-size:1.2rem;font-weight:700;margin-bottom:8px}
+.incoming-call-alert .actions{display:flex;gap:10px;margin-top:12px}
+.incoming-call-alert .actions button{padding:10px 24px;border-radius:8px;font-weight:700;font-size:14px}
+.incoming-call-alert .actions .answer{background:var(--success);color:#fff}
+.incoming-call-alert .actions .decline{background:rgba(255,255,255,.2);color:#fff}
+
+/* Call Status */
+.call-status-display{display:flex;align-items:center;gap:16px;padding:12px;background:var(--bg);border-radius:10px}
+.call-status-display .status-icon{font-size:2rem}
+.call-status-display .status-text{font-size:1.1rem;font-weight:600}
+.call-status-display .status-timer{font-family:monospace;font-size:1.5rem;font-weight:700;color:var(--gold);margin-left:auto}
+.call-status-display .status-timer.connected{color:var(--success)}
+.call-status-display .status-timer.ringing{color:var(--warning);animation:pulse 1s infinite}
+
+/* Call History */
+.call-history-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--border);transition:background .2s}
+.call-history-item:hover{background:rgba(255,255,255,.03)}
+.call-history-item .caller{font-weight:600}
+.call-history-item .dept{color:var(--text-dim);font-size:.8rem}
+.call-history-item .status{font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:10px}
+.call-history-item .status.connected{background:rgba(47,160,106,.2);color:var(--success)}
+.call-history-item .status.missed{background:rgba(226,65,44,.2);color:var(--danger)}
+.call-history-item .status.declined{background:rgba(226,65,44,.2);color:var(--danger)}
+.call-history-item .status.ended{background:rgba(255,255,255,.05);color:var(--text-dim)}
+.call-history-item .duration{font-family:monospace;color:var(--text-dim);font-size:.85rem}
+
+/* Call Analytics */
+.analytics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:650px){.analytics-grid{grid-template-columns:1fr 1fr}}
+.analytics-card{background:var(--bg);border-radius:10px;padding:16px;text-align:center}
+.analytics-card .number{font-size:1.5rem;font-weight:800;color:var(--gold)}
+.analytics-card .label{font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-top:4px}
+
+.toast-container{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:6px;font-size:.72rem;font-weight:600;color:#f0f0f8;background:#1e1e38;border:1px solid rgba(255,255,255,.08);animation:slideIn .3s ease;max-width:260px}
+.toast.success{border-left:3px solid #34d399}.toast.info{border-left:3px solid #60a5fa}.toast.error{border-left:3px solid #e54545}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+.notification-banner{background:rgba(47,160,106,.15);border:1px solid rgba(47,160,106,.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.notification-banner .status{display:flex;align-items:center;gap:8px;font-size:.85rem}
+.notification-banner .status .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.notification-banner .status .dot.on{background:var(--success)}
+.notification-banner .status .dot.off{background:var(--danger)}
+.notification-banner .btn{font-size:.7rem;padding:4px 12px}
+</style>
+</head>
+<body>
+
+<header class="mobile-header">
+    <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+    <span class="mobile-title">Call Management</span>
+    <div style="width:42px"></div>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="sidebar-logo"><div class="logo-icon">&#127976;</div><div><h2 id="sidebarHotel">Hotel</h2><p class="hotel-name" id="sidebarDept">Staff</p></div></div><button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button></div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Dashboard</div>
+        <a class="nav-item" href="../dashboard/index.html"><span class="nav-icon">&#128682;</span> Rooms</a>
+        <a class="nav-item" href="shift-calendar.html"><span class="nav-icon">&#128197;</span> Shift Calendar</a>
+        <a class="nav-item" href="shift-management.html"><span class="nav-icon">&#128203;</span> Shift Management</a>
+        <a class="nav-item" href="promotional.html"><span class="nav-icon">&#128227;</span> Promotional Messages</a>
+        <a class="nav-item active" href="call.html"><span class="nav-icon">&#128222;</span> Calls</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-info"><div class="user-avatar" id="userAvatar">S</div><div><div class="user-name" id="userName">Staff</div><div class="user-role" id="userRole">Loading...</div></div></div>
+        <button class="logout-btn" onclick="logout()">&#128682; Sign Out</button>
+    </div>
+</aside>
+
+<main class="main-content">
+    <div class="page-header">
+        <h1 class="page-title">&#128222; Call Management</h1>
+        <p class="page-sub">Manage incoming calls from guests</p>
+    </div>
+
+    <!-- Push Notification Status -->
+    <div class="notification-banner" id="notificationBanner">
+        <div class="status">
+            <span class="dot" id="notifDot"></span>
+            <span id="notifText">Checking notification status...</span>
+        </div>
+        <button class="btn btn-gold btn-sm" id="notifToggleBtn" onclick="toggleNotifications()">Enable</button>
+    </div>
+
+    <!-- Incoming Call Alert -->
+    <div class="incoming-call-alert" id="incomingCallAlert">
+        <div class="caller">📞 <span id="callerInfo">Room 101 is calling</span></div>
+        <div style="font-size:.85rem;opacity:.8;" id="callDeptInfo">Department: Reception</div>
+        <div class="actions">
+            <button class="answer" onclick="answerCall()">✅ Answer</button>
+            <button class="decline" onclick="declineCall()">❌ Decline</button>
+        </div>
+    </div>
+
+    <!-- Active Call Status -->
+    <div class="card" id="activeCallCard" style="display:none;">
+        <div class="card-title">Active Call</div>
+        <div class="call-status-display">
+            <div class="status-icon">📞</div>
+            <div>
+                <div class="status-text" id="callStatusText">Connected</div>
+                <div style="font-size:.75rem;color:var(--text-dim);" id="callerDetail">Room 101 - Reception</div>
+            </div>
+            <div class="status-timer connected" id="callTimer">00:00</div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+            <button class="btn btn-danger btn-sm" onclick="endActiveCall()">⏹ End Call</button>
+        </div>
+    </div>
+
+    <!-- Call Analytics -->
+    <div class="card">
+        <div class="card-title">Call Analytics</div>
+        <div class="analytics-grid">
+            <div class="analytics-card"><div class="number" id="totalCalls">0</div><div class="label">Total Calls</div></div>
+            <div class="analytics-card"><div class="number" id="todayCalls">0</div><div class="label">Today</div></div>
+            <div class="analytics-card"><div class="number" id="missedCalls">0</div><div class="label">Missed</div></div>
+            <div class="analytics-card"><div class="number" id="avgDuration">0:00</div><div class="label">Avg Duration</div></div>
+        </div>
+    </div>
+
+    <!-- Call History -->
+    <div class="card">
+        <div class="card-title">
+            <span>Call History</span>
+            <button class="btn btn-outline btn-sm" onclick="loadCallHistory()">🔄 Refresh</button>
+        </div>
+        <div id="callHistory">
+            <p style="color:var(--text-dim);text-align:center;padding:40px;">Loading call history...</p>
+        </div>
+    </div>
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+// Call Management - Staff Dashboard Integration
+// ============================================================
+
+const API = "https://connectapi.voddic.com.ng/api/v1";
+const token = localStorage.getItem("access_token");
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+const hotel = JSON.parse(localStorage.getItem("hotel") || "{}");
+const staff = JSON.parse(localStorage.getItem("staff") || "{}");
+
+console.log("=== CALL MANAGEMENT DEBUG ===");
+console.log("Token exists:", !!token);
+console.log("User:", user);
+console.log("Staff:", staff);
+
+if (!token) {
+    window.location.href = "/auth/login.html";
+}
+
+// Global variables
+var peer = null;
+var currentCallId = null;
+var callStartTime = null;
+var callTimerInterval = null;
+var isSubscribed = false;
+var pushSubscription = null;
+var activeCallStatus = 'idle'; // idle, ringing, connected, ended
+
+// ============================================================
+// Helper Functions
+// ============================================================
+
+function getHeaders() {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        window.location.href = "/auth/login.html";
+        return {};
+    }
+    return {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+    };
+}
+
+async function fetchWithAuth(url, options = {}) {
+    const headers = getHeaders();
+    if (!headers.Authorization) {
+        window.location.href = "/auth/login.html";
+        return null;
+    }
+    const response = await fetch(url, { ...options, headers: headers });
+    if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = "/auth/login.html";
+        return null;
+    }
+    return response;
+}
+
+function showToast(msg, type) {
+    const container = document.getElementById("toastContainer");
+    if (!container) return;
+    const toast = document.createElement("div");
+    toast.className = "toast " + (type || "info");
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+}
+
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("sidebarOverlay").classList.toggle("active");
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = "/auth/login.html";
+}
+
+// ============================================================
+// URL Base64 to Uint8Array for Push
+// ============================================================
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+// ============================================================
+// Push Notification Registration
+// ============================================================
+
+async function checkNotificationStatus() {
+    try {
+        const res = await fetchWithAuth(API + "/staff/push/status/");
+        if (!res) return;
+        
+        if (res.ok) {
+            const data = await res.json();
+            isSubscribed = data.subscribed || false;
+            updateNotificationUI();
+        }
+    } catch(e) {
+        console.error("Error checking notification status:", e);
+    }
+}
+
+function updateNotificationUI() {
+    const dot = document.getElementById('notifDot');
+    const text = document.getElementById('notifText');
+    const btn = document.getElementById('notifToggleBtn');
+
+    if (isSubscribed) {
+        dot.className = 'dot on';
+        text.textContent = '✅ Notifications enabled';
+        btn.textContent = 'Disable';
+        btn.className = 'btn btn-danger btn-sm';
+    } else {
+        dot.className = 'dot off';
+        text.textContent = '❌ Notifications disabled';
+        btn.textContent = 'Enable';
+        btn.className = 'btn btn-gold btn-sm';
+    }
+}
+
+async function toggleNotifications() {
+    if (isSubscribed) {
+        await unsubscribeNotifications();
+    } else {
+        await subscribeNotifications();
+    }
+}
+
+async function subscribeNotifications() {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'denied') {
+            showToast('Please allow notifications in browser settings.', 'error');
+            return;
+        }
+        if (permission !== 'granted') {
+            showToast('Please click "Allow" to enable notifications.', 'info');
+            return;
+        }
+
+        // Get VAPID public key
+        const pkRes = await fetch(API + "/push/vapid-public-key/");
+        if (!pkRes.ok) {
+            showToast('Failed to get notification keys.', 'error');
+            return;
+        }
+        const pkData = await pkRes.json();
+        const applicationServerKey = urlBase64ToUint8Array(pkData.public_key);
+
+        // Register service worker
+        const registration = await navigator.serviceWorker.register('/staff/sw.js');
+        const sub = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: applicationServerKey
+        });
+
+        function getKeyBase64(key) {
+            const buffer = sub.getKey(key);
+            if (!buffer) return '';
+            return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+        }
+
+        const res = await fetchWithAuth(API + "/staff/push/subscribe/", {
+            method: "POST",
+            body: JSON.stringify({
+                endpoint: sub.endpoint,
+                auth_key: getKeyBase64('auth'),
+                p256dh_key: getKeyBase64('p256dh')
+            })
+        });
+
+        if (res && res.ok) {
+            isSubscribed = true;
+            pushSubscription = sub;
+            updateNotificationUI();
+            showToast('✅ Notifications enabled!', 'success');
+        } else {
+            const data = res ? await res.json() : {};
+            showToast('Failed to subscribe: ' + (data.error || 'Unknown error'), 'error');
+        }
+    } catch(e) {
+        console.error("Subscription error:", e);
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+async function unsubscribeNotifications() {
+    try {
+        if (!pushSubscription) {
+            const registration = await navigator.serviceWorker.ready;
+            const sub = await registration.pushManager.getSubscription();
+            if (sub) pushSubscription = sub;
+        }
+
+        const res = await fetchWithAuth(API + "/staff/push/unsubscribe/", {
+            method: "POST",
+            body: JSON.stringify({
+                endpoint: pushSubscription ? pushSubscription.endpoint : ''
+            })
+        });
+
+        if (res && res.ok) {
+            if (pushSubscription) {
+                await pushSubscription.unsubscribe();
+            }
+            isSubscribed = false;
+            pushSubscription = null;
+            updateNotificationUI();
+            showToast('🔕 Notifications disabled.', 'info');
+        } else {
+            showToast('Failed to unsubscribe.', 'error');
+        }
+    } catch(e) {
+        console.error("Unsubscribe error:", e);
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+// ============================================================
+// Incoming Call Handling
+// ============================================================
+
+function showIncomingCall(data) {
+    const alertDiv = document.getElementById('incomingCallAlert');
+    const callerInfo = document.getElementById('callerInfo');
+    const deptInfo = document.getElementById('callDeptInfo');
+    
+    currentCallId = data.call_id;
+    callerInfo.textContent = `Room ${data.room_number} is calling`;
+    deptInfo.textContent = `Department: ${data.department || 'Reception'}`;
+    alertDiv.classList.add('active');
+    activeCallStatus = 'ringing';
+    
+    // Play sound
+    playIncomingCallSound();
+    
+    // Show notification if page is in background
+    if (document.hidden && Notification.permission === 'granted') {
+        new Notification('📞 Incoming Call', {
+            body: `Room ${data.room_number} is calling ${data.department || 'Reception'}`,
+            icon: '/static/icons/phone-icon.png',
+            tag: 'incoming-call',
+            requireInteraction: true
+        });
+    }
+}
+
+function playIncomingCallSound() {
+    try {
+        const audio = new Audio('/static/sounds/ring.mp3');
+        audio.loop = true;
+        audio.volume = 0.5;
+        audio.play();
+        window.callAudio = audio;
+    } catch(e) {
+        console.log('Could not play sound:', e);
+    }
+}
+
+function stopCallSound() {
+    if (window.callAudio) {
+        window.callAudio.pause();
+        window.callAudio.currentTime = 0;
+        window.callAudio = null;
+    }
+}
+
+async function answerCall() {
+    if (!currentCallId) {
+        showToast('No active call to answer.', 'error');
+        return;
+    }
+    
+    try {
+        const res = await fetchWithAuth(API + "/calls/answer/", {
+            method: "POST",
+            body: JSON.stringify({
+                call_id: currentCallId,
+                action: 'answer'
+            })
+        });
+
+        if (res && res.ok) {
+            const data = await res.json();
+            stopCallSound();
+            document.getElementById('incomingCallAlert').classList.remove('active');
+            activeCallStatus = 'connected';
+            
+            // Show active call card
+            document.getElementById('activeCallCard').style.display = 'block';
+            document.getElementById('callStatusText').textContent = '📞 Connected';
+            document.getElementById('callerDetail').textContent = `Room ${data.caller_room || '---'} - ${data.department || 'Reception'}`;
+            
+            // Start timer
+            callStartTime = new Date();
+            if (callTimerInterval) clearInterval(callTimerInterval);
+            callTimerInterval = setInterval(updateCallTimer, 1000);
+            
+            showToast('Call answered!', 'success');
+            
+            // Refresh call history
+            setTimeout(loadCallHistory, 1000);
+        } else {
+            const err = res ? await res.json() : {};
+            showToast('Failed to answer: ' + (err.error || 'Unknown error'), 'error');
+        }
+    } catch(e) {
+        console.error('Error answering call:', e);
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+async function declineCall() {
+    if (!currentCallId) {
+        showToast('No active call to decline.', 'error');
+        return;
+    }
+    
+    try {
+        const res = await fetchWithAuth(API + "/calls/answer/", {
+            method: "POST",
+            body: JSON.stringify({
+                call_id: currentCallId,
+                action: 'decline'
+            })
+        });
+
+        if (res && res.ok) {
+            stopCallSound();
+            document.getElementById('incomingCallAlert').classList.remove('active');
+            showToast('Call declined', 'info');
+            currentCallId = null;
+            activeCallStatus = 'ended';
+            
+            // Refresh call history
+            setTimeout(loadCallHistory, 1000);
+        } else {
+            const err = res ? await res.json() : {};
+            showToast('Failed to decline: ' + (err.error || 'Unknown error'), 'error');
+        }
+    } catch(e) {
+        console.error('Error declining call:', e);
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+async function endActiveCall() {
+    if (!currentCallId) {
+        showToast('No active call.', 'error');
+        return;
+    }
+    
+    try {
+        var duration = "00:00";
+        if (callStartTime) {
+            const elapsed = Math.floor((new Date() - callStartTime) / 1000);
+            const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const secs = String(elapsed % 60).padStart(2, '0');
+            duration = mins + ":" + secs;
+        }
+        
+        const res = await fetchWithAuth(API + "/calls/end/", {
+            method: "POST",
+            body: JSON.stringify({
+                call_id: currentCallId,
+                duration: duration
+            })
+        });
+
+        if (res && res.ok) {
+            if (callTimerInterval) {
+                clearInterval(callTimerInterval);
+                callTimerInterval = null;
+            }
+            callStartTime = null;
+            document.getElementById('activeCallCard').style.display = 'none';
+            showToast('Call ended', 'info');
+            activeCallStatus = 'ended';
+            currentCallId = null;
+            
+            // Refresh call history
+            setTimeout(loadCallHistory, 1000);
+        } else {
+            const err = res ? await res.json() : {};
+            showToast('Failed to end call: ' + (err.error || 'Unknown error'), 'error');
+        }
+    } catch(e) {
+        console.error('Error ending call:', e);
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+function updateCallTimer() {
+    if (!callStartTime) return;
+    const elapsed = Math.floor((new Date() - callStartTime) / 1000);
+    const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const secs = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('callTimer').textContent = mins + ':' + secs;
+}
+
+// ============================================================
+// Load Call Analytics
+// ============================================================
+
+async function loadCallAnalytics() {
+    try {
+        const res = await fetchWithAuth(API + "/calls/analytics/");
+        if (!res) return;
+        
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('totalCalls').textContent = data.total_calls || 0;
+            document.getElementById('todayCalls').textContent = data.today_calls || 0;
+            document.getElementById('missedCalls').textContent = data.missed_calls || 0;
+            document.getElementById('avgDuration').textContent = data.avg_duration || '0:00';
+        }
+    } catch(e) {
+        console.error('Error loading analytics:', e);
+    }
+}
+
+// ============================================================
+// Load Call History
+// ============================================================
+
+async function loadCallHistory() {
+    try {
+        const res = await fetchWithAuth(API + "/calls/analytics/");
+        if (!res) return;
+        
+        if (res.ok) {
+            const data = await res.json();
+            const container = document.getElementById('callHistory');
+            
+            if (data.today_calls_list && data.today_calls_list.length > 0) {
+                container.innerHTML = data.today_calls_list.map(call => {
+                    const statusClass = call.status.toLowerCase();
+                    return `
+                        <div class="call-history-item">
+                            <div>
+                                <div class="caller">Room ${call.caller_room}</div>
+                                <div class="dept">${call.department || 'Unknown'} • ${call.time}</div>
+                            </div>
+                            <div>
+                                <span class="status ${statusClass}">${call.status}</span>
+                                <span class="duration">${call.duration}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:40px;">No call history available.</p>';
+            }
+        }
+    } catch(e) {
+        console.error('Error loading call history:', e);
+        document.getElementById('callHistory').innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:40px;">Error loading call history.</p>';
+    }
+}
+
+// ============================================================
+// Check for Active Calls
+// ============================================================
+
+async function checkForActiveCalls() {
+    try {
+        const res = await fetchWithAuth(API + "/calls/status/");
+        if (!res) return;
+        
+        if (res.ok) {
+            const data = await res.json();
+            if (data.has_active_call) {
+                if (data.status === 'ringing') {
+                    // Show incoming call alert
+                    showIncomingCall({
+                        call_id: data.call_id,
+                        room_number: data.caller_room,
+                        department: data.department
+                    });
+                } else if (data.status === 'connected') {
+                    currentCallId = data.call_id;
+                    activeCallStatus = 'connected';
+                    document.getElementById('activeCallCard').style.display = 'block';
+                    document.getElementById('callStatusText').textContent = '📞 Connected';
+                    document.getElementById('callerDetail').textContent = `Room ${data.caller_room} - ${data.department || 'Reception'}`;
+                    
+                    if (data.started_at) {
+                        callStartTime = new Date(data.started_at);
+                        if (callTimerInterval) clearInterval(callTimerInterval);
+                        callTimerInterval = setInterval(updateCallTimer, 1000);
+                    }
+                }
+            } else {
+                // No active calls
+                if (activeCallStatus !== 'idle') {
+                    document.getElementById('activeCallCard').style.display = 'none';
+                    document.getElementById('incomingCallAlert').classList.remove('active');
+                    activeCallStatus = 'idle';
+                    currentCallId = null;
+                    callStartTime = null;
+                    if (callTimerInterval) {
+                        clearInterval(callTimerInterval);
+                        callTimerInterval = null;
+                    }
+                }
+            }
+        }
+    } catch(e) {
+        console.error('Error checking active calls:', e);
+    }
+}
+
+// ============================================================
+// Service Worker Message Listener
+// ============================================================
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'incoming_call') {
+            showIncomingCall(event.data);
+        }
+    });
+}
+
+// ============================================================
+// Initialize Page
+// ============================================================
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Set user info
+    document.getElementById("userName").textContent = user.full_name || user.email || "Staff";
+    document.getElementById("userAvatar").textContent = (user.first_name || "S")[0].toUpperCase();
+    document.getElementById("userRole").textContent = staff.position || staff.department || "Staff";
+    document.getElementById("sidebarHotel").textContent = hotel.name || "Hotel";
+    document.getElementById("sidebarDept").textContent = staff.department || "Staff";
+
+    // Check notification status
+    checkNotificationStatus();
+    
+    // Load call data
+    loadCallAnalytics();
+    loadCallHistory();
+    
+    // Check for active calls
+    setTimeout(checkForActiveCalls, 1000);
+    
+    // Periodic checks
+    setInterval(checkForActiveCalls, 5000);
+    setInterval(loadCallAnalytics, 30000);
+    setInterval(loadCallHistory, 30000);
+
+
+
+
+
+
+
+// call.html - Add this inside the <script> tag
+
+// ============================================================
+// Service Worker Message Listener
+// ============================================================
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function(event) {
+        console.log('📨 Message from Service Worker:', event.data);
+        
+        if (event.data && event.data.type === 'answer_call') {
+            // Staff clicked Answer on notification
+            const callId = event.data.call_id;
+            const roomNumber = event.data.room_number || 'Unknown';
+            const department = event.data.department || 'Reception';
+            
+            console.log('✅ Answering call from notification:', callId);
+            
+            if (callId) {
+                currentCallId = callId;
+                // Show the incoming call alert with the details
+                showIncomingCall({
+                    call_id: callId,
+                    room_number: roomNumber,
+                    department: department
+                });
+                // Automatically answer the call
+                setTimeout(function() {
+                    answerCall();
+                }, 500);
+            }
+        } else if (event.data && event.data.type === 'decline_call') {
+            // Staff clicked Decline on notification
+            const callId = event.data.call_id;
+            console.log('❌ Declining call from notification:', callId);
+            if (callId) {
+                currentCallId = callId;
+                declineCall();
+            }
+        }
+    });
+}
+
+// ============================================================
+// Updated showIncomingCall function
+// ============================================================
+
+function showIncomingCall(data) {
+    const alertDiv = document.getElementById('incomingCallAlert');
+    const callerInfo = document.getElementById('callerInfo');
+    const deptInfo = document.getElementById('callDeptInfo');
+    
+    currentCallId = data.call_id;
+    callerInfo.textContent = `📞 Room ${data.room_number || 'Unknown'} is calling`;
+    deptInfo.textContent = `Department: ${data.department || 'Reception'}`;
+    alertDiv.classList.add('active');
+    activeCallStatus = 'ringing';
+    
+    console.log('📞 Incoming call alert shown:', data);
+    
+    // Play sound
+    playIncomingCallSound();
+    
+    // Show notification if page is in background
+    if (document.hidden && Notification.permission === 'granted') {
+        new Notification('📞 Incoming Call', {
+            body: `Room ${data.room_number || 'Unknown'} is calling ${data.department || 'Reception'}`,
+            icon: '/static/icons/phone-icon.png',
+            tag: 'incoming-call-' + data.call_id,
+            requireInteraction: true
+        });
+    }
+}
+
+// ============================================================
+// Updated answerCall function with better error handling
+// ============================================================
+
+async function answerCall() {
+    if (!currentCallId) {
+        showToast('No active call to answer.', 'error');
+        return;
+    }
+    
+    console.log('📞 Answering call:', currentCallId);
+    
+    try {
+        const res = await fetchWithAuth(API + "/calls/answer/", {
+            method: "POST",
+            body: JSON.stringify({
+                call_id: currentCallId,
+                action: 'answer'
+            })
+        });
+
+        if (res && res.ok) {
+            const data = await res.json();
+            console.log('✅ Call answered successfully:', data);
+            
+            stopCallSound();
+            document.getElementById('incomingCallAlert').classList.remove('active');
+            activeCallStatus = 'connected';
+            
+            // Show active call card
+            document.getElementById('activeCallCard').style.display = 'block';
+            document.getElementById('callStatusText').textContent = '📞 Connected';
+            document.getElementById('callerDetail').textContent = `Room ${data.caller_room || '101'} - ${data.department || 'Reception'}`;
+            
+            // Start timer
+            callStartTime = new Date();
+            if (callTimerInterval) clearInterval(callTimerInterval);
+            callTimerInterval = setInterval(updateCallTimer, 1000);
+            
+            showToast('Call answered!', 'success');
+            
+            // Notify the guest that call was answered
+            try {
+                await fetchWithAuth(API + "/calls/notify-guest/", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        call_id: currentCallId,
+                        status: 'connected'
+                    })
+                });
+                console.log('✅ Guest notified about answered call');
+            } catch(e) {
+                console.log('Guest notification error:', e);
+            }
+            
+            // Refresh call history
+            setTimeout(loadCallHistory, 1000);
+        } else {
+            const err = res ? await res.json() : { error: 'Unknown error' };
+            console.error('❌ Failed to answer call:', err);
+            showToast('Failed to answer: ' + (err.error || 'Unknown error'), 'error');
+        }
+    } catch(e) {
+        console.error('❌ Error answering call:', e);
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+// ============================================================
+// Updated declineCall function
+// ============================================================
+
+async function declineCall() {
+    if (!currentCallId) {
+        showToast('No active call to decline.', 'error');
+        return;
+    }
+    
+    console.log('📞 Declining call:', currentCallId);
+    
+    try {
+        const res = await fetchWithAuth(API + "/calls/answer/", {
+            method: "POST",
+            body: JSON.stringify({
+                call_id: currentCallId,
+                action: 'decline'
+            })
+        });
+
+        if (res && res.ok) {
+            const data = await res.json();
+            console.log('✅ Call declined successfully:', data);
+            
+            stopCallSound();
+            document.getElementById('incomingCallAlert').classList.remove('active');
+            showToast('Call declined', 'info');
+            
+            // Notify the guest that call was declined
+            try {
+                await fetchWithAuth(API + "/calls/notify-guest/", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        call_id: currentCallId,
+                        status: 'declined'
+                    })
+                });
+            } catch(e) {
+                console.log('Guest notification error:', e);
+            }
+            
+            currentCallId = null;
+            activeCallStatus = 'ended';
+            
+            // Refresh call history
+            setTimeout(loadCallHistory, 1000);
+        } else {
+            const err = res ? await res.json() : { error: 'Unknown error' };
+            console.error('❌ Failed to decline call:', err);
+            showToast('Failed to decline: ' + (err.error || 'Unknown error'), 'error');
+        }
+    } catch(e) {
+        console.error('❌ Error declining call:', e);
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+
+
+// call.html - Add this function
+
+function showActiveCall(callData) {
+    // If there's an active call, show a button to open the call interface
+    const container = document.getElementById('activeCallCard');
+    container.style.display = 'block';
+    
+    document.getElementById('callStatusText').textContent = '📞 ' + (callData.status || 'Ringing');
+    document.getElementById('callerDetail').textContent = `Room ${callData.caller_room || '---'} - ${callData.department || 'Reception'}`;
+    
+    // Add button to open call interface
+    const actionsDiv = container.querySelector('.call-actions') || document.createElement('div');
+    actionsDiv.className = 'call-actions';
+    actionsDiv.style.cssText = 'display:flex;gap:8px;margin-top:12px;';
+    actionsDiv.innerHTML = `
+        <button class="btn btn-gold" onclick="openCallInterface()">📞 Open Call</button>
+        <button class="btn btn-danger btn-sm" onclick="endActiveCall()">⏹ End Call</button>
+    `;
+    container.appendChild(actionsDiv);
+}
+
+function openCallInterface() {
+    if (!currentCallId) return;
+    const room = document.getElementById('callerDetail').textContent.match(/Room (\d+)/)?.[1] || '---';
+    const dept = document.getElementById('callerDetail').textContent.match(/- (.*)/)?.[1] || 'Reception';
+    const url = '/staff/dashboard/call-interface.html?call_id=' + currentCallId + 
+                '&room=' + room + 
+                '&dept=' + encodeURIComponent(dept);
+    window.open(url, '_blank');
+}
+
+
+
+    // Service Worker registration
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/staff/sw.js')
+            .then(function(reg) {
+                console.log('Staff Service Worker registered for calls');
+            })
+            .catch(function(err) {
+                console.log('Service Worker registration failed:', err);
+            });
+    }
+});
+</script>
+</body>
+</html>
