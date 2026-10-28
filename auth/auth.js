@@ -187,3 +187,106 @@ window.isPWA = function() {
 };
 
 console.log('✅ Auth helpers loaded');
+
+
+
+// ============================================================
+// Signup Form Handler
+// ============================================================
+const signupForm = document.getElementById('signupForm');
+
+if (signupForm) {
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors();
+
+        // 1. Gather input values matching your HTML IDs
+        const first_name = document.getElementById('firstName')?.value.trim();
+        const last_name = document.getElementById('lastName')?.value.trim();
+        const email = document.getElementById('email')?.value.trim();
+        const hotel_name = document.getElementById('hotelName')?.value.trim();
+        const phone = document.getElementById('phone')?.value.trim();
+        const password = document.getElementById('password')?.value;
+        const confirm_password = document.getElementById('confirmPassword')?.value;
+        const agree_terms = document.getElementById('agreeTerms')?.checked;
+
+        // 2. Client-side Validation Checks
+        let isValid = true;
+
+        if (!first_name) { showFieldError('firstName', 'First name is required'); isValid = false; }
+        if (!last_name) { showFieldError('lastName', 'Last name is required'); isValid = false; }
+        if (!email) { showFieldError('email', 'Email address is required'); isValid = false; }
+        if (!hotel_name) { showFieldError('hotelName', 'Hotel name is required'); isValid = false; }
+        if (!password || password.length < 8) { showFieldError('password', 'Password must be at least 8 characters'); isValid = false; }
+        if (password !== confirm_password) { showFieldError('confirmPassword', 'Passwords do not match'); isValid = false; }
+        if (!agree_terms) { showFormError('You must agree to the Terms of Service'); isValid = false; }
+
+        if (!isValid) return;
+
+        // 3. UI Loading State
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
+        const submitLoader = document.getElementById('submitLoader');
+
+        if (submitBtn) submitBtn.disabled = true;
+        if (submitText) submitText.style.display = 'none';
+        if (submitLoader) submitLoader.style.display = 'inline-block';
+
+        try {
+            // 4. Send Request to Backend API
+            // Note: Update '/hotel-owner/signup/' if your backend uses a different route suffix
+            const response = await fetch(API_BASE + '/hotel-owner/signup/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    first_name,
+                    last_name,
+                    email,
+                    hotel_name,
+                    phone,
+                    password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showFormSuccess('Account created successfully! Redirecting...');
+                
+                // If backend returns a token or user session automatically on sign-up
+                if (data.access) {
+                    setToken(data.access);
+                    if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+                    if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+                }
+
+                setTimeout(() => {
+                    window.location.href = '/hotel-owner/index.html'; // Or your target post-signup page
+                }, 1500);
+            } else {
+                // Handle API error dictionaries (e.g., email already exists)
+                if (typeof data === 'object') {
+                    let errorMessage = '';
+                    for (const [key, value] of Object.entries(data)) {
+                        errorMessage += `${key}: ${Array.isArray(value) ? value.join(', ') : value} \n`;
+                        if (key === 'email') showFieldError('email', value);
+                        if (key === 'password') showFieldError('password', value);
+                    }
+                    showFormError(errorMessage || 'Registration failed. Please check your inputs.');
+                } else {
+                    showFormError(data.message || data.error || 'Registration failed.');
+                }
+            }
+        } catch (err) {
+            console.error('Registration error:', err);
+            showFormError('Network error: Unable to connect to server.');
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+            if (submitText) submitText.style.display = 'inline-block';
+            if (submitLoader) submitLoader.style.display = 'none';
+        }
+    });
+}
