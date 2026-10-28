@@ -30,6 +30,14 @@
         .btn-primary{width:100%;padding:14px;border:none;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;background:linear-gradient(135deg,#e4af3e,#c48a20);color:#000;transition:all .2s}
         .btn-primary:hover{opacity:.85}
         .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+        
+        /* New Create Account button styles */
+        .auth-divider{display:flex;align-items:center;text-align:center;margin:20px 0;color:#55556e;font-size:.75rem}
+        .auth-divider::before, .auth-divider::after{content:'';flex:1;border-bottom:1px solid rgba(255,255,255,.06)}
+        .auth-divider span{padding:0 10px}
+        .btn-secondary{display:block;width:100%;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:12px;font-weight:600;font-size:.85rem;text-align:center;text-decoration:none;color:#eaeaf0;background:rgba(255,255,255,.02);transition:all .2s}
+        .btn-secondary:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.25)}
+
         .footer-text{text-align:center;color:#55556e;font-size:.7rem;margin-top:16px}
         .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:8px;font-size:.85rem;font-weight:600;color:#fff;z-index:9999;display:none;max-width:90%;text-align:center}
         .toast.error{background:rgba(226,65,44,.95)}
@@ -39,10 +47,6 @@
         .pwa-install-banner{background:linear-gradient(135deg,#e4af3e,#c98e22);color:#000;padding:12px 16px;border-radius:12px;margin-bottom:16px;display:none;align-items:center;justify-content:space-between}
         .pwa-install-banner.show{display:flex}
         .pwa-install-banner button{background:#000;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.75rem}
-        .role-badge{display:inline-block;padding:4px 12px;border-radius:12px;font-size:.65rem;font-weight:700;margin-left:8px}
-        .role-badge.staff{background:rgba(47,160,106,.2);color:#2fa06a}
-        .role-badge.admin{background:rgba(59,130,246,.2);color:#3b82f6}
-        .role-badge.owner{background:rgba(228,175,62,.2);color:#e4af3e}
     </style>
 </head>
 <body>
@@ -78,6 +82,14 @@
                 Sign In
             </button>
         </form>
+
+        <!-- Create Account Section -->
+        <div class="auth-divider">
+            <span>New to Voddic?</span>
+        </div>
+        <a href="http://127.0.0.1:5500/auth/signup.html" class="btn-secondary">
+            Create Hotel Account
+        </a>
 
         <p class="footer-text">Voddic Hotel Connect</p>
     </div>
