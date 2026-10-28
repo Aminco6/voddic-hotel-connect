@@ -79,6 +79,38 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer}
 .scan-area button{width:100%;max-width:200px;padding:9px;background:var(--brass);color:#000;border:none;border-radius:7px;font-weight:700;font-size:12px;cursor:pointer}
 
 footer{text-align:center;padding:16px 20px 30px;font-family:'IBM Plex Mono';font-size:9px;color:var(--muted-2)}footer span{color:var(--brass)}
+
+
+.hero-owner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  margin-bottom: 24px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  transition: all 0.25s ease;
+}
+
+.hero-owner-link span {
+  opacity: 0.75;
+}
+
+.hero-owner-link:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+  color: #ffffff;
+}
+
+
 </style>
 </head>
 <body>
@@ -88,6 +120,12 @@ footer{text-align:center;padding:16px 20px 30px;font-family:'IBM Plex Mono';font
     <div class="hero-badge"><span class="dot"></span> Guest Directory — Live</div>
     <h1 class="hero-title">Voddic<br><span>Hotel Digital Assistance</span></h1>
     <p class="hero-subtitle">One scan connects you to everything your hotel offers.</p>
+    
+    <!-- Small subtle button for hotel owners -->
+    <a href="http://127.0.0.1:5500/auth/signup.html" class="hero-owner-link">
+      <span>Are you a hotel owner?</span> Register your hotel here &rarr;
+    </a>
+
     <div class="hero-stats">
       <div class="hero-stat"><div class="hero-stat-num" id="statProps">—</div><div class="hero-stat-lbl">Properties</div></div>
       <div class="hero-stat"><div class="hero-stat-num" id="statRooms">—</div><div class="hero-stat-lbl">Rooms Available</div></div>

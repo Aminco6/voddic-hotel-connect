@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voddic Docs — Hotel Platform Help Center</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg:#ffffff;
+    --panel:#f7f8fa;
+    --panel-2:#eef1f6;
+    --line:#e1e5eb;
+    --text:#1e2733;
+    --text-muted:#5b6675;
+    --accent-blue:#1d5fd6;
+    --accent-green:#0d8a4e;
+    --accent-amber:#a35a00;
+    --red:#c22a2a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:16px;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:'Lexend',sans-serif;letter-spacing:.01em;margin:0;color:#0f172a;font-weight:600;}
+  a{color:inherit;text-decoration:none;}
+  p{line-height:1.75;font-size:16px;}
+
+  /* ===== Mobile menu trigger (fixed, top-left — shows only on small screens) ===== */
+  .menu-toggle{display:none;position:fixed;top:14px;left:14px;z-index:1000;background:var(--accent-blue);border:none;color:#ffffff;padding:10px 16px;border-radius:6px;font-family:'Lexend',sans-serif;font-weight:600;font-size:13px;letter-spacing:.02em;cursor:pointer;box-shadow:0 4px 14px rgba(15,23,42,.18);}
+
+  /* ===== Shell / Sidebar (identical pattern to the Voddic Academy sandbox) ===== */
+  .shell{display:flex;min-height:100vh;}
+  #sidebar{width:290px;flex:none;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;transition:transform .3s ease;}
+  .sidebar-inner{width:290px;padding:18px 16px;}
+  .sidebar-header{padding-bottom:14px;margin-bottom:10px;border-bottom:1px solid var(--line);}
+  .sidebar-header .logo{display:block;font-family:'Lexend',sans-serif;font-weight:700;letter-spacing:.01em;color:#0f172a;font-size:21px;line-height:1.2;}
+  .sidebar-header .logo span{color:var(--accent-blue);}
+  .sidebar-header .tagline{display:block;font-size:12px;color:var(--text-muted);margin-top:4px;letter-spacing:.01em;}
+  #topicSearch{width:100%;background:#ffffff;border:1px solid var(--line);color:var(--text);padding:10px 11px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;margin-bottom:14px;}
+  #topicSearch::placeholder{color:#93a0b1;}
+  .cat-count{color:var(--text-muted);font-size:11px;}
+  details.cat{border-bottom:1px solid var(--line);padding:6px 0;}
+  details.cat summary{cursor:pointer;font-family:'Lexend',sans-serif;font-weight:500;font-size:13px;letter-spacing:.01em;color:#1e2733;padding:6px 2px;display:flex;justify-content:space-between;align-items:center;list-style:none;}
+  details.cat summary::-webkit-details-marker{display:none;}
+  details.cat summary::before{content:'▸';color:var(--accent-blue);margin-right:7px;font-size:10px;transition:.15s;}
+  details.cat[open] summary::before{content:'▾';}
+  details.cat ul{list-style:none;margin:4px 0 6px;padding:0 0 0 18px;display:flex;flex-direction:column;gap:2px;}
+  details.cat li a{display:flex;justify-content:space-between;gap:6px;font-size:12.5px;color:var(--text-muted);padding:6px 7px;border-radius:4px;}
+  details.cat li a:hover{color:var(--accent-blue);background:var(--panel-2);}
+  details.cat li a.current{color:#0f172a;font-weight:600;background:#e4edff;border-left:2px solid var(--accent-blue);}
+  details.cat li a .n{color:#9aa5b3;font-size:10px;}
+  details.cat li.hidden{display:none;}
+  details.cat.hidden{display:none;}
+  #sidebarNote{font-size:11.5px;color:#7c8798;line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
+
+  @media (max-width:900px){
+    .menu-toggle{display:block;}
+    #sidebar{position:fixed;top:0;left:0;height:100%;width:290px;transform:translateX(-100%);z-index:999;box-shadow:2px 0 24px rgba(15,23,42,.18);}
+    #sidebar.open{transform:translateX(0);}
+    main.container{padding-top:64px;}
+  }
+
+  /* ===== Main content ===== */
+  .container{max-width:820px;margin:0 auto;padding:28px 24px 120px;flex:1;min-width:0;}
+  .breadcrumb{font-size:12.5px;color:var(--text-muted);margin-bottom:14px;}
+  .breadcrumb b{color:var(--accent-blue);font-weight:400;}
+
+  .progress-wrap{margin-bottom:26px;}
+  .progress-label{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .progress-track{height:6px;background:var(--panel-2);border-radius:3px;overflow:hidden;border:1px solid var(--line);}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-blue),var(--accent-green));border-radius:3px;transition:width .25s ease;}
+
+  .doc-icon{font-size:30px;}
+  .doc-title{font-size:30px;margin:10px 0 10px;line-height:1.25;}
+  .doc-blurb{color:#374151;font-size:17px;line-height:1.75;margin-bottom:22px;}
+
+  .callout{border:1px solid var(--line);border-left:4px solid var(--accent-blue);background:var(--panel);border-radius:8px;padding:15px 17px;margin:18px 0;font-size:15px;line-height:1.7;color:#2b3542;}
+  .callout.why{border-left-color:var(--accent-blue);}
+  .callout.tip{border-left-color:var(--accent-green);}
+  .callout.warn{border-left-color:var(--accent-amber);}
+  .callout.result{border-left-color:var(--accent-green);background:#f0faf3;}
+  .callout .lbl{display:block;font-family:'Lexend',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-blue);margin-bottom:6px;}
+  .callout.tip .lbl{color:var(--accent-green);}
+  .callout.warn .lbl{color:var(--accent-amber);}
+  .callout.result .lbl{color:var(--accent-green);}
+
+  .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;}
+  @media (max-width:640px){.card-grid{grid-template-columns:1fr;}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 15px;}
+  .card h4{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-blue);margin-bottom:6px;}
+  .card p{font-size:13.5px;color:var(--text-muted);margin:0;}
+
+  .tutorial-block{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:20px 22px;margin:20px 0;}
+  .tutorial-block h3{font-size:13.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-amber);margin-bottom:11px;font-weight:700;}
+  .req-list, .steps-list{list-style:none;margin:0;padding:0;}
+  .req-list li{font-size:15px;color:#374151;padding:5px 0 5px 20px;position:relative;line-height:1.6;}
+  .req-list li::before{content:'—';position:absolute;left:0;color:var(--accent-blue);}
+  .steps-list li{display:flex;gap:14px;padding:13px 0;border-top:1px solid var(--line);}
+  .steps-list li:first-child{border-top:none;}
+  .step-num{flex:none;width:28px;height:28px;border-radius:50%;background:#ffffff;border:1.5px solid var(--accent-blue);color:var(--accent-blue);display:flex;align-items:center;justify-content:center;font-family:'Lexend',sans-serif;font-size:13px;font-weight:700;}
+  .step-body h5{font-size:15.5px;color:#0f172a;margin-bottom:4px;font-family:'Lexend',sans-serif;font-weight:600;letter-spacing:.01em;}
+  .step-body p{font-size:14.5px;color:#4b5563;margin:0;line-height:1.65;}
+
+  .placeholder{border:1.5px dashed #c9d2df;border-radius:8px;padding:18px;margin:16px 0;background:#f8fafc;font-size:13px;color:#5b6675;}
+  .placeholder .lbl{display:inline-block;font-family:'Lexend',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;background:#ffffff;border:1px solid var(--line);color:var(--accent-blue);padding:4px 9px;border-radius:4px;margin-bottom:9px;}
+  .placeholder.video .lbl{color:var(--accent-amber);}
+  .placeholder .cap{font-size:14px;color:#374151;line-height:1.6;}
+  .placeholder dl{margin:8px 0 0;display:grid;grid-template-columns:90px 1fr;gap:6px 10px;}
+  .placeholder dt{color:#8892a0;font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;}
+  .placeholder dd{margin:0;font-size:13.5px;color:#374151;}
+
+  .faq-item{border-bottom:1px solid var(--line);padding:14px 0;}
+  .faq-item h4{font-size:15.5px;color:#0f172a;margin-bottom:6px;font-weight:600;}
+  .faq-item p{font-size:14.5px;color:#4b5563;margin:0;line-height:1.65;}
+
+  .mistakes-list{margin:0;padding-left:20px;font-size:15px;color:#374151;line-height:1.75;}
+
+  .navbtns{position:sticky;bottom:0;display:flex;justify-content:space-between;gap:10px;margin-top:36px;padding:16px 0 4px;background:linear-gradient(0deg,#ffffff 65%,rgba(255,255,255,0));}
+  .navbtn{flex:1;max-width:47%;background:#ffffff;border:1.5px solid var(--line);color:var(--text);padding:14px 16px;border-radius:8px;cursor:pointer;font-family:'Lexend',sans-serif;font-size:13.5px;letter-spacing:.01em;text-align:left;transition:.15s;box-shadow:0 1px 3px rgba(15,23,42,.06);}
+  .navbtn:hover{border-color:var(--accent-blue);}
+  .navbtn.next{text-align:right;margin-left:auto;}
+  .navbtn .small{display:block;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;font-weight:600;}
+  .navbtn[disabled]{opacity:.4;cursor:not-allowed;}
+  .navbtn[disabled]:hover{border-color:var(--line);}
+
+  .section-heading{font-size:17px;letter-spacing:.005em;color:#0f172a;margin:28px 0 11px;padding-top:16px;border-top:1px solid var(--line);font-weight:600;}
+  .section-heading:first-of-type{border-top:none;padding-top:0;margin-top:20px;}
+</style>
+</head>
+<body>
+
+  <button class="menu-toggle" id="sidebarToggle">☰ Menu</button>
+
+  <div class="shell">
+    <!-- ================= COLLAPSIBLE TOPIC SIDEBAR (same pattern as the Academy sandbox) ================= -->
+    <aside id="sidebar">
+      <div class="sidebar-inner">
+        <div class="sidebar-header">
+          <span class="logo">Voddic <span>Docs</span></span>
+          <span class="tagline">Hotel Platform Help Center</span>
+        </div>
+        <input type="text" id="topicSearch" placeholder="Search the docs…">
+        <div id="topicTree"></div>
+        <p id="sidebarNote">Every guide below is a separate journey — Guest, Reception, Housekeeping, Restaurant, Security, Super Admin and Hotel Owner each get their own path, so nobody has to read documentation meant for a different job.</p>
+      </div>
+    </aside>
+
+    <main class="container">
+      <div class="breadcrumb" id="breadcrumb"></div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span id="progressText">Step 1 of 25</span><span id="progressCat"></span></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:4%"></div></div>
+      </div>
+
+      <div id="pageBody"></div>
+
+      <div class="navbtns">
+        <button class="navbtn prev" id="prevBtn"><span class="small">◂ Previous</span><span id="prevLabel"></span></button>
+        <button class="navbtn next" id="nextBtn"><span class="small">Next ▸</span><span id="nextLabel"></span></button>
+      </div>
+    </main>
+  </div>
+
+<script>
+/* ============================================================
+   DATA — 25 guides, grouped into 8 sidebar categories.
+   Flat "PAGES" order below is the canonical Step 1→25 reading order.
+   ============================================================ */
+/* ============================================================
+   MEDIA — put your real screenshots and videos here.
+   One line per page. Use the page id as the key.
+   - image: path to a PNG/JPG, e.g. "images/emergency.png"
+   - video: path to an MP4, e.g. "videos/emergency.mp4",
+            OR a YouTube link, e.g. "https://youtu.be/XXXXXXXXXXX"
+   Leave a page out (or leave a value empty) and the dashed
+   placeholder is shown instead, so you can add media gradually.
+   ============================================================ */
+const MEDIA = {
+  // "intro":          { image: "images/intro.png",          video: "videos/intro.mp4" },
+  // "guest-guide":    { image: "images/guest-guide.png",    video: "https://youtu.be/XXXXXXXXXXX" },
+  // "emergency":      { image: "images/emergency.png",      video: "videos/emergency.mp4" },
+  // "reception":      { image: "images/reception.png",      video: "videos/reception.mp4" },
+};
+
+const CATS = [
+  {cat:"Getting Started", ids:["intro","how-it-works","getting-started"]},
+  {cat:"Guest Experience", ids:["guest-guide","booking","device-security","emergency","chat","calls","services","orders","promotions"]},
+  {cat:"Staff & Operations", ids:["reception","staff","shifts"]},
+  {cat:"Administration", ids:["superadmin","reports","audit"]},
+  {cat:"Hotel Owner & Business", ids:["owner"]},
+  {cat:"Finance & Subscription", ids:["finance","subscription"]},
+  {cat:"Security & Technical", ids:["security"]},
+  {cat:"Support & What's Next", ids:["troubleshooting","faq","future"]}
+];
+
+const PAGES = [
+{id:"intro", title:"Voddic Introduction", icon:"👋", category:"Getting Started",
+ blurb:"Voddic is a digital guest experience, communication, safety and hotel service platform that works alongside a hotel's existing hotel-management, booking, payment and point-of-sale systems.",
+ why:"Most hotels already run software to manage bookings, payments and accounting. Voddic doesn't ask a hotel to replace any of that. It sits alongside it, so guests, staff and management can talk to each other in real time — something older systems usually aren't built for.",
+ sections:[
+   {h:"Where Voddic sits", body:"<pre style='background:#f3f5f8;border:1px solid var(--line);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#334155;overflow-x:auto;line-height:1.7;'>EXISTING HOTEL SYSTEMS\nPMS / POS / Booking / Accounting\n          ↓\n       VODDIC\n          ↓\nGuest ↔ Hotel Staff ↔ Management</pre>The hotel keeps using its existing systems for the things they already do well. Voddic handles guest communication, service requests, emergency alerts, room-aware requests and the day-to-day guest experience."},
+   {h:"Who uses Voddic", body:"Nine kinds of people use Voddic: the hotel owner, a super admin, reception staff, housekeeping staff, restaurant staff, security staff, other hotel staff, guests, and members of the public browsing hotels before they book. Each group has its own guide in this documentation."}
+ ]},
+
+{id:"how-it-works", title:"How Voddic Works", icon:"⚙️", category:"Getting Started",
+ blurb:"Voddic connects three groups — guests, hotel staff, and management — through one shared, room-aware system.",
+ sections:[
+   {h:"The everyday flow", body:"A guest checks in and connects their phone to their room. From there, they can message the hotel, ask for services, order food, or press the emergency button — and every request already knows which room and which guest it came from. Staff receive only the requests meant for their department, and management can see everything happening across the hotel in one dashboard."},
+   {h:"What Voddic is not", body:"Voddic is not a replacement for a hotel's booking system, point-of-sale, or landline phones. It's the layer that connects a guest's phone to the hotel's people and services."}
+ ]},
+
+{id:"getting-started", title:"Getting Started", icon:"🚀", category:"Getting Started",
+ blurb:"A short orientation for anyone opening Voddic for the first time — hotel management, staff, or guest.",
+ goal:"Understand the first-time setup so your hotel can start using Voddic.",
+ requirements:["A Voddic account created for your hotel","A device with an internet connection (computer for management/reception, phone for guests and mobile staff)"],
+ steps:[
+   {title:"Management signs in", text:"The person setting up the hotel signs in and completes the Hotel Profile — name, address, rooms, and departments."},
+   {title:"Add rooms and staff", text:"Rooms are added in Room Management, and staff accounts are created and assigned to a department (Reception, Housekeeping, Restaurant, Security, or Other)."},
+   {title:"Print or install room QR codes", text:"Each room gets a QR code, generated in QR Code Management, that stays permanently in that room."},
+   {title:"Everyone signs in from their own guide", text:"Staff sign in from the Staff PWA; guests never sign in — they scan a QR code once they're in their room."}
+ ],
+ result:"The hotel profile, rooms, staff and QR codes are ready, and the hotel can begin activating rooms for real guests.",
+ notes:["Understanding the Dashboard: the dashboard is a read-only summary — it shows counts like active bookings and occupied rooms, and does not need to be refreshed manually."],
+ image:{caption:"Hotel Profile setup screen showing name, address, and room count fields."},
+ video:{title:"Setting up your hotel on Voddic", duration:"60s", desc:"A walkthrough of creating a hotel profile, adding a room, and generating its QR code.", script:"Start on the empty dashboard. Open Hotel Profile, fill in the name and address, save. Open Room Management, add Room 205, save. Open QR Code Management, generate the QR for Room 205, show the printable code."}
+},
+
+{id:"guest-guide", title:"Guest Guide — Connecting to Your Room", icon:"🛎️", category:"Guest Experience",
+ blurb:"How a guest gets from arriving at the hotel to using Voddic on their own phone — no app store download, no technical knowledge needed.",
+ sections:[{h:"The arrival journey", body:"<pre style='background:#f3f5f8;border:1px solid var(--line);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#334155;overflow-x:auto;line-height:1.7;'>ARRIVAL\n  ↓\nReception gives guest room information\n  ↓\nGuest enters room\n  ↓\nGuest scans QR code\n  ↓\nVoddic recognizes the active room\n  ↓\nGuest phone is connected to the room\n  ↓\nGuest sees the simple hotel interface</pre>The QR code in the room can stay there permanently — it doesn't need to be replaced between guests. The QR code identifies the room. Voddic checks with the hotel's system whether the room is currently active and whether your phone is allowed to connect."}],
+ goal:"Connect your phone to your hotel room so you can chat with staff, request services, and reach help quickly.",
+ requirements:["A working stay (checked in by reception, or a paid booking)","A phone with a camera and internet access"],
+ steps:[
+   {title:"Get your room information from reception", text:"Example: Room 205 is ready for John."},
+   {title:"Enter the room", text:"Head to your room as normal."},
+   {title:"Scan the QR code", text:"Open your phone's camera and point it at the QR code near the door or on the desk."},
+   {title:"Confirm your stay if asked", text:"If reception checked you in manually, you may be asked for the identifier they gave you at the desk."},
+   {title:"Start using Voddic", text:"Your phone is now connected to Room 205. You'll see the hotel's simple guest home screen."}
+ ],
+ result:"Your phone becomes the connected device for your room, and you can chat, call, request services, order food, and use the emergency button — all already tied to Room 205, so you never have to repeat your room number.",
+ notes:["Two-guest rooms: if your room allows two occupants, a second person can scan the same QR code and connect their own phone, as long as a device slot is free.","Every connected device has its own, independent emergency button."],
+ mistakes:["Scanning the QR code before your stay has been activated by reception or confirmed by payment — wait for confirmation first.","Trying to connect a second device when both slots are already in use — reception can help free one up."],
+ troubleshoot:[{q:"All available guest device slots for this room are currently occupied.", a:"Both connection slots for this room are already in use. Contact reception — they can check who is connected and free a slot if needed."}],
+ image:{caption:"Guest phone screen showing the QR scan confirmation and the Room 205 home screen."},
+ video:{title:"Connecting your phone to your room", duration:"25s", desc:"Shows a guest scanning the in-room QR code and landing on the guest home screen.", script:"Guest opens camera app, scans code on the desk. Screen shows a brief \"Connecting to Room 205…\" message, then the guest home screen with chat, services, and emergency options.", startScreen:"Hotel room, QR code visible", endScreen:"Guest home screen"}
+},
+
+{id:"booking", title:"Booking & Payment", icon:"📅", category:"Guest Experience",
+ blurb:"There are two ways a room becomes active for a guest: reception activates it manually, or a guest books and pays automatically.",
+ sections:[
+   {h:"Manual booking (via reception)", body:"Reception activates the room using check-in and check-out information. The guest scans the room QR, and if required, provides the identifier given at check-in. Voddic verifies the active stay, and the device becomes connected."},
+   {h:"Automatic booking (self-service)", body:"The guest books and pays through Voddic. Once payment is confirmed, the booking becomes active and the guest's device can connect automatically the moment they scan the room QR — no reception step needed."}
+ ],
+ sections2:true,
+ notes:["Room 205, Capacity 2 example: if Device A is already connected and Device B is available, a second occupant scanning the same QR takes Device B. Once both are connected, further scans show the \"slots occupied\" message until reception frees one."],
+ image:{caption:"Booking confirmation screen showing payment status changing from Pending to Confirmed."},
+ video:{title:"Booking a room and getting confirmed", duration:"40s", desc:"Shows a guest completing payment and the booking status changing to active.", script:"Guest selects dates, enters payment details, taps Pay. Screen shows a brief processing state, then \"Booking confirmed — Room 205 is ready for check-in.\""}
+},
+
+{id:"device-security", title:"Guest Device & Room Security", icon:"🔐", category:"Guest Experience",
+ blurb:"A simple explanation of how Voddic makes sure only the right phone can connect to the right room.",
+ why:"Hotels need confidence that a random phone can't connect to someone else's room. Voddic checks this on the server, not just on the guest's phone.",
+ sections:[
+   {h:"In plain language", body:"The QR code identifies the room. Voddic checks with the hotel's system whether the room is currently active and whether your phone is allowed to connect. Nothing about your device — its browser, its stored data, or its network address — is treated as proof on its own."},
+   {h:"Device limits", body:"Every room has a capacity. Room 205 with a capacity of 2 allows Device A and Device B to connect. A third device is turned away unless an authorized action (like reception freeing a slot) changes the room's state."}
+ ],
+ notes:["Session expiry example: checkout is Friday 12:00 PM with a 10-minute grace period. After that, the system automatically ends the guest's connection to the room."],
+ troubleshoot:[{q:"Room already connected", a:"This room has reached its device limit. Ask reception to check who is currently connected."}]},
+
+{id:"emergency", title:"Emergency System", icon:"🚨", category:"Guest Experience",
+ blurb:"Need urgent help? Press the Emergency button.",
+ goal:"Get help from hotel staff quickly, from anywhere in the hotel that your connected phone has a signal.",
+ sections:[{h:"What happens when you press it", body:"<pre style='background:#f3f5f8;border:1px solid var(--line);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#334155;overflow-x:auto;line-height:1.7;'>Emergency created\n  ↓\nStaff notified\n  ↓\nStaff accepts\n  ↓\nStaff responds\n  ↓\nEmergency resolved</pre>Voddic records the hotel, the room, which guest device raised it, and the time. The right staff — for example, security — are alerted immediately."}],
+ steps:[
+   {title:"Press Emergency", text:"The button is always visible on the guest home screen."},
+   {title:"Wait for confirmation", text:"You'll see a short message confirming staff have been alerted."},
+   {title:"Stay reachable", text:"Staff may reply through chat or call to check on you while they're on the way."}
+ ],
+ result:"Security staff (in the Royal Palace Hotel example, David) receive the alert with the room number already attached, accept it, respond, and mark it resolved once it's handled. Management can review the full incident history afterward.",
+ notes:["This is an additional digital emergency channel — it does not replace a hotel's existing emergency procedures, alarms, or staff training."],
+ image:{caption:"Security staff screen showing an incoming emergency alert for Room 205."},
+ video:{title:"Responding to a guest emergency", duration:"30s", desc:"Shows the alert arriving on a security staff device and being accepted and resolved.", script:"Alert banner appears: \"Emergency — Room 205.\" Staff taps Accept, then later taps Resolve once handled.", startScreen:"Staff device, idle", endScreen:"Emergency marked Resolved"}
+},
+
+{id:"chat", title:"Chat & Communication", icon:"💬", category:"Guest Experience",
+ blurb:"A live chat between a guest and hotel staff, already tied to the guest's room.",
+ sections:[{h:"How it works", body:"A guest opens chat from their home screen and messages are routed to the right department. Because the chat is tied to the guest's active room, staff already know who they're talking to and which room to act on."}],
+ notes:["Chat history stays with the guest's session for the length of their stay."]},
+
+{id:"calls", title:"Calls (Audio, where available)", icon:"📞", category:"Guest Experience",
+ blurb:"Technology that allows supported browsers and devices to establish live audio communication between a guest and staff.",
+ sections:[
+   {h:"How a call happens", body:"<pre style='background:#f3f5f8;border:1px solid var(--line);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#334155;overflow-x:auto;line-height:1.7;'>Guest starts call\n  ↓\nStaff receives notification\n  ↓\nStaff opens call\n  ↓\nAudio connection established</pre>Two things work together here, and they do different jobs. A notification tells staff \"someone is calling you.\" The audio connection itself is what carries the actual conversation once staff opens it."}
+ ],
+ notes:["Calling behavior depends on the guest's and staff's browser and device. Audio calls through Voddic are not guaranteed to behave exactly like a native phone call when a phone is completely locked — supported behavior is documented per device where relevant."]},
+
+{id:"services", title:"Hotel Services", icon:"🧹", category:"Guest Experience",
+ blurb:"Guests can request housekeeping, towels, toiletries, maintenance, laundry, concierge help, transport, and other hotel services — all from their phone.",
+ sections:[{h:"Why requests are simple for guests", body:"Every request is already linked to the guest's active room and session, so staff never need to ask which room the guest is in — it's attached automatically."}],
+ goal:"Request a hotel service without calling the front desk.",
+ steps:[
+   {title:"Open Services", text:"From the guest home screen, tap Services."},
+   {title:"Choose what you need", text:"For example, Housekeeping → Extra Towels."},
+   {title:"Confirm the request", text:"Tap Send Request."}
+ ],
+ result:"The right department (Housekeeping, in this example) receives the request instantly, already knowing it's for your room."},
+
+{id:"orders", title:"Menu & Orders", icon:"🍽️", category:"Guest Experience",
+ blurb:"Guests can browse the hotel's food and drink menu and place an order from their room.",
+ goal:"Order food or drinks to your room.",
+ steps:[
+   {title:"Open the Menu", text:"Browse categories like breakfast, drinks, or room service."},
+   {title:"Add items to your order", text:"Choose quantities and any notes, like \"no onions.\""},
+   {title:"Confirm and pay if required", text:"Depending on hotel settings, payment may happen now or be added to your room bill."}
+ ],
+ result:"The order goes straight to the restaurant team (in our example, Mary's team), who accept it, prepare it, mark it ready, and deliver it — with status updates visible to the guest the whole way.",
+ image:{caption:"Guest menu screen with categories and an order summary."}
+},
+
+{id:"promotions", title:"Promotions", icon:"🏷️", category:"Guest Experience",
+ blurb:"Hotels can send offers to guests who are currently staying, and to past guests after they've checked out.",
+ sections:[
+   {h:"Examples", body:"\"20% off food today.\" \"Upgrade your room.\" \"Book our spa service.\" \"Airport transfer available.\" After checkout: \"Come back within 14 days and receive 10% off your next stay.\""},
+   {h:"What a hotel sets when creating a promotion", body:"Start and end date, target audience, discount amount, minimum order, expiration, and maximum number of uses."},
+   {h:"What management can measure afterward", body:"How many guests the promotion was sent to, how many opened it, how many resulting orders or bookings it produced, and the revenue it generated."}
+ ]},
+
+{id:"reception", title:"Reception Guide — Activating a Room", icon:"🗝️", category:"Staff & Operations",
+ blurb:"Reception's day-to-day work in Voddic: checking guests in, activating rooms, and helping with manual bookings.",
+ goal:"Activate a room so a checked-in guest can connect their phone.",
+ requirements:["Reception login to the Staff PWA","The guest's booking or walk-in details"],
+ steps:[
+   {title:"Sign in", text:"Open the Staff PWA and sign in with your reception account."},
+   {title:"View active rooms", text:"Check the current room list to confirm the room is free."},
+   {title:"Activate the room", text:"Enter check-in and check-out details for the guest, then activate."},
+   {title:"Hand off to the guest", text:"Tell the guest their room number. They'll scan the in-room QR code themselves."}
+ ],
+ result:"The room shows as active and ready for the guest to connect. If the guest needs a shared identifier to confirm their stay, reception provides it at this step.",
+ sections:[{h:"Other reception tasks", body:"Check-in, check-out, verifying an online booking, managing which guest devices are connected to a room, messaging a guest directly, and viewing current shift status."}],
+ mistakes:["Activating the wrong room number — always confirm the room on screen matches the guest's key or door."],
+ image:{caption:"Reception screen showing the Active Rooms list with Room 205 highlighted."},
+ video:{title:"Activating a room for check-in", duration:"35s", desc:"Shows reception entering check-in details and activating a room.", script:"Reception opens Active Rooms, selects Room 205, enters guest name and checkout time, taps Activate. Room status changes to Active.", startScreen:"Active Rooms list", endScreen:"Room 205 marked Active"}
+},
+
+{id:"staff", title:"Staff Guide — Housekeeping, Restaurant, Security & Other", icon:"🧑‍🔧", category:"Staff & Operations",
+ blurb:"Every department follows the same simple pattern: receive a request, accept it, do the work, mark it complete.",
+ sections:[
+   {h:"Housekeeping", body:"Receive requests, accept a request, start the task, complete the task, view the room, and check request history."},
+   {h:"Restaurant", body:"Receive a food order, accept it, prepare it, mark it ready, deliver it, and complete it."},
+   {h:"Security", body:"Receive an emergency, accept it, respond, mark arrived, resolve it, and view the emergency history."},
+   {h:"Other staff", body:"Any other department is routed the same way — requests go to whichever department they belong to, based on what the guest asked for."}
+ ],
+ goal:"Handle an incoming request from start to finish.",
+ steps:[
+   {title:"Get notified", text:"A request for your department appears with the room number already attached."},
+   {title:"Accept it", text:"Let the system (and the guest) know you're on it."},
+   {title:"Do the work", text:"Mark progress as you go — started, then complete."}
+ ],
+ result:"The guest sees their request status update in real time, and the request is logged in that department's history."},
+
+{id:"shifts", title:"Staff Shift Scheduling", icon:"🗓️", category:"Staff & Operations",
+ blurb:"Arrange existing staff into shifts so Voddic knows who is on duty right now.",
+ why:"A staff account existing doesn't mean that person should get every notification. Voddic routes normal requests to whoever is scheduled and on duty for that department.",
+ sections:[{h:"Example — Reception", body:"Morning 07:00–15:00: Sarah. Evening 15:00–23:00: David. Night 23:00–07:00: Michael."}],
+ goal:"Build a weekly schedule for a department.",
+ steps:[
+   {title:"Open Shift Scheduling", text:"Choose the department, for example Reception."},
+   {title:"Pick a view", text:"Weekly, monthly, or custom dates."},
+   {title:"Assign staff to shifts", text:"Drag and drop staff onto shift slots, or copy last week's schedule as a starting point."},
+   {title:"Save the schedule", text:"Published shifts determine who receives that department's notifications."}
+ ],
+ result:"Requests for a department are routed to whoever is currently on shift, not to everyone with an account. Emergency notifications are handled separately and may reach a wider group, since emergencies can need broader escalation.",
+ notes:["Staff don't need to be marked present every day by a manager — the published shift schedule is what determines duty status."]},
+
+{id:"superadmin", title:"Super Admin Guide", icon:"🛠️", category:"Administration",
+ blurb:"The Super Admin dashboard gives a full, hotel-wide view: operations, communication, hotel setup, finance, analytics, and system settings.",
+ sections:[
+   {h:"Dashboard summary cards", body:"Total Members, Total Rooms, Active Emergencies, Chat Messages, Active Bookings, Occupied Rooms, Today's Revenue, Pending Orders, Active Staff — all read-only at a glance."},
+   {h:"Operations", body:"Rooms, Guests, Bookings, Emergencies, Service Requests, Orders."},
+   {h:"Communication", body:"Live Chat, Calls, Notifications."},
+   {h:"Hotel", body:"Staff, Menu, QR Codes, Hotel Settings."},
+   {h:"Finance", body:"Payments, Transactions, Revenue, Subscription."},
+   {h:"Analytics", body:"Reports, Guest Analytics, Staff Performance, Emergency Analytics, Service Analytics."},
+   {h:"System", body:"Audit Logs, System Settings."}
+ ],
+ notes:["Each module follows the same pattern: what you see, what you can do, what you should not do, and the typical day-to-day workflow for it."]},
+
+{id:"reports", title:"Reports & Analytics", icon:"📊", category:"Administration",
+ blurb:"See how the hotel is actually performing — occupancy, revenue, guest activity, service response times, staff performance, emergency statistics, and promotion results.",
+ sections:[{h:"What you can measure", body:"Occupancy trends, revenue over time, how actively guests use Voddic, how quickly staff respond to requests, staff performance by department, emergency statistics, and how well each promotion performed."}]},
+
+{id:"audit", title:"Audit Logs", icon:"📜", category:"Administration",
+ blurb:"A time-stamped record of important administrative and financial actions, so anything unusual can always be traced.",
+ sections:[{h:"Example log", body:"<pre style='background:#f3f5f8;border:1px solid var(--line);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#334155;overflow-x:auto;line-height:1.7;'>10:31  Booking created\n10:32  Payment verified\n10:33  Room activated\n10:34  Device connected\n10:45  Food order created\n10:50  Order completed\n11:30  Checkout changed\n11:31  Manager approved change</pre>"}],
+ notes:["Audit logs exist so financial and administrative changes are always traceable — they are not something anyone can simply delete."]},
+
+{id:"owner", title:"Hotel Owner Guide — Why Voddic", icon:"🏨", category:"Hotel Owner & Business",
+ blurb:"Why a hotel would use Voddic even if it already has hotel-management software and landline phones.",
+ sections:[
+   {h:"How to think about it", body:"Your PMS manages the hotel. Your landline connects the room to reception. Voddic connects the guest to the hotel's services."},
+   {h:"What Voddic adds", body:"Digital guest services, room-aware requests, an emergency workflow, staff response tracking, service performance data, guest experience analytics, promotions, direct upselling, food and service ordering, guest feedback, a digital hotel directory, and guest engagement before, during and after the stay."}
+ ]},
+
+{id:"finance", title:"Finance", icon:"💳", category:"Finance & Subscription",
+ blurb:"Payments, transactions, revenue, refunds, discounts, and subscription billing, all in one place.",
+ sections:[
+   {h:"What's tracked for every payment", body:"Transaction ID, payment reference, amount, date and time, staff involved, status, refund status, approval, and full audit history."},
+   {h:"How confirmation works", body:"Payment confirmation is verified by the server — not just shown on a screen — so a payment can't be marked successful by mistake or by tampering with what's displayed."}
+ ],
+ notes:["Discounts above a certain amount typically require manager approval, configurable in Hotel Settings."]},
+
+{id:"subscription", title:"Subscription", icon:"🧾", category:"Finance & Subscription",
+ blurb:"What plan the hotel is on, when it renews, and what it includes.",
+ sections:[
+   {h:"What you can see", body:"Current plan, subscription status, renewal date, billing history, and payment status."},
+   {h:"Two different limits", body:"A hotel's room capacity/room count is not the same thing as the Voddic subscription's room-number limit. You can add rooms or upgrade your subscription independently of renewing it."}
+ ]},
+
+{id:"security", title:"Security & Technical Information", icon:"🛡️", category:"Security & Technical",
+ blurb:"How Voddic keeps guest devices and rooms secure, explained for people who want the fuller picture.",
+ sections:[
+   {h:"The flow", body:"<pre style='background:#f3f5f8;border:1px solid var(--line);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#334155;overflow-x:auto;line-height:1.7;'>QR\n  ↓\nBackend validates active stay\n  ↓\nDevice creates a secure credential\n  ↓\nServer stores the credential\n  ↓\nSecure session created\n  ↓\nDevice becomes authorized</pre>"},
+   {h:"What is not trusted as proof of authorization", body:"A device's network address, its browser fingerprint, and anything stored in the browser's local cache are not treated as proof — all of those can be changed or spoofed. The server is always the authority on whether a device is authorized."},
+   {h:"Device limits", body:"Room 205, capacity 2: Device A and Device B connect normally. A third device is rejected unless an authorized action — like reception freeing a slot — changes the room's state."},
+   {h:"Session expiry", body:"Example: checkout Friday 12:00 PM, grace period 10 minutes. After that time, the server ends the guest session and the device's authorization, automatically."}
+ ]},
+
+{id:"troubleshooting", title:"Troubleshooting", icon:"🧩", category:"Support & What's Next",
+ blurb:"Quick answers to the problems that come up most often.",
+ troubleshoot:[
+   {q:"QR won't scan", a:"Make sure the phone's camera has a clear, well-lit view of the code, and that the phone has an internet connection."},
+   {q:"Guest cannot connect", a:"Confirm the room has been activated by reception, or that the booking payment has been confirmed."},
+   {q:"Notification not received", a:"Check that the staff device is registered to receive Voddic alerts, and that the staff member is scheduled on shift for that department."},
+   {q:"Staff not receiving requests", a:"Confirm the staff member is on the current shift schedule for the right department — requests route by shift, not by account alone."},
+   {q:"Device replacement", a:"Ask reception to disconnect the old device from the room so the new device can connect."},
+   {q:"Expired guest session", a:"Sessions end automatically after checkout plus the grace period. Reception can reactivate if the stay is extended."},
+   {q:"Room already connected", a:"The room's device limit has been reached. Reception can check who is connected and free a slot."},
+   {q:"Payment pending", a:"Payment confirmation is verified by the server and can take a short moment. If it stays pending, check with your payment provider."},
+   {q:"Call not connecting", a:"Confirm both devices have a stable internet connection and are using a supported browser."},
+   {q:"Internet problems", a:"Voddic needs an internet connection to work. Guests and staff should check their Wi-Fi or mobile data."}
+ ]},
+
+{id:"faq", title:"Frequently Asked Questions", icon:"❓", category:"Support & What's Next",
+ troubleshoot:[
+   {q:"Does Voddic replace our existing hotel management software?", a:"No. Voddic works alongside your existing PMS, POS, booking and accounting systems — it doesn't replace them."},
+   {q:"Do guests need to download an app?", a:"No. Guests use Voddic in their phone's browser after scanning the room QR code."},
+   {q:"What happens if two guests share a room?", a:"If the room's capacity allows it, a second guest can connect their own device using the same room QR code, as long as a device slot is free."},
+   {q:"Does the emergency button replace our safety procedures?", a:"No. It's an additional digital emergency communication channel, not a replacement for your existing procedures."}
+ ]},
+
+{id:"future", title:"Future Features / Coming Soon", icon:"🔭", category:"Support & What's Next",
+ blurb:"Planned features that are not yet available. They're listed here so nobody expects them today.",
+ sections:[{h:"Public Hotel Directory (Coming Soon)", body:"A public side of Voddic where anyone can discover hotels nearby, by city, state, or country, then view hotel information, rooms, prices, packages, availability, services, promotions and reviews before booking. Room availability shown here would be updated by each hotel's own backend."}]}
+];
+
+/* ============================================================
+   SIDEBAR — identical structure/behaviour to the Academy sandbox
+   ============================================================ */
+const byId = {}; PAGES.forEach((p,i)=>{ p.num=i+1; byId[p.id]=p; });
+
+const tree = document.getElementById('topicTree');
+CATS.forEach((group, gi) => {
+  const details = document.createElement('details');
+  details.className = 'cat';
+  if(gi === 0) details.open = true;
+  const summary = document.createElement('summary');
+  summary.innerHTML = `<span>${group.cat}</span><span class="cat-count">${group.ids.length}</span>`;
+  details.appendChild(summary);
+  const ul = document.createElement('ul');
+  group.ids.forEach(id => {
+    const p = byId[id];
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = '#'+id;
+    a.dataset.id = id;
+    a.innerHTML = `<span>${p.icon} ${p.title}</span><span class="n">${p.num}</span>`;
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      goTo(id);
+      if(window.innerWidth <= 900) document.getElementById('sidebar').classList.remove('open');
+    });
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+  details.appendChild(ul);
+  tree.appendChild(details);
+});
+
+document.getElementById('topicSearch').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll('#topicTree details.cat').forEach(det => {
+    let visibleCount = 0;
+    det.querySelectorAll('li').forEach(li => {
+      const match = li.textContent.toLowerCase().includes(q);
+      li.classList.toggle('hidden', !match);
+      if(match) visibleCount++;
+    });
+    det.classList.toggle('hidden', q.length > 0 && visibleCount === 0);
+    if(q.length > 0 && visibleCount > 0) det.open = true;
+  });
+});
+
+document.getElementById('sidebarToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* ============================================================
+   PAGE RENDERING + PREV/NEXT + PROGRESS
+   ============================================================ */
+function renderCallout(type, label, html){
+  return `<div class="callout ${type}"><span class="lbl">${label}</span>${html}</div>`;
+}
+
+function renderPage(p){
+  let out = `<div class="doc-icon">${p.icon}</div><h1 class="doc-title">${p.title}</h1>`;
+  if(p.blurb) out += `<p class="doc-blurb">${p.blurb}</p>`;
+  if(p.why) out += renderCallout('why','Why this exists', `<p style="margin:0;">${p.why}</p>`);
+
+  if(p.goal || p.requirements || p.steps){
+    out += `<div class="tutorial-block">`;
+    if(p.goal){ out += `<h3>Goal</h3><p style="font-size:15px;color:#374151;margin:0 0 16px;line-height:1.7;">${p.goal}</p>`; }
+    if(p.requirements){
+      out += `<h3>Requirements</h3><ul class="req-list">${p.requirements.map(r=>`<li>${r}</li>`).join('')}</ul>`;
+    }
+    if(p.steps){
+      out += `<h3 style="margin-top:16px;">Steps</h3><ul class="steps-list">`;
+      p.steps.forEach((s,i)=>{ out += `<li><span class="step-num">${i+1}</span><div class="step-body"><h5>${s.title}</h5><p>${s.text}</p></div></li>`; });
+      out += `</ul>`;
+    }
+    out += `</div>`;
+  }
+
+  if(p.sections){
+    p.sections.forEach(s=>{
+      out += `<h3 class="section-heading">${s.h}</h3><p style="font-size:16px;color:#374151;line-height:1.75;">${s.body}</p>`;
+    });
+  }
+
+  if(p.result) out += renderCallout('result','Result — what should happen', `<p style="margin:0;">${p.result}</p>`);
+  if(p.mistakes) out += renderCallout('warn','Common mistakes', `<ul class="mistakes-list">${p.mistakes.map(m=>`<li>${m}</li>`).join('')}</ul>`);
+  if(p.notes) out += renderCallout('tip','Important notes', `<ul class="mistakes-list">${p.notes.map(n=>`<li>${n}</li>`).join('')}</ul>`);
+
+  if(p.troubleshoot){
+    out += `<h3 class="section-heading">${p.id==='faq'?'Questions':'Troubleshooting'}</h3>`;
+    p.troubleshoot.forEach(t=>{ out += `<div class="faq-item"><h4>${t.q}</h4><p>${t.a}</p></div>`; });
+  }
+
+  /* Every page gets both a screenshot and a video placeholder — use the
+     page's own placeholder details when set, otherwise fall back to a
+     generic one built from the page title so no page is ever missing one. */
+  const img = p.image || {caption:`Screenshot of the ${p.title} screen in Voddic.`};
+  const media = MEDIA[p.id] || {};
+
+  /* Real screenshot: if MEDIA has an image path for this page, show it.
+     Otherwise show the dashed placeholder. */
+  if(media.image){
+    out += `<figure style="margin:18px 0;"><img src="${media.image}" alt="${img.caption}" loading="lazy" style="width:100%;border:1px solid var(--line);border-radius:10px;display:block;"><figcaption style="font-size:13px;color:var(--text-muted);margin-top:6px;">${img.caption}</figcaption></figure>`;
+  } else {
+    out += `<div class="placeholder"><span class="lbl">Screenshot placeholder</span><div class="cap">${img.caption}</div></div>`;
+  }
+
+  const vid = p.video || {title:`${p.title} — walkthrough`, duration:"30–60s", desc:`A short screen-recording walkthrough of ${p.title.toLowerCase()}.`};
+
+  /* Real video: a YouTube link gets embedded; any other path (e.g. videos/guest.mp4)
+     plays in a normal video player. Otherwise show the dashed placeholder. */
+  if(media.video){
+    const yt = media.video.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+    out += `<div style="margin:18px 0;">` + (yt
+      ? `<iframe src="https://www.youtube.com/embed/${yt[1]}" title="${vid.title}" allowfullscreen loading="lazy" style="width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:10px;"></iframe>`
+      : `<video src="${media.video}" controls preload="metadata" playsinline style="width:100%;border:1px solid var(--line);border-radius:10px;background:#000;"></video>`)
+      + `<div style="font-size:13px;color:var(--text-muted);margin-top:6px;">${vid.title} · ${vid.duration}</div></div>`;
+  } else {
+    out += `<div class="placeholder video"><span class="lbl">Video placeholder</span>
+      <dl>
+        <dt>Title</dt><dd>${vid.title}</dd>
+        <dt>Duration</dt><dd>${vid.duration}</dd>
+        <dt>Shows</dt><dd>${vid.desc}</dd>
+        ${vid.script?`<dt>Script</dt><dd>${vid.script}</dd>`:''}
+        ${vid.startScreen?`<dt>Starts on</dt><dd>${vid.startScreen}</dd>`:''}
+        ${vid.endScreen?`<dt>Ends on</dt><dd>${vid.endScreen}</dd>`:''}
+      </dl>
+    </div>`;
+  }
+
+  return out;
+}
+
+function goTo(id){
+  const idx = PAGES.findIndex(p=>p.id===id);
+  if(idx===-1) return;
+  const p = PAGES[idx];
+
+  document.getElementById('pageBody').innerHTML = renderPage(p);
+  document.getElementById('breadcrumb').innerHTML = `Voddic Docs <b>›</b> ${p.category} <b>›</b> ${p.title}`;
+
+  document.getElementById('progressText').textContent = `Step ${p.num} of ${PAGES.length}`;
+  document.getElementById('progressCat').textContent = p.category;
+  document.getElementById('progressFill').style.width = ((p.num/PAGES.length)*100)+'%';
+
+  document.querySelectorAll('#topicTree a').forEach(a=>a.classList.toggle('current', a.dataset.id===id));
+  document.querySelectorAll('#topicTree details.cat').forEach(det=>{
+    if(det.querySelector(`a[data-id="${id}"]`)) det.open = true;
+  });
+
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const prev = PAGES[idx-1];
+  const next = PAGES[idx+1];
+  prevBtn.disabled = !prev;
+  nextBtn.disabled = !next;
+  document.getElementById('prevLabel').textContent = prev ? prev.title : '—';
+  document.getElementById('nextLabel').textContent = next ? next.title : '—';
+  prevBtn.onclick = () => { if(prev){ goTo(prev.id); window.scrollTo({top:0,behavior:'smooth'}); } };
+  nextBtn.onclick = () => { if(next){ goTo(next.id); window.scrollTo({top:0,behavior:'smooth'}); } };
+
+  history.replaceState(null,'','#'+id);
+}
+
+const startId = (location.hash || '#intro').slice(1);
+goTo(byId[startId] ? startId : 'intro');
+</script>
+</body>
+</html>
+

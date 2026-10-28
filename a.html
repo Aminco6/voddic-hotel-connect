@@ -1,0 +1,2627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Industrial Temperature Historian</title>
+  <style>
+    /* ---------- RESET & BASE ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --navy: #0b1a2f;
+      --charcoal: #1e2a3a;
+      --steel: #3a4a5e;
+      --steel-light: #5d6f84;
+      --grey-bg: #f0f2f5;
+      --white: #ffffff;
+      --amber: #d48c2c;
+      --amber-light: #fef3e2;
+      --red: #b33a3a;
+      --green: #2e7d5e;
+      --font: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+      --border-radius: 6px;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--navy);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      color: #1e2a3a;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- DESKTOP APP WINDOW ---------- */
+    .app-window {
+      width: 1366px;
+      max-width: 100%;
+      height: 768px;
+      max-height: 95vh;
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid #2a3a4e;
+    }
+
+    /* ---------- TITLE BAR ---------- */
+    .title-bar {
+      background: var(--navy);
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      height: 42px;
+      flex-shrink: 0;
+      border-bottom: 1px solid #2a3a4e;
+      gap: 12px;
+      user-select: none;
+    }
+
+    .title-bar .logo-small {
+      height: 26px;
+      width: auto;
+      display: flex;
+      align-items: center;
+    }
+
+    .title-bar .logo-small img {
+      height: 26px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .title-bar .app-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-bar .app-title .divider {
+      color: #4a5e78;
+      font-weight: 300;
+    }
+
+    .title-bar .company-label {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .title-bar .window-controls {
+      margin-left: auto;
+      display: flex;
+      gap: 2px;
+    }
+
+    .title-bar .window-controls span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 30px;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #94a3b8;
+      cursor: default;
+      transition: background 0.1s;
+    }
+
+    .title-bar .window-controls span:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .title-bar .window-controls span.close:hover {
+      background: #b33a3a;
+      color: white;
+    }
+
+    /* ---------- MAIN LAYOUT ---------- */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      background: var(--grey-bg);
+    }
+
+    /* ---------- SIDEBAR ---------- */
+    .sidebar {
+      width: 220px;
+      background: var(--charcoal);
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      border-right: 1px solid #2a3a4e;
+      overflow-y: auto;
+    }
+
+    .sidebar .nav-section {
+      padding: 12px 0 4px 0;
+    }
+
+    .sidebar .nav-section-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #64748b;
+      padding: 6px 18px 4px 18px;
+      font-weight: 600;
+    }
+
+    .sidebar .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px;
+      font-size: 13px;
+      cursor: default;
+      transition: background 0.1s;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar .nav-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar .nav-item.active {
+      background: rgba(212, 140, 44, 0.12);
+      border-left-color: var(--amber);
+      color: #f1f5f9;
+    }
+
+    .sidebar .nav-item .icon {
+      width: 18px;
+      text-align: center;
+      font-size: 14px;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    .sidebar .nav-item.active .icon {
+      color: var(--amber);
+    }
+
+    .sidebar .nav-item .label {
+      flex: 1;
+    }
+
+    .sidebar .nav-item .badge {
+      background: var(--steel);
+      color: #e2e8f0;
+      font-size: 10px;
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .sidebar .nav-divider {
+      height: 1px;
+      background: #2a3a4e;
+      margin: 6px 12px;
+    }
+
+    .sidebar .nav-footer {
+      margin-top: auto;
+      padding: 12px 18px;
+      border-top: 1px solid #2a3a4e;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    /* ---------- MAIN CONTENT ---------- */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--grey-bg);
+    }
+
+    .content-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+
+    /* ---------- FOOTER ---------- */
+    .app-footer {
+      height: 32px;
+      background: var(--charcoal);
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      font-size: 11px;
+      flex-shrink: 0;
+      border-top: 1px solid #2a3a4e;
+      gap: 8px;
+    }
+
+    .app-footer .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app-footer .footer-left img {
+      height: 16px;
+      width: auto;
+      opacity: 0.8;
+    }
+
+    .app-footer .footer-left .company-name {
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+
+    .app-footer .footer-left .divider {
+      color: #475569;
+    }
+
+    .app-footer .footer-left .app-name {
+      color: #94a3b8;
+    }
+
+    .app-footer .footer-right {
+      margin-left: auto;
+      display: flex;
+      gap: 12px;
+      color: #64748b;
+    }
+
+    /* ---------- COMMON COMPONENTS ---------- */
+    .card {
+      background: var(--white);
+      border-radius: var(--border-radius);
+      border: 1px solid #dde1e7;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e9ecf0;
+    }
+
+    .card-header h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-header h2 .icon {
+      color: var(--amber);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      text-decoration: none;
+      line-height: 1.4;
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background: var(--navy);
+      color: white;
+      border-color: var(--navy);
+    }
+
+    .btn-primary:hover {
+      background: #142a44;
+    }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--charcoal);
+      border-color: #cbd5e1;
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: white;
+      border-color: var(--red);
+    }
+
+    .btn-danger:hover {
+      background: #9e2e2e;
+    }
+
+    .btn-amber {
+      background: var(--amber);
+      color: white;
+      border-color: var(--amber);
+    }
+
+    .btn-amber:hover {
+      background: #b87a22;
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      color: var(--steel-light);
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .btn-icon:hover {
+      background: #e9ecf0;
+      color: var(--navy);
+    }
+
+    /* ---------- FORM FIELDS ---------- */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--charcoal);
+      margin-bottom: 5px;
+    }
+
+    .form-group label .required {
+      color: var(--red);
+      margin-left: 2px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: var(--font);
+      background: var(--white);
+      color: var(--charcoal);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px rgba(212, 140, 44, 0.15);
+    }
+
+    .form-group .hint {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 3px;
+    }
+
+    .form-group .error {
+      font-size: 11px;
+      color: var(--red);
+      margin-top: 3px;
+      display: none;
+    }
+
+    .form-group.has-error input,
+    .form-group.has-error select {
+      border-color: var(--red);
+    }
+
+    .form-group.has-error .error {
+      display: block;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* ---------- PASSWORD INPUT WRAPPER ---------- */
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-wrapper input {
+      padding-right: 40px;
+    }
+
+    .password-wrapper .toggle-password {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: #64748b;
+      padding: 4px;
+      border-radius: 4px;
+    }
+
+    .password-wrapper .toggle-password:hover {
+      color: var(--charcoal);
+    }
+
+    /* ---------- LOGIN SCREEN ---------- */
+    .login-screen {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .login-left {
+      width: 50%;
+      background: linear-gradient(145deg, #0b1a2f 0%, #142a44 100%);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      padding: 40px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-left::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(212, 140, 44, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .login-left .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+
+    .login-left .brand .logo-placeholder {
+      width: 48px;
+      height: 48px;
+      background: var(--amber);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+      flex-shrink: 0;
+    }
+
+    .login-left .brand .brand-text h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin: 0;
+    }
+
+    .login-left .brand .brand-text p {
+      font-size: 12px;
+      color: #94a3b8;
+      margin: 2px 0 0 0;
+    }
+
+    .login-left .app-hero {
+      margin-top: 20px;
+      margin-bottom: 32px;
+    }
+
+    .login-left .app-hero h2 {
+      font-size: 26px;
+      font-weight: 300;
+      color: #f1f5f9;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .login-left .app-hero .subtitle {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .login-left .abstract-graphic {
+      width: 100%;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-left .abstract-graphic .graphic-line {
+      position: absolute;
+      bottom: 20px;
+      left: 10%;
+      width: 80%;
+      height: 60px;
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+    }
+
+    .login-left .abstract-graphic .graphic-line .bar {
+      flex: 1;
+      background: rgba(212, 140, 44, 0.25);
+      border-radius: 2px 2px 0 0;
+      min-height: 4px;
+      transition: height 0.3s;
+    }
+
+    .login-left .abstract-graphic .graphic-line .bar:nth-child(odd) {
+      background: rgba(212, 140, 44, 0.45);
+    }
+
+    .login-left .system-status {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+
+    .login-left .system-status .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 5px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .login-left .system-status .status-item .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #64748b;
+      flex-shrink: 0;
+    }
+
+    .login-left .system-status .status-item .dot.unknown {
+      background: #d48c2c;
+    }
+
+    .login-left .system-status .status-item .dot.offline {
+      background: #b33a3a;
+    }
+
+    /* RIGHT PANEL */
+    .login-right {
+      width: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      background: var(--white);
+    }
+
+    .login-form-container {
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .login-form-container h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .login-form-container .login-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 28px;
+    }
+
+    .login-form-container .form-group {
+      margin-bottom: 16px;
+    }
+
+    .login-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }
+
+    .login-options label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--charcoal);
+      cursor: pointer;
+      font-weight: 400;
+      margin: 0;
+    }
+
+    .login-options input[type="checkbox"] {
+      width: auto;
+      accent-color: var(--navy);
+    }
+
+    .login-options .forgot-link {
+      color: var(--steel-light);
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .login-options .forgot-link:hover {
+      color: var(--navy);
+      text-decoration: underline;
+    }
+
+    .login-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .login-error.visible {
+      display: block;
+    }
+
+    .demo-badge {
+      display: inline-block;
+      background: #fef3e2;
+      color: #b87a22;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-left: 8px;
+      vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ---------- SETUP SCREEN ---------- */
+    .setup-screen {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .setup-left {
+      width: 40%;
+      background: linear-gradient(145deg, #0b1a2f 0%, #142a44 100%);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      padding: 40px 48px;
+      position: relative;
+    }
+
+    .setup-left .setup-hero h2 {
+      font-size: 22px;
+      font-weight: 300;
+      color: #f1f5f9;
+      margin-bottom: 8px;
+    }
+
+    .setup-left .setup-hero p {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .setup-left .setup-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .setup-left .setup-steps .step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .setup-left .setup-steps .step .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(212, 140, 44, 0.2);
+      border: 1px solid rgba(212, 140, 44, 0.4);
+      color: var(--amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .setup-left .setup-steps .step .step-text {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.4;
+      padding-top: 3px;
+    }
+
+    .setup-left .setup-steps .step .step-text strong {
+      color: #cbd5e1;
+    }
+
+    .setup-right {
+      width: 60%;
+      overflow-y: auto;
+      padding: 32px 40px;
+      background: var(--white);
+    }
+
+    .setup-right .setup-header {
+      margin-bottom: 24px;
+    }
+
+    .setup-right .setup-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .setup-right .setup-header p {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .setup-section {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e9ecf0;
+    }
+
+    .setup-section:last-of-type {
+      border-bottom: none;
+    }
+
+    .setup-section h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .setup-section h3 .section-num {
+      background: var(--amber);
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .setup-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid #e9ecf0;
+    }
+
+    /* ---------- USER MANAGEMENT TABLE ---------- */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .toolbar .search-box {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+
+    .toolbar .search-box input {
+      width: 100%;
+      padding: 8px 12px 8px 34px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: var(--font);
+    }
+
+    .toolbar .search-box input:focus {
+      outline: none;
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px rgba(212, 140, 44, 0.15);
+    }
+
+    .toolbar .search-box .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .toolbar select {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: var(--font);
+      background: var(--white);
+      color: var(--charcoal);
+      min-width: 120px;
+    }
+
+    .toolbar select:focus {
+      outline: none;
+      border-color: var(--amber);
+    }
+
+    .data-table-wrapper {
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .data-table thead {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .data-table thead th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      user-select: none;
+    }
+
+    .data-table tbody tr {
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.1s;
+    }
+
+    .data-table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .data-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .data-table tbody td {
+      padding: 10px 12px;
+      color: var(--charcoal);
+      vertical-align: middle;
+    }
+
+    .data-table tbody td .cell-primary {
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    .data-table tbody td .cell-secondary {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .data-table .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .data-table .status-badge.active {
+      background: #e6f4ee;
+      color: var(--green);
+    }
+
+    .data-table .status-badge.inactive {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    .data-table .status-badge.locked {
+      background: #fef2f2;
+      color: var(--red);
+    }
+
+    .data-table .status-badge.pending {
+      background: #fef3e2;
+      color: #b87a22;
+    }
+
+    .data-table .actions-cell {
+      display: flex;
+      gap: 2px;
+    }
+
+    .data-table .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+    }
+
+    .data-table .empty-state .empty-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+
+    .data-table .empty-state p {
+      font-size: 13px;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .pagination .pages {
+      display: flex;
+      gap: 4px;
+    }
+
+    .pagination .pages button {
+      padding: 4px 10px;
+      border: 1px solid #cbd5e1;
+      background: var(--white);
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: default;
+      color: var(--charcoal);
+    }
+
+    .pagination .pages button.active {
+      background: var(--navy);
+      color: white;
+      border-color: var(--navy);
+    }
+
+    /* ---------- MODAL ---------- */
+    .modal-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(11, 26, 47, 0.55);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(1px);
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--white);
+      border-radius: 8px;
+      width: 720px;
+      max-width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid #e9ecf0;
+      background: #f8fafc;
+    }
+
+    .modal-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    .modal-header .close-modal {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #64748b;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      line-height: 1;
+    }
+
+    .modal-header .close-modal:hover {
+      background: #e9ecf0;
+      color: var(--navy);
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 14px 24px;
+      border-top: 1px solid #e9ecf0;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      background: #f8fafc;
+    }
+
+    /* ---------- NOTIFICATION TOAST ---------- */
+    .toast-container {
+      position: absolute;
+      bottom: 48px;
+      right: 20px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--charcoal);
+      color: #f1f5f9;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.2s ease;
+      max-width: 360px;
+      border-left: 3px solid var(--amber);
+    }
+
+    .toast.success {
+      border-left-color: var(--green);
+    }
+
+    .toast.error {
+      border-left-color: var(--red);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* ---------- UTILITY ---------- */
+    .text-muted {
+      color: #64748b;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mt-16 {
+      margin-top: 16px;
+    }
+
+    .mb-8 {
+      margin-bottom: 8px;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .gap-8 {
+      gap: 8px;
+    }
+
+    .items-center {
+      align-items: center;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ---------- SCROLLBAR ---------- */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 1100px) {
+      .login-left,
+      .setup-left {
+        padding: 28px 32px;
+      }
+      .login-right,
+      .setup-right {
+        padding: 28px 24px;
+      }
+      .login-left .app-hero h2 {
+        font-size: 22px;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .login-screen,
+      .setup-screen {
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      .login-left,
+      .setup-left {
+        width: 100%;
+        padding: 24px;
+      }
+      .login-right,
+      .setup-right {
+        width: 100%;
+        padding: 24px;
+      }
+      .form-row,
+      .form-row-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-window" id="appWindow">
+    <!-- TITLE BAR -->
+    <div class="title-bar">
+      <div class="logo-small" id="titleBarLogo">
+        <div style="width:22px;height:22px;background:var(--amber);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);">IT</div>
+      </div>
+      <div class="app-title">
+        Industrial Temperature Historian
+        <span class="divider">|</span>
+        <span class="company-label" id="titleBarCompany">Acme Manufacturing</span>
+      </div>
+      <div class="window-controls">
+        <span>&#x2013;</span>
+        <span>&#x25A1;</span>
+        <span class="close">&#x2715;</span>
+      </div>
+    </div>
+
+    <!-- APP BODY -->
+    <div class="app-body" id="appBody">
+      <!-- SIDEBAR (hidden on login/setup) -->
+      <nav class="sidebar hidden" id="sidebar">
+        <div class="nav-section">
+          <div class="nav-section-label">Monitoring</div>
+          <div class="nav-item active" data-view="overview">
+            <span class="icon">&#9632;</span>
+            <span class="label">Overview</span>
+          </div>
+          <div class="nav-item" data-view="live">
+            <span class="icon">&#9654;</span>
+            <span class="label">Live Temperature</span>
+          </div>
+          <div class="nav-item" data-view="trends">
+            <span class="icon">&#9651;</span>
+            <span class="label">Temperature Trends</span>
+          </div>
+          <div class="nav-item" data-view="jobs">
+            <span class="icon">&#9881;</span>
+            <span class="label">Production Jobs</span>
+          </div>
+          <div class="nav-item" data-view="activities">
+            <span class="icon">&#9776;</span>
+            <span class="label">Machine Activities</span>
+          </div>
+          <div class="nav-item" data-view="history">
+            <span class="icon">&#128337;</span>
+            <span class="label">Historical Records</span>
+          </div>
+          <div class="nav-item" data-view="deviations">
+            <span class="icon">&#9888;</span>
+            <span class="label">Deviations</span>
+          </div>
+          <div class="nav-item" data-view="reports">
+            <span class="icon">&#128196;</span>
+            <span class="label">Reports</span>
+          </div>
+          <div class="nav-item" data-view="equipment">
+            <span class="icon">&#128295;</span>
+            <span class="label">Equipment</span>
+          </div>
+        </div>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-section">
+          <div class="nav-section-label">Administration</div>
+          <div class="nav-item" data-view="users">
+            <span class="icon">&#128101;</span>
+            <span class="label">User Management</span>
+            <span class="badge">Admin</span>
+          </div>
+          <div class="nav-item" data-view="audit">
+            <span class="icon">&#128220;</span>
+            <span class="label">Audit Trail</span>
+            <span class="badge">Admin</span>
+          </div>
+          <div class="nav-item" data-view="settings">
+            <span class="icon">&#9881;</span>
+            <span class="label">Settings</span>
+          </div>
+        </div>
+
+        <div class="nav-footer">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--steel);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#e2e8f0;">JD</div>
+            <div>
+              <div style="font-size:11px;color:#cbd5e1;font-weight:500;">J. Doe</div>
+              <div style="font-size:10px;color:#64748b;">System Administrator</div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- MAIN CONTENT -->
+      <main class="main-content" id="mainContent">
+        <div class="content-scroll" id="contentScroll">
+          <!-- ============================================ -->
+          <!-- LOGIN SCREEN                                 -->
+          <!-- ============================================ -->
+          <div class="login-screen" id="loginScreen">
+            <div class="login-left">
+              <div class="brand">
+                <div class="logo-placeholder" id="loginLogoPlaceholder">IT</div>
+                <div class="brand-text">
+                  <h1 id="loginCompanyName">Acme Manufacturing</h1>
+                  <p>Industrial Temperature Historian</p>
+                </div>
+              </div>
+
+              <div class="app-hero">
+                <h2>Temperature Monitoring,<br />Production History &<br />Quality Records</h2>
+                <p class="subtitle">Real-time burner temperature trends and production traceability for Litho 1, 2 &amp; 3.</p>
+              </div>
+
+              <div class="abstract-graphic">
+                <div class="graphic-line">
+                  <div class="bar" style="height:35%;"></div>
+                  <div class="bar" style="height:60%;"></div>
+                  <div class="bar" style="height:45%;"></div>
+                  <div class="bar" style="height:80%;"></div>
+                  <div class="bar" style="height:55%;"></div>
+                  <div class="bar" style="height:70%;"></div>
+                  <div class="bar" style="height:40%;"></div>
+                  <div class="bar" style="height:90%;"></div>
+                  <div class="bar" style="height:65%;"></div>
+                  <div class="bar" style="height:50%;"></div>
+                  <div class="bar" style="height:75%;"></div>
+                  <div class="bar" style="height:30%;"></div>
+                </div>
+              </div>
+
+              <div class="system-status">
+                <div class="status-item">
+                  <span class="dot unknown"></span> Local Network — Demo
+                </div>
+                <div class="status-item">
+                  <span class="dot unknown"></span> API Connection — Demo
+                </div>
+                <div class="status-item">
+                  <span class="dot unknown"></span> Database — Demo
+                </div>
+              </div>
+            </div>
+
+            <div class="login-right">
+              <div class="login-form-container">
+                <h2>Sign In <span class="demo-badge">Prototype</span></h2>
+                <p class="login-subtitle">Access the temperature historian</p>
+
+                <div class="login-error" id="loginError">
+                  Invalid username or password. Please try again.
+                </div>
+
+                <form id="loginForm" autocomplete="off">
+                  <div class="form-group">
+                    <label for="loginUsername">Username or Company Email</label>
+                    <input type="text" id="loginUsername" placeholder="e.g. jdoe or jdoe@acme.com" autocomplete="username" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <div class="password-wrapper">
+                      <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" required />
+                      <button type="button" class="toggle-password" id="toggleLoginPassword" aria-label="Show password">&#128065;</button>
+                    </div>
+                  </div>
+
+                  <div class="login-options">
+                    <label>
+                      <input type="checkbox" id="rememberUsername" /> Remember username
+                    </label>
+                    <a href="#" class="forgot-link" id="forgotPasswordLink">Forgot password?</a>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary" style="width:100%;padding:10px;font-size:14px;">
+                    Sign In
+                  </button>
+                </form>
+
+                <div style="margin-top:24px;padding-top:16px;border-top:1px solid #e9ecf0;font-size:11px;color:#94a3b8;line-height:1.5;">
+                  <strong>Demo access:</strong> Use <code style="background:#f1f5f9;padding:1px 5px;border-radius:3px;">admin</code> / <code style="background:#f1f5f9;padding:1px 5px;border-radius:3px;">admin123</code> to explore the prototype.
+                  <br />Accounts are created by authorized administrators only.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================ -->
+          <!-- FIRST-TIME SETUP SCREEN                      -->
+          <!-- ============================================ -->
+          <div class="setup-screen hidden" id="setupScreen">
+            <div class="setup-left">
+              <div class="brand" style="display:flex;align-items:center;gap:14px;margin-bottom:28px;">
+                <div class="logo-placeholder" style="width:44px;height:44px;background:var(--amber);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--navy);">IT</div>
+                <div>
+                  <h1 style="font-size:16px;font-weight:600;color:#f1f5f9;margin:0;">Industrial Temperature Historian</h1>
+                  <p style="font-size:11px;color:#94a3b8;margin:2px 0 0 0;">First-Time Setup</p>
+                </div>
+              </div>
+
+              <div class="setup-hero">
+                <h2>Welcome to your new installation</h2>
+                <p>Configure your company details and create the initial System Administrator account to get started.</p>
+              </div>
+
+              <div class="setup-steps">
+                <div class="step">
+                  <div class="step-num">1</div>
+                  <div class="step-text"><strong>Company Information</strong><br />Set your company name and branding.</div>
+                </div>
+                <div class="step">
+                  <div class="step-num">2</div>
+                  <div class="step-text"><strong>Administrator Account</strong><br />Create the primary System Administrator.</div>
+                </div>
+                <div class="step">
+                  <div class="step-num">3</div>
+                  <div class="step-text"><strong>Security</strong><br />Set a strong password and complete setup.</div>
+                </div>
+              </div>
+
+              <div style="margin-top:auto;padding-top:24px;font-size:11px;color:#64748b;">
+                This screen is only available when no administrator account exists. Once completed, first-run setup is permanently disabled.
+              </div>
+            </div>
+
+            <div class="setup-right">
+              <div class="setup-header">
+                <h2>System Setup</h2>
+                <p>All fields marked with <span style="color:var(--red);">*</span> are required.</p>
+              </div>
+
+              <form id="setupForm" autocomplete="off">
+                <div class="setup-section">
+                  <h3><span class="section-num">1</span> Company Information</h3>
+                  <div class="form-group">
+                    <label for="setupCompanyName">Company Name <span class="required">*</span></label>
+                    <input type="text" id="setupCompanyName" placeholder="e.g. Acme Manufacturing" required value="Acme Manufacturing" />
+                  </div>
+                  <div class="form-group">
+                    <label for="setupCompanyLogo">Company Logo</label>
+                    <input type="file" id="setupCompanyLogo" accept="image/*" style="padding:5px;background:#f8fafc;" />
+                    <div class="hint">Optional. PNG or JPG, recommended 200×50px. Placeholder will be used if not provided.</div>
+                  </div>
+                </div>
+
+                <div class="setup-section">
+                  <h3><span class="section-num">2</span> Initial Administrator Account</h3>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="setupFirstName">Full Name — First <span class="required">*</span></label>
+                      <input type="text" id="setupFirstName" placeholder="First name" required />
+                    </div>
+                    <div class="form-group">
+                      <label for="setupLastName">Last Name <span class="required">*</span></label>
+                      <input type="text" id="setupLastName" placeholder="Last name" required />
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="setupEmployeeId">Employee ID <span class="required">*</span></label>
+                      <input type="text" id="setupEmployeeId" placeholder="e.g. EMP-001" required />
+                    </div>
+                    <div class="form-group">
+                      <label for="setupDepartment">Department <span class="required">*</span></label>
+                      <select id="setupDepartment" required>
+                        <option value="">Select department</option>
+                        <option value="Management">Management</option>
+                        <option value="Technical Department">Technical Department</option>
+                        <option value="Litho">Litho</option>
+                        <option value="Quality Assurance">Quality Assurance</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="setupEmail">Company Email or Username <span class="required">*</span></label>
+                    <input type="text" id="setupEmail" placeholder="e.g. admin@acme.com or admin" required />
+                  </div>
+                </div>
+
+                <div class="setup-section">
+                  <h3><span class="section-num">3</span> Account Security</h3>
+                  <div class="form-group">
+                    <label for="setupPassword">Password <span class="required">*</span></label>
+                    <div class="password-wrapper">
+                      <input type="password" id="setupPassword" placeholder="Minimum 8 characters" required minlength="8" />
+                      <button type="button" class="toggle-password" id="toggleSetupPassword" aria-label="Show password">&#128065;</button>
+                    </div>
+                    <div class="hint">At least 8 characters. Use a mix of letters, numbers, and symbols.</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="setupPasswordConfirm">Confirm Password <span class="required">*</span></label>
+                    <input type="password" id="setupPasswordConfirm" placeholder="Re-enter password" required minlength="8" />
+                    <div class="error" id="setupPasswordError">Passwords do not match.</div>
+                  </div>
+                </div>
+
+                <div class="setup-actions">
+                  <button type="submit" class="btn btn-primary">Complete Setup</button>
+                  <button type="button" class="btn btn-secondary" id="setupCancelBtn">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- ============================================ -->
+          <!-- MAIN DASHBOARD CONTENT (User Management)     -->
+          <!-- ============================================ -->
+          <div class="dashboard-content hidden" id="dashboardContent">
+            <!-- User Management View -->
+            <div id="userManagementView">
+              <div class="card-header" style="margin-bottom:16px;">
+                <h2><span class="icon">&#128101;</span> User Management</h2>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-primary btn-sm" id="addUserBtn">+ Add User</button>
+                </div>
+              </div>
+
+              <div class="toolbar">
+                <div class="search-box">
+                  <span class="search-icon">&#128269;</span>
+                  <input type="text" id="userSearchInput" placeholder="Search by name, employee ID, or username..." />
+                </div>
+                <select id="filterDepartment">
+                  <option value="">All Departments</option>
+                  <option value="Litho">Litho</option>
+                  <option value="Quality Assurance">Quality Assurance</option>
+                  <option value="Technical Department">Technical Department</option>
+                  <option value="Management">Management</option>
+                </select>
+                <select id="filterRole">
+                  <option value="">All Roles</option>
+                  <option value="User / Viewer">User / Viewer</option>
+                  <option value="Operator">Operator</option>
+                  <option value="Supervisor">Supervisor</option>
+                  <option value="Technician">Technician</option>
+                  <option value="Engineer">Engineer</option>
+                  <option value="QA Personnel">QA Personnel</option>
+                  <option value="Quality Assurance Manager">Quality Assurance Manager</option>
+                  <option value="Printing Manager">Printing Manager</option>
+                  <option value="Technical Manager">Technical Manager</option>
+                  <option value="Plant Manager">Plant Manager</option>
+                  <option value="System Administrator">System Administrator</option>
+                </select>
+                <select id="filterStatus">
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="locked">Locked</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+
+              <div class="data-table-wrapper">
+                <table class="data-table" id="usersTable">
+                  <thead>
+                    <tr>
+                      <th>Employee ID</th>
+                      <th>Full Name</th>
+                      <th>Username</th>
+                      <th>Department</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Last Login</th>
+                      <th>Created By</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersTableBody">
+                    <!-- Rows injected by JS -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="pagination">
+                <span id="tableRecordCount">Showing 6 of 6 users</span>
+                <div class="pages">
+                  <button class="active">1</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Placeholder for other views -->
+            <div id="placeholderView" class="hidden">
+              <div class="card" style="text-align:center;padding:60px 20px;">
+                <div style="font-size:40px;margin-bottom:12px;opacity:0.4;">&#9881;</div>
+                <h3 style="font-size:16px;color:var(--navy);margin-bottom:6px;" id="placeholderTitle">Overview</h3>
+                <p style="font-size:13px;color:#64748b;">This module is part of the prototype and will be implemented in the full application.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="app-footer">
+          <div class="footer-left">
+            <div style="width:16px;height:16px;background:var(--amber);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:var(--navy);">IT</div>
+            <span class="company-name" id="footerCompanyName">Acme Manufacturing</span>
+            <span class="divider">|</span>
+            <span class="app-name">Industrial Temperature Historian</span>
+          </div>
+          <div class="footer-right">
+            <span>Internal Production Monitoring System</span>
+            <span>|</span>
+            <span>Version 1.0.0</span>
+          </div>
+        </footer>
+      </main>
+    </div>
+
+    <!-- MODAL OVERLAY -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal" id="modal">
+        <div class="modal-header">
+          <h3 id="modalTitle">Add User</h3>
+          <button class="close-modal" id="closeModalBtn">&#x2715;</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+          <!-- Dynamic content -->
+        </div>
+        <div class="modal-footer" id="modalFooter">
+          <!-- Dynamic buttons -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+  </div>
+
+  <script>
+    // ============================================================
+    // CONFIGURATION
+    // ============================================================
+    const CONFIG = {
+      companyName: 'Acme Manufacturing',
+      appName: 'Industrial Temperature Historian',
+      version: '1.0.0',
+      logoPath: 'assets/company-logo.png',
+      demoMode: true,
+    };
+
+    // ============================================================
+    // DEMO DATA
+    // ============================================================
+    const DEMO_USERS = [
+      {
+        id: 1,
+        employeeId: 'EMP-1001',
+        firstName: 'James',
+        lastName: 'Doe',
+        middleName: '',
+        username: 'jdoe',
+        email: 'jdoe@acme.com',
+        department: 'Management',
+        role: 'System Administrator',
+        jobTitle: 'IT Administrator',
+        phone: '555-0101',
+        status: 'active',
+        lastLogin: '2025-02-14 08:32:15',
+        createdBy: 'System Setup',
+        createdAt: '2024-01-15',
+      },
+      {
+        id: 2,
+        employeeId: 'EMP-1002',
+        firstName: 'Sarah',
+        lastName: 'Chen',
+        middleName: 'M',
+        username: 'schen',
+        email: 'schen@acme.com',
+        department: 'Quality Assurance',
+        role: 'Quality Assurance Manager',
+        jobTitle: 'QA Manager',
+        phone: '555-0102',
+        status: 'active',
+        lastLogin: '2025-02-14 07:15:42',
+        createdBy: 'J. Doe',
+        createdAt: '2024-02-01',
+      },
+      {
+        id: 3,
+        employeeId: 'EMP-1003',
+        firstName: 'Michael',
+        lastName: 'Torres',
+        middleName: '',
+        username: 'mtorres',
+        email: 'mtorres@acme.com',
+        department: 'Litho',
+        role: 'Operator',
+        jobTitle: 'Press Operator',
+        phone: '555-0103',
+        status: 'active',
+        lastLogin: '2025-02-13 22:05:11',
+        createdBy: 'J. Doe',
+        createdAt: '2024-03-10',
+      },
+      {
+        id: 4,
+        employeeId: 'EMP-1004',
+        firstName: 'Emily',
+        lastName: 'Watson',
+        middleName: '',
+        username: 'ewatson',
+        email: 'ewatson@acme.com',
+        department: 'Technical Department',
+        role: 'Engineer',
+        jobTitle: 'Process Engineer',
+        phone: '555-0104',
+        status: 'active',
+        lastLogin: '2025-02-12 16:48:30',
+        createdBy: 'J. Doe',
+        createdAt: '2024-03-15',
+      },
+      {
+        id: 5,
+        employeeId: 'EMP-1005',
+        firstName: 'David',
+        lastName: 'Kim',
+        middleName: '',
+        username: 'dkim',
+        email: 'dkim@acme.com',
+        department: 'Litho',
+        role: 'Supervisor',
+        jobTitle: 'Shift Supervisor',
+        phone: '555-0105',
+        status: 'inactive',
+        lastLogin: '2025-01-20 14:22:08',
+        createdBy: 'J. Doe',
+        createdAt: '2024-04-01',
+      },
+      {
+        id: 6,
+        employeeId: 'EMP-1006',
+        firstName: 'Lisa',
+        lastName: 'Patel',
+        middleName: '',
+        username: 'lpatel',
+        email: 'lpatel@acme.com',
+        department: 'Quality Assurance',
+        role: 'QA Personnel',
+        jobTitle: 'QA Inspector',
+        phone: '555-0106',
+        status: 'pending',
+        lastLogin: '—',
+        createdBy: 'S. Chen',
+        createdAt: '2025-02-10',
+      },
+    ];
+
+    const ROLES = [
+      { value: 'User / Viewer', description: 'View all six burners, trends, and permitted historical records.' },
+      { value: 'Operator', description: 'View equipment and record operational information authorized for operators.' },
+      { value: 'Supervisor', description: 'Record production jobs, products, shifts, and machine activities.' },
+      { value: 'Technician', description: 'Review technical records and perform authorized equipment maintenance tasks.' },
+      { value: 'Engineer', description: 'Investigate temperature behaviour and access authorized engineering configuration.' },
+      { value: 'QA Personnel', description: 'Review historical temperatures, production records, deviations, and permitted reports.' },
+      { value: 'Quality Assurance Manager', description: 'Review QA records, deviations, and quality reports; perform authorized approvals.' },
+      { value: 'Printing Manager', description: 'Review Litho production, job history, and relevant machine reports.' },
+      { value: 'Technical Manager', description: 'Oversee engineering records, technical investigations, and authorized system configuration.' },
+      { value: 'Plant Manager', description: 'View plant-wide monitoring, production summaries, and management reports.' },
+      { value: 'System Administrator', description: 'Manage users, roles, configuration, and system administration.' },
+    ];
+
+    const DEPARTMENTS = ['Litho', 'Quality Assurance', 'Technical Department', 'Management'];
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let users = JSON.parse(JSON.stringify(DEMO_USERS));
+    let currentView = 'login';
+    let editingUserId = null;
+    let toastTimeout = null;
+
+    // ============================================================
+    // DOM REFS
+    // ============================================================
+    const appWindow = document.getElementById('appWindow');
+    const sidebar = document.getElementById('sidebar');
+    const loginScreen = document.getElementById('loginScreen');
+    const setupScreen = document.getElementById('setupScreen');
+    const dashboardContent = document.getElementById('dashboardContent');
+    const userManagementView = document.getElementById('userManagementView');
+    const placeholderView = document.getElementById('placeholderView');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalFooter = document.getElementById('modalFooter');
+    const toastContainer = document.getElementById('toastContainer');
+
+    // ============================================================
+    // UTILITIES
+    // ============================================================
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>"]/g, function (m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        if (m === '"') return '&quot;';
+        return m;
+      });
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.textContent = message;
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 4000);
+    }
+
+    function showModal(title, bodyHtml, footerHtml) {
+      modalTitle.textContent = title;
+      modalBody.innerHTML = bodyHtml;
+      modalFooter.innerHTML = footerHtml;
+      modalOverlay.classList.add('visible');
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('visible');
+      editingUserId = null;
+    }
+
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+    function showLogin() {
+      currentView = 'login';
+      loginScreen.classList.remove('hidden');
+      setupScreen.classList.add('hidden');
+      dashboardContent.classList.add('hidden');
+      sidebar.classList.add('hidden');
+      document.getElementById('loginForm').reset();
+      document.getElementById('loginError').classList.remove('visible');
+    }
+
+    function showSetup() {
+      currentView = 'setup';
+      loginScreen.classList.add('hidden');
+      setupScreen.classList.remove('hidden');
+      dashboardContent.classList.add('hidden');
+      sidebar.classList.add('hidden');
+    }
+
+    function showDashboard() {
+      currentView = 'dashboard';
+      loginScreen.classList.add('hidden');
+      setupScreen.classList.add('hidden');
+      dashboardContent.classList.remove('hidden');
+      sidebar.classList.remove('hidden');
+      userManagementView.classList.remove('hidden');
+      placeholderView.classList.add('hidden');
+      renderUserTable();
+    }
+
+    function showPlaceholder(title) {
+      userManagementView.classList.add('hidden');
+      placeholderView.classList.remove('hidden');
+      document.getElementById('placeholderTitle').textContent = title;
+    }
+
+    // Sidebar navigation
+    document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+      item.addEventListener('click', function () {
+        document.querySelectorAll('.sidebar .nav-item').forEach(n => n.classList.remove('active'));
+        this.classList.add('active');
+        const view = this.dataset.view;
+        if (view === 'users') {
+          showDashboard();
+        } else {
+          showPlaceholder(this.querySelector('.label').textContent);
+        }
+      });
+    });
+
+    // ============================================================
+    // LOGIN HANDLERS
+    // ============================================================
+    document.getElementById('toggleLoginPassword').addEventListener('click', function () {
+      const input = document.getElementById('loginPassword');
+      if (input.type === 'password') {
+        input.type = 'text';
+        this.innerHTML = '&#128064;';
+      } else {
+        input.type = 'password';
+        this.innerHTML = '&#128065;';
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+
+      // Demo authentication
+      if (username === 'admin' && password === 'admin123') {
+        errorEl.classList.remove('visible');
+        showDashboard();
+        showToast('Signed in as System Administrator (demo)', 'success');
+      } else {
+        errorEl.textContent = 'Invalid username or password. (Hint: admin / admin123)';
+        errorEl.classList.add('visible');
+      }
+    });
+
+    document.getElementById('forgotPasswordLink').addEventListener('click', function (e) {
+      e.preventDefault();
+      showToast('Password reset requires administrator approval in the production version.', 'info');
+    });
+
+    // ============================================================
+    // SETUP HANDLERS
+    // ============================================================
+    document.getElementById('toggleSetupPassword').addEventListener('click', function () {
+      const input = document.getElementById('setupPassword');
+      if (input.type === 'password') {
+        input.type = 'text';
+        this.innerHTML = '&#128064;';
+      } else {
+        input.type = 'password';
+        this.innerHTML = '&#128065;';
+      }
+    });
+
+    document.getElementById('setupForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const pw = document.getElementById('setupPassword').value;
+      const pwc = document.getElementById('setupPasswordConfirm').value;
+      const errEl = document.getElementById('setupPasswordError');
+
+      if (pw !== pwc) {
+        errEl.style.display = 'block';
+        return;
+      }
+      errEl.style.display = 'none';
+
+      // Demo completion
+      showToast('Setup complete! You can now sign in with your new administrator account.', 'success');
+      showLogin();
+    });
+
+    document.getElementById('setupCancelBtn').addEventListener('click', function () {
+      showLogin();
+    });
+
+    // ============================================================
+    // USER TABLE RENDERING
+    // ============================================================
+    function renderUserTable() {
+      const tbody = document.getElementById('usersTableBody');
+      const search = (document.getElementById('userSearchInput').value || '').toLowerCase();
+      const deptFilter = document.getElementById('filterDepartment').value;
+      const roleFilter = document.getElementById('filterRole').value;
+      const statusFilter = document.getElementById('filterStatus').value;
+
+      let filtered = users.filter(u => {
+        const matchesSearch = !search ||
+          u.firstName.toLowerCase().includes(search) ||
+          u.lastName.toLowerCase().includes(search) ||
+          u.employeeId.toLowerCase().includes(search) ||
+          u.username.toLowerCase().includes(search) ||
+          (u.email && u.email.toLowerCase().includes(search));
+        const matchesDept = !deptFilter || u.department === deptFilter;
+        const matchesRole = !roleFilter || u.role === roleFilter;
+        const matchesStatus = !statusFilter || u.status === statusFilter;
+        return matchesSearch && matchesDept && matchesRole && matchesStatus;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div class="empty-icon">&#128101;</div><p>No users match the current filters.</p></td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(u => {
+          const statusClass = u.status === 'active' ? 'active' :
+            u.status === 'inactive' ? 'inactive' :
+              u.status === 'locked' ? 'locked' : 'pending';
+          const statusLabel = u.status.charAt(0).toUpperCase() + u.status.slice(1);
+          return `
+            <tr data-user-id="${u.id}">
+              <td><span class="cell-primary">${escapeHtml(u.employeeId)}</span></td>
+              <td>${escapeHtml(u.firstName + ' ' + u.lastName)}</td>
+              <td><span class="cell-secondary">${escapeHtml(u.username)}</span></td>
+              <td>${escapeHtml(u.department)}</td>
+              <td>${escapeHtml(u.role)}</td>
+              <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+              <td><span class="cell-secondary">${escapeHtml(u.lastLogin)}</span></td>
+              <td><span class="cell-secondary">${escapeHtml(u.createdBy)}</span></td>
+              <td class="actions-cell">
+                <button class="btn-icon edit-user-btn" data-user-id="${u.id}" title="Edit user">&#9998;</button>
+                <button class="btn-icon view-user-btn" data-user-id="${u.id}" title="View details">&#128065;</button>
+                <button class="btn-icon reset-pw-btn" data-user-id="${u.id}" title="Reset password">&#128273;</button>
+                <button class="btn-icon toggle-status-btn" data-user-id="${u.id}" title="${u.status === 'active' ? 'Deactivate' : 'Activate'} account">${u.status === 'active' ? '&#128683;' : '&#9989;'}</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('tableRecordCount').textContent = `Showing ${filtered.length} of ${users.length} users`;
+
+      // Attach action handlers
+      tbody.querySelectorAll('.edit-user-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const id = parseInt(this.dataset.userId);
+          openEditUserModal(id);
+        });
+      });
+      tbody.querySelectorAll('.view-user-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const id = parseInt(this.dataset.userId);
+          openViewUserModal(id);
+        });
+      });
+      tbody.querySelectorAll('.reset-pw-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const id = parseInt(this.dataset.userId);
+          openResetPasswordModal(id);
+        });
+      });
+      tbody.querySelectorAll('.toggle-status-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const id = parseInt(this.dataset.userId);
+          toggleUserStatus(id);
+        });
+      });
+    }
+
+    // ============================================================
+    // FILTER HANDLERS
+    // ============================================================
+    document.getElementById('userSearchInput').addEventListener('input', renderUserTable);
+    document.getElementById('filterDepartment').addEventListener('change', renderUserTable);
+    document.getElementById('filterRole').addEventListener('change', renderUserTable);
+    document.getElementById('filterStatus').addEventListener('change', renderUserTable);
+
+    // ============================================================
+    // ADD USER MODAL
+    // ============================================================
+    document.getElementById('addUserBtn').addEventListener('click', function () {
+      editingUserId = null;
+      openUserFormModal(null);
+    });
+
+    function openUserFormModal(userId) {
+      const isEdit = userId !== null && userId !== undefined;
+      const user = isEdit ? users.find(u => u.id === userId) : null;
+
+      const title = isEdit ? 'Edit User' : 'Add New User';
+      const deptOptions = DEPARTMENTS.map(d =>
+        `<option value="${d}" ${user && user.department === d ? 'selected' : ''}>${d}</option>`
+      ).join('');
+      const roleOptions = ROLES.map(r =>
+        `<option value="${r.value}" ${user && user.role === r.value ? 'selected' : ''}>${r.value}</option>`
+      ).join('');
+      const roleDescriptions = ROLES.map(r =>
+        `<div class="role-desc" data-role="${r.value}" style="display:none;font-size:11px;color:#64748b;margin-top:4px;">${r.description}</div>`
+      ).join('');
+
+      const bodyHtml = `
+        <form id="userForm">
+          <div class="setup-section">
+            <h3><span class="section-num">A</span> Employee Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="userEmployeeId">Employee ID <span class="required">*</span></label>
+                <input type="text" id="userEmployeeId" placeholder="e.g. EMP-1007" value="${user ? escapeHtml(user.employeeId) : ''}" required ${isEdit ? 'readonly style="background:#f1f5f9;"' : ''} />
+                <div class="error" id="errEmployeeId"></div>
+              </div>
+              <div class="form-group">
+                <label for="userUsername">Username <span class="required">*</span></label>
+                <input type="text" id="userUsername" placeholder="e.g. jsmith" value="${user ? escapeHtml(user.username) : ''}" required ${isEdit ? 'readonly style="background:#f1f5f9;"' : ''} />
+                <div class="error" id="errUsername"></div>
+              </div>
+            </div>
+            <div class="form-row-3">
+              <div class="form-group">
+                <label for="userFirstName">First Name <span class="required">*</span></label>
+                <input type="text" id="userFirstName" placeholder="First name" value="${user ? escapeHtml(user.firstName) : ''}" required />
+              </div>
+              <div class="form-group">
+                <label for="userLastName">Last Name <span class="required">*</span></label>
+                <input type="text" id="userLastName" placeholder="Last name" value="${user ? escapeHtml(user.lastName) : ''}" required />
+              </div>
+              <div class="form-group">
+                <label for="userMiddleName">Middle Name</label>
+                <input type="text" id="userMiddleName" placeholder="Optional" value="${user ? escapeHtml(user.middleName || '') : ''}" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="userEmail">Company Email</label>
+                <input type="email" id="userEmail" placeholder="e.g. jsmith@acme.com" value="${user ? escapeHtml(user.email || '') : ''}" />
+              </div>
+              <div class="form-group">
+                <label for="userPhone">Phone Number</label>
+                <input type="text" id="userPhone" placeholder="Optional" value="${user ? escapeHtml(user.phone || '') : ''}" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="userDepartment">Department <span class="required">*</span></label>
+                <select id="userDepartment" required>
+                  <option value="">Select department</option>
+                  ${deptOptions}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="userJobTitle">Job Title</label>
+                <input type="text" id="userJobTitle" placeholder="Optional" value="${user ? escapeHtml(user.jobTitle || '') : ''}" />
+              </div>
+            </div>
+          </div>
+
+          <div class="setup-section">
+            <h3><span class="section-num">C</span> Role Assignment</h3>
+            <div class="form-group">
+              <label for="userRole">Assigned Role <span class="required">*</span></label>
+              <select id="userRole" required>
+                <option value="">Select role</option>
+                ${roleOptions}
+              </select>
+              <div id="roleDescriptionContainer" style="margin-top:6px;font-size:11px;color:#64748b;min-height:28px;">
+                ${user ? ROLES.find(r => r.value === user.role)?.description || '' : 'Select a role to see its description.'}
+              </div>
+            </div>
+          </div>
+
+          ${!isEdit ? `
+          <div class="setup-section">
+            <h3><span class="section-num">D</span> Account Security</h3>
+            <div class="form-group">
+              <label for="userTempPassword">Temporary Password <span class="required">*</span></label>
+              <div class="password-wrapper">
+                <input type="password" id="userTempPassword" placeholder="Minimum 8 characters" required minlength="8" />
+                <button type="button" class="toggle-password" id="toggleUserTempPassword" aria-label="Show password">&#128065;</button>
+              </div>
+              <div class="hint">The user will be required to change this password at first login.</div>
+            </div>
+            <div class="form-group">
+              <label for="userTempPasswordConfirm">Confirm Password <span class="required">*</span></label>
+              <input type="password" id="userTempPasswordConfirm" placeholder="Re-enter password" required minlength="8" />
+              <div class="error" id="errPasswordMatch">Passwords do not match.</div>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+                <input type="checkbox" id="userRequirePwChange" checked style="width:auto;accent-color:var(--navy);" />
+                Require password change at first login
+              </label>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+                <input type="checkbox" id="userAccountActive" checked style="width:auto;accent-color:var(--navy);" />
+                Account is active immediately
+              </label>
+            </div>
+          </div>
+          ` : `
+          <div class="setup-section">
+            <h3><span class="section-num">D</span> Account Security</h3>
+            <div class="form-group">
+              <label>Account Status</label>
+              <div style="font-size:13px;padding:8px 0;">
+                <span class="status-badge ${user.status === 'active' ? 'active' : user.status === 'inactive' ? 'inactive' : user.status === 'locked' ? 'locked' : 'pending'}">${user.status.charAt(0).toUpperCase() + user.status.slice(1)}</span>
+                <span style="margin-left:8px;color:#64748b;font-size:11px;">Use the table actions to change status.</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Created By</label>
+              <div style="font-size:13px;color:#64748b;">${escapeHtml(user.createdBy)} on ${escapeHtml(user.createdAt)}</div>
+            </div>
+          </div>
+          `}
+        </form>
+      `;
+
+      const footerHtml = `
+        <button class="btn btn-secondary" id="cancelUserFormBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveUserBtn">${isEdit ? 'Save Changes' : 'Create Account'}</button>
+        ${!isEdit ? '<button class="btn btn-amber" id="createAndAddAnotherBtn">Create & Add Another</button>' : ''}
+      `;
+
+      showModal(title, bodyHtml, footerHtml);
+
+      // Attach handlers
+      document.getElementById('cancelUserFormBtn').addEventListener('click', closeModal);
+      document.getElementById('saveUserBtn').addEventListener('click', function () {
+        saveUser(isEdit, userId);
+      });
+      if (!isEdit) {
+        document.getElementById('createAndAddAnotherBtn').addEventListener('click', function () {
+          saveUser(false, null, true);
+        });
+        // Toggle temp password visibility
+        const toggleBtn = document.getElementById('toggleUserTempPassword');
+        if (toggleBtn) {
+          toggleBtn.addEventListener('click', function () {
+            const input = document.getElementById('userTempPassword');
+            if (input.type === 'password') {
+              input.type = 'text';
+              this.innerHTML = '&#128064;';
+            } else {
+              input.type = 'password';
+              this.innerHTML = '&#128065;';
+            }
+          });
+        }
+      }
+
+      // Role description update
+      const roleSelect = document.getElementById('userRole');
+      const roleDescEl = document.getElementById('roleDescriptionContainer');
+      roleSelect.addEventListener('change', function () {
+        const role = ROLES.find(r => r.value === this.value);
+        roleDescEl.textContent = role ? role.description : 'Select a role to see its description.';
+      });
+
+      // Password match validation
+      const pwInput = document.getElementById('userTempPassword');
+      const pwcInput = document.getElementById('userTempPasswordConfirm');
+      const errMatch = document.getElementById('errPasswordMatch');
+      if (pwInput && pwcInput && errMatch) {
+        [pwInput, pwcInput].forEach(el => {
+          el.addEventListener('input', function () {
+            if (pwInput.value !== pwcInput.value) {
+              errMatch.style.display = 'block';
+            } else {
+              errMatch.style.display = 'none';
+            }
+          });
+        });
+      }
+    }
+
+    function saveUser(isEdit, userId, addAnother = false) {
+      // Validation
+      const empId = document.getElementById('userEmployeeId').value.trim();
+      const username = document.getElementById('userUsername').value.trim();
+      const firstName = document.getElementById('userFirstName').value.trim();
+      const lastName = document.getElementById('userLastName').value.trim();
+      const department = document.getElementById('userDepartment').value;
+      const role = document.getElementById('userRole').value;
+
+      let valid = true;
+
+      // Check duplicate employee ID (if not edit)
+      if (!isEdit) {
+        if (users.some(u => u.employeeId.toLowerCase() === empId.toLowerCase())) {
+          document.getElementById('errEmployeeId').textContent = 'This Employee ID already exists.';
+          document.getElementById('errEmployeeId').style.display = 'block';
+          valid = false;
+        } else {
+          document.getElementById('errEmployeeId').style.display = 'none';
+        }
+
+        if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+          document.getElementById('errUsername').textContent = 'This username is already taken.';
+          document.getElementById('errUsername').style.display = 'block';
+          valid = false;
+        } else {
+          document.getElementById('errUsername').style.display = 'none';
+        }
+      }
+
+      if (!firstName || !lastName || !department || !role) {
+        valid = false;
+      }
+
+      // Password validation (only for create)
+      if (!isEdit) {
+        const pw = document.getElementById('userTempPassword').value;
+        const pwc = document.getElementById('userTempPasswordConfirm').value;
+        if (pw.length < 8) {
+          valid = false;
+          showToast('Password must be at least 8 characters.', 'error');
+        }
+        if (pw !== pwc) {
+          valid = false;
+          document.getElementById('errPasswordMatch').style.display = 'block';
+        } else {
+          document.getElementById('errPasswordMatch').style.display = 'none';
+        }
+      }
+
+      if (!valid) {
+        showToast('Please correct the highlighted errors.', 'error');
+        return;
+      }
+
+      if (isEdit) {
+        // Update existing user
+        const user = users.find(u => u.id === userId);
+        user.firstName = firstName;
+        user.lastName = lastName;
+        user.middleName = document.getElementById('userMiddleName').value.trim();
+        user.email = document.getElementById('userEmail').value.trim();
+        user.phone = document.getElementById('userPhone').value.trim();
+        user.department = department;
+        user.jobTitle = document.getElementById('userJobTitle').value.trim();
+        user.role = role;
+        showToast('User updated successfully (demo).', 'success');
+        closeModal();
+        renderUserTable();
+      } else {
+        // Create new user
+        const newId = Math.max(...users.map(u => u.id)) + 1;
+        const newUser = {
+          id: newId,
+          employeeId: empId,
+          firstName: firstName,
+          lastName: lastName,
+          middleName: document.getElementById('userMiddleName').value.trim(),
+          username: username,
+          email: document.getElementById('userEmail').value.trim(),
+          department: department,
+          role: role,
+          jobTitle: document.getElementById('userJobTitle').value.trim(),
+          phone: document.getElementById('userPhone').value.trim(),
+          status: document.getElementById('userAccountActive').checked ? 'active' : 'pending',
+          lastLogin: '—',
+          createdBy: 'J. Doe (Admin)',
+          createdAt: new Date().toISOString().split('T')[0],
+        };
+        users.push(newUser);
+        showToast('User account created successfully (demo).', 'success');
+
+        if (addAnother) {
+          // Reset form for another user
+          openUserFormModal(null);
+        } else {
+          closeModal();
+        }
+        renderUserTable();
+      }
+    }
+
+    // ============================================================
+    // VIEW USER DETAILS
+    // ============================================================
+    function openViewUserModal(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+
+      const bodyHtml = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Employee ID</div>
+            <div style="font-size:14px;font-weight:600;color:var(--navy);">${escapeHtml(user.employeeId)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Username</div>
+            <div style="font-size:14px;font-weight:600;color:var(--navy);">${escapeHtml(user.username)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Full Name</div>
+            <div style="font-size:14px;">${escapeHtml(user.firstName + ' ' + (user.middleName ? user.middleName + ' ' : '') + user.lastName)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Email</div>
+            <div style="font-size:14px;">${escapeHtml(user.email || '—')}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Department</div>
+            <div style="font-size:14px;">${escapeHtml(user.department)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Job Title</div>
+            <div style="font-size:14px;">${escapeHtml(user.jobTitle || '—')}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Role</div>
+            <div style="font-size:14px;font-weight:600;color:var(--amber);">${escapeHtml(user.role)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Phone</div>
+            <div style="font-size:14px;">${escapeHtml(user.phone || '—')}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Status</div>
+            <div><span class="status-badge ${user.status === 'active' ? 'active' : user.status === 'inactive' ? 'inactive' : user.status === 'locked' ? 'locked' : 'pending'}">${user.status.charAt(0).toUpperCase() + user.status.slice(1)}</span></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Last Login</div>
+            <div style="font-size:14px;">${escapeHtml(user.lastLogin)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Created By</div>
+            <div style="font-size:14px;">${escapeHtml(user.createdBy)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Created At</div>
+            <div style="font-size:14px;">${escapeHtml(user.createdAt)}</div>
+          </div>
+        </div>
+      `;
+
+      showModal('User Details — ' + escapeHtml(user.firstName + ' ' + user.lastName), bodyHtml, '<button class="btn btn-secondary" id="closeViewModalBtn">Close</button>');
+      document.getElementById('closeViewModalBtn').addEventListener('click', closeModal);
+    }
+
+    // ============================================================
+    // RESET PASSWORD MODAL
+    // ============================================================
+    function openResetPasswordModal(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+
+      const bodyHtml = `
+        <p style="font-size:13px;margin-bottom:16px;">Reset password for <strong>${escapeHtml(user.firstName + ' ' + user.lastName)}</strong> (${escapeHtml(user.username)}).</p>
+        <div class="form-group">
+          <label for="resetNewPassword">New Temporary Password <span class="required">*</span></label>
+          <div class="password-wrapper">
+            <input type="password" id="resetNewPassword" placeholder="Minimum 8 characters" required minlength="8" />
+            <button type="button" class="toggle-password" id="toggleResetPassword" aria-label="Show password">&#128065;</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="resetConfirmPassword">Confirm Password <span class="required">*</span></label>
+          <input type="password" id="resetConfirmPassword" placeholder="Re-enter password" required minlength="8" />
+          <div class="error" id="errResetPasswordMatch">Passwords do not match.</div>
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+            <input type="checkbox" id="resetRequireChange" checked style="width:auto;accent-color:var(--navy);" />
+            Require password change at next login
+          </label>
+        </div>
+      `;
+
+      showModal('Reset Password', bodyHtml, '<button class="btn btn-secondary" id="cancelResetBtn">Cancel</button><button class="btn btn-danger" id="confirmResetBtn">Reset Password</button>');
+
+      document.getElementById('cancelResetBtn').addEventListener('click', closeModal);
+
+      const pwInput = document.getElementById('resetNewPassword');
+      const pwcInput = document.getElementById('resetConfirmPassword');
+      const errEl = document.getElementById('errResetPasswordMatch');
+      [pwInput, pwcInput].forEach(el => {
+        el.addEventListener('input', function () {
+          if (pwInput.value !== pwcInput.value) {
+            errEl.style.display = 'block';
+          } else {
+            errEl.style.display = 'none';
+          }
+        });
+      });
+
+      document.getElementById('toggleResetPassword').addEventListener('click', function () {
+        if (pwInput.type === 'password') {
+          pwInput.type = 'text';
+          this.innerHTML = '&#128064;';
+        } else {
+          pwInput.type = 'password';
+          this.innerHTML = '&#128065;';
+        }
+      });
+
+      document.getElementById('confirmResetBtn').addEventListener('click', function () {
+        if (pwInput.value.length < 8) {
+          showToast('Password must be at least 8 characters.', 'error');
+          return;
+        }
+        if (pwInput.value !== pwcInput.value) {
+          errEl.style.display = 'block';
+          return;
+        }
+        showToast('Password reset successfully (demo). The user will be required to change it at next login.', 'success');
+        closeModal();
+      });
+    }
+
+    // ============================================================
+    // TOGGLE USER STATUS
+    // ============================================================
+    function toggleUserStatus(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+
+      const newStatus = user.status === 'active' ? 'inactive' : 'active';
+      const actionLabel = newStatus === 'active' ? 'activate' : 'deactivate';
+
+      const bodyHtml = `
+        <p style="font-size:13px;margin-bottom:8px;">Are you sure you want to <strong>${actionLabel}</strong> the account for <strong>${escapeHtml(user.firstName + ' ' + user.lastName)}</strong> (${escapeHtml(user.username)})?</p>
+        <p style="font-size:12px;color:#64748b;">The user will ${newStatus === 'active' ? 'regain' : 'lose'} access to the temperature historian upon their next login attempt.</p>
+      `;
+
+      showModal('Confirm Status Change', bodyHtml, '<button class="btn btn-secondary" id="cancelStatusBtn">Cancel</button><button class="btn btn-primary" id="confirmStatusBtn">Confirm</button>');
+
+      document.getElementById('cancelStatusBtn').addEventListener('click', closeModal);
+      document.getElementById('confirmStatusBtn').addEventListener('click', function () {
+        user.status = newStatus;
+        showToast(`Account ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully (demo).`, 'success');
+        closeModal();
+        renderUserTable();
+      });
+    }
+
+    // ============================================================
+    // MODAL CLOSE HANDLERS
+    // ============================================================
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', function (e) {
+      if (e.target === modalOverlay) closeModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modalOverlay.classList.contains('visible')) {
+        closeModal();
+      }
+    });
+
+    // ============================================================
+    // INITIALIZATION
+    // ============================================================
+    function init() {
+      // Apply config to branding elements
+      document.getElementById('loginCompanyName').textContent = CONFIG.companyName;
+      document.getElementById('titleBarCompany').textContent = CONFIG.companyName;
+      document.getElementById('footerCompanyName').textContent = CONFIG.companyName;
+
+      // Check if first-time setup is needed (demo: always show login initially)
+      // In production, this would check the backend for an existing admin.
+      showLogin();
+
+      // Simulate abstract graphic bars with random heights for visual interest
+      document.querySelectorAll('.graphic-line .bar').forEach(bar => {
+        const h = 15 + Math.random() * 75;
+        bar.style.height = h + '%';
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
