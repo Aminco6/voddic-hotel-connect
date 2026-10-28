@@ -133,9 +133,9 @@ if (signupForm) {
             if (response.ok && data.success) {
                 showFormSuccess(data.message || 'Account created successfully! Redirecting...');
                 
-                setTimeout(() => {
-                    window.location.href = '/auth/login.html'; // Or your target login/success page
-                }, 2000);
+               setTimeout(() => {
+    window.location.href = `/auth/verify-email.html?email=${encodeURIComponent(email)}`;
+}, 1800);
             } else {
                 // Handle field-specific errors returned from Django DRF
                 if (data.errors && typeof data.errors === 'object') {
