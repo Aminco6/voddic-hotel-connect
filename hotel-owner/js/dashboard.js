@@ -1,46 +1,36 @@
 /* ============================================================
    VODDIC HOTEL CONNECT — Dashboard Logic (real data)
    Requires: js/auth-guard.js loaded first (provides window.Voddic)
-   Populates: hotel-owner/index.html DOM ids.
-   No fake data. Empty states → CTA to the right page.
    ============================================================ */
 (function () {
   'use strict';
 
-  // ---- Guard: wait for auth-guard to expose window.Voddic ----
   if (!window.Voddic) {
-    // auth-guard not loaded; don't proceed silently — redirect
     console.error('[dashboard] auth-guard.js not loaded');
     window.location.replace('/auth/login.html');
     return;
   }
   var V = window.Voddic;
-  var API = V.api;
   var authFetch = V.authFetch;
 
-  // ---- Endpoint paths (relative to /api/v1) ----
   var EP = {
-    me:              '/auth/me/',
-    hotels:          '/hotels/',
-    subscription:    '/hotels/subscription/',
-    rooms:           '/rooms/',
-    staff:           '/staff/staff/',
-    emergency:       '/emergency/',
-    services:        '/services/',
-    chat:            '/chat/'
+    rooms:        '/rooms/',
+    staff:        '/staff/staff/',
+    emergency:    '/emergency/',
+    services:     '/services/',
+    chat:         '/chat/',
+    subscription: '/hotels/subscription/'
   };
 
-  // ---- CTA map: when a stat is 0, show this button ----
   var CTA = {
-    rooms:   { label: '＋ Add your first room', href: '/hotel-owner/pages/rooms.html' },
-    staff:   { label: '＋ Invite staff',        href: '/hotel-owner/pages/staff.html' },
-    services:{ label: '＋ Create a service',    href: '/hotel-owner/pages/settings.html' },
-    revenue: { label: '＋ Set room prices',     href: '/hotel-owner/pages/rooms.html' }
+    rooms:    { label: '＋ Add your first room', href: '/hotel-owner/pages/rooms.html' },
+    staff:    { label: '＋ Invite staff',        href: '/hotel-owner/pages/staff.html' },
+    services: { label: '＋ Create a service',    href: '/hotel-owner/pages/settings.html' },
+    revenue:  { label: '＋ Set room prices',     href: '/hotel-owner/pages/rooms.html' }
   };
 
-  // ---- State ----
   var dashboardData = {
-    user: V.user || {},
+    user:  V.user  || {},
     hotel: V.hotel || {},
     stats: {},
     activity: []
@@ -55,7 +45,6 @@
     setCurrentDate();
     bindSidebarUser();
 
-    // Wait for auth-guard to validate/refresh user+hotel, then load
     window.addEventListener('voddic:ready', function (e) {
       if (e && e.detail) {
         dashboardData.user  = e.detail.user  || dashboardData.user;
@@ -65,15 +54,12 @@
       loadDashboardData();
     });
 
-    // Fallback: if auth-guard check is slow, still load after 2s
+    // Fallback if auth-guard is slow
     setTimeout(function () {
       if (!dashboardData.stats.roomsTotal) loadDashboardData();
     }, 2000);
   });
 
-  // ============================================================
-  // SIDEBAR: user/hotel/logout
-  // ============================================================
   function bindSidebarUser() {
     var name = dashboardData.user.full_name || dashboardData.user.email || 'Owner';
     var initial = (name.trim()[0] || 'O').toUpperCase();
@@ -86,18 +72,12 @@
     setText('hotelNameDisplay', hotelName);
   }
 
-  // ============================================================
-  // SIDEBAR NAVIGATION (existing page ids)
-  // ============================================================
   function initNavigation() {
     document.querySelectorAll('.nav-item[data-page]').forEach(function (item) {
       item.addEventListener('click', function (e) {
         var href = this.getAttribute('href') || '#';
         var page = this.getAttribute('data-page');
-        // Real link → let browser navigate
-        if (href && href !== '#' && href.indexOf('pages/') !== -1) return;
-        if (href && href.charAt(0) === '/') return;
-        // Otherwise in-page tab
+        if (href && href !== '#' && (href.indexOf('pages/') !== -1 || href.charAt(0) === '/')) return;
         if (page) {
           e.preventDefault();
           showPage(page);
@@ -127,9 +107,6 @@
     }
   }
 
-  // ============================================================
-  // GREETING / DATE
-  // ============================================================
   function setGreeting() {
     var hour = new Date().getHours();
     var greeting = hour < 12 ? 'Good morning'
@@ -144,28 +121,25 @@
   }
 
   // ============================================================
-  // LOAD ALL DASHBOARD DATA
+  // LOAD
   // ============================================================
   function loadDashboardData() {
     setShimmerState(true);
 
-    // Fire all requests in parallel; each fails independently
-    var calls = [
+    Promise.all([
       safeGet(EP.rooms),
       safeGet(EP.staff),
       safeGet(EP.emergency),
       safeGet(EP.services),
       safeGet(EP.chat),
       safeGet(EP.subscription)
-    ];
-
-    Promise.all(calls).then(function (results) {
-      var rooms          = toList(results[0]);
-      var staff          = toList(results[1]);
-      var emergencies    = toList(results[2]);
-      var services       = toList(results[3]);
-      var chats          = toList(results[4]);
-      var subscription   = results[5] && !Array.isArray(results[5]) ? results[5] : {};
+    ]).then(function (results) {
+      var rooms        = toList(results[0]);
+      var staff        = toList(results[1]);
+      var emergencies  = toList(results[2]);
+      var services     = toList(results[3]);
+      var chats        = toList(results[4]);
+      var subscription = (results[5] && !Array.isArray(results[5])) ? results[5] : {};
 
       computeStats(rooms, staff, emergencies, services, chats, subscription);
       computeActivity(rooms, emergencies, services);
@@ -174,23 +148,15 @@
     }).catch(function (err) {
       console.error('[dashboard] load error', err);
       setShimmerState(false);
-      // Still render with whatever we have (likely zeros)
       renderDashboard();
     });
   }
 
-  // ============================================================
-  // STATS COMPUTATION (defensive against unknown shapes)
-  // ============================================================
   function computeStats(rooms, staff, emergencies, services, chats, sub) {
-    var roomActive    = rooms.filter(function (r) { return r.status === 'ACTIVE_STAY'; }).length;
-    var roomVacant    = rooms.filter(function (r) { return r.status === 'AVAILABLE'; }).length;
-    var roomMaint     = rooms.filter(function (r) { return r.status === 'MAINTENANCE'; }).length;
-    var roomCleaning  = rooms.filter(function (r) { return r.status === 'CLEANING'; }).length;
+    var roomActive   = rooms.filter(function (r) { return r.status === 'ACTIVE_STAY'; }).length;
+    var roomVacant   = rooms.filter(function (r) { return r.status === 'AVAILABLE'; }).length;
 
-    var staffActive = staff.filter(function (s) {
-      return s.is_active !== false;
-    }).length;
+    var staffActive = staff.filter(function (s) { return s.is_active !== false; }).length;
 
     var emergenciesActive = emergencies.filter(function (e) {
       var s = (e.status || '').toUpperCase();
@@ -205,9 +171,7 @@
     var unreadChats = chats.filter(function (c) {
       return (c.unread_count || c.unread || 0) > 0;
     }).length;
-    if (!unreadChats && chats.length) unreadChats = 0;
 
-    // Revenue: try common fields on services (orders) — 0 if none
     var today = new Date().toISOString().slice(0, 10);
     var revenue = services.reduce(function (sum, s) {
       var created = (s.created_at || '').slice(0, 10);
@@ -217,35 +181,28 @@
     }, 0);
 
     dashboardData.stats = {
-      roomsTotal:     rooms.length,
-      roomsActive:    roomActive,
-      roomsVacant:    roomVacant,
-      roomsMaint:     roomMaint,
-      roomsCleaning:  roomCleaning,
-      staffTotal:     staff.length,
-      staffActive:    staffActive,
-      emergencies:    emergenciesActive,
-      servicesOpen:   servicesOpen,
-      servicesTotal:  services.length,
-      unreadChats:    unreadChats,
-      revenueToday:   revenue,
-      // Not tracked yet — show as em-dash
-      checkins:       '—',
-      checkouts:      '—',
-      orders:         services.length,
-      activeCalls:    '—',
-      pending:        servicesOpen + emergenciesActive,
-      avgResponse:    '—',
-      plan:           sub.plan || 'free',
-      planStatus:     sub.status || 'active',
-      maxRooms:       sub.room_limit || sub.max_rooms || 5,
-      expiresAt:      sub.expires_at || null
+      roomsTotal:    rooms.length,
+      roomsActive:   roomActive,
+      roomsVacant:   roomVacant,
+      staffTotal:    staff.length,
+      staffActive:   staffActive,
+      emergencies:   emergenciesActive,
+      servicesOpen:  servicesOpen,
+      servicesTotal: services.length,
+      unreadChats:   unreadChats,
+      revenueToday:  revenue,
+      checkins:      '—',
+      checkouts:     '—',
+      orders:        services.length,
+      activeCalls:   '—',
+      pending:       servicesOpen + emergenciesActive,
+      avgResponse:   '—',
+      plan:          sub.plan || 'free',
+      planStatus:    sub.status || 'active',
+      maxRooms:      sub.room_limit || sub.max_rooms || 5
     };
   }
 
-  // ============================================================
-  // ACTIVITY FEED (last 6 from rooms + emergencies + services)
-  // ============================================================
   function computeActivity(rooms, emergencies, services) {
     var items = [];
 
@@ -291,7 +248,6 @@
       });
     });
 
-    // Sort newest first (by created_at if present)
     items.sort(function (a, b) {
       return (b.time || '').localeCompare(a.time || '');
     });
@@ -299,28 +255,18 @@
     dashboardData.activity = items.slice(0, 6);
   }
 
-  // ============================================================
-  // RENDER
-  // ============================================================
   function renderDashboard() {
     var s = dashboardData.stats;
 
-    // Header
-    setText('sidebarHotelName', (dashboardData.hotel && dashboardData.hotel.name) || 'Your Hotel');
+    setStat('statGuests',      s.roomsActive,    CTA.rooms);
+    setStat('statActiveRooms', s.roomsActive,    CTA.rooms);
+    setStat('statVacantRooms', s.roomsVacant,    CTA.rooms);
+    setStat('statEmergencies', s.emergencies,    null);
+    setStat('statServices',    s.servicesOpen,   CTA.services);
+    setStat('statStaff',       s.staffActive,    CTA.staff);
+    setStat('statChats',       s.unreadChats,    null);
+    setStat('statRevenue',     s.revenueToday,   CTA.revenue, '₦');   // <-- FIX
 
-    // Top 8 cards
-    setStat('statGuests',     s.roomsActive,    CTA.rooms);
-    setStat('statActiveRooms', s.roomsActive,   CTA.rooms);
-    setStat('statVacantRooms', s.roomsVacant,   CTA.rooms);
-    setStat('statEmergencies', s.emergencies,   null);            // no CTA (owner doesn't create)
-    setStat('statServices',    s.servicesOpen,  CTA.services);
-    setStat('statStaff',       s.staffActive,   CTA.staff);
-    setStat('statChats',       s.unreadChats,   null);
-    setStat('statRevenue',     s.revenueToday > 0
-      ? '₦' + s.revenueToday.toLocaleString()
-      : '₦0', CTA.revenue);
-
-    // 6 secondary cards
     setText('statCheckins',   s.checkins);
     setText('statCheckouts',  s.checkouts);
     setText('statOrders',     s.orders);
@@ -328,7 +274,6 @@
     setText('statPending',    s.pending);
     setText('statResponse',   s.avgResponse);
 
-    // Sidebar badges
     setText('roomsBadge',    s.roomsTotal);
     setText('guestsBadge',   s.roomsActive);
     setText('servicesBadge', s.servicesOpen);
@@ -407,19 +352,28 @@
     if (el) el.textContent = (value === null || value === undefined) ? '—' : String(value);
   }
 
-  function setStat(id, value, cta) {
+  function setStat(id, value, cta, prefix) {
     var el = document.getElementById(id);
     if (!el) return;
-    el.textContent = (value === null || value === undefined) ? '—' : String(value);
 
-    // Empty-state CTA: only when the stat is 0 AND a CTA is defined
-    // Find parent .stat-card and inject a small link if not already present
+    var display;
+    if (value === null || value === undefined) {
+      display = '—';
+    } else if (prefix && typeof value === 'number') {
+      display = prefix + value.toLocaleString();
+    } else {
+      display = String(value);
+    }
+    el.textContent = display;
+
     var card = el.closest('.stat-card');
     if (!card) return;
     var existing = card.querySelector('.stat-cta');
     if (existing) existing.remove();
 
-    if (value === 0 && cta) {
+    // FIX: also treat numeric zero
+    var isZero = (value === 0 || value === '0');
+    if (isZero && cta) {
       var a = document.createElement('a');
       a.className = 'stat-cta';
       a.href = cta.href;
@@ -467,7 +421,7 @@
   }
 
   // ============================================================
-  // GLOBAL EXPORTS (for inline onclick handlers in index.html)
+  // GLOBAL EXPORTS (for inline onclick in index.html)
   // ============================================================
   window.toggleSidebar = function () {
     var sidebar = document.getElementById('sidebar');
@@ -488,12 +442,10 @@
   window.viewNotifications = function () { showPage('notifications'); };
   window.logout = function () { V.logout(); };
 
-  // Live refresh (30s), no fake data
   setInterval(function () {
     if (document.visibilityState === 'visible') loadDashboardData();
   }, 30000);
 
-  // Resize handler for back button
   window.addEventListener('resize', function () {
     var backBtn = document.getElementById('backBtn');
     if (!backBtn) return;
@@ -501,7 +453,6 @@
     else backBtn.classList.remove('visible');
   });
 
-  // Escape closes sidebar
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       var sidebar = document.getElementById('sidebar');

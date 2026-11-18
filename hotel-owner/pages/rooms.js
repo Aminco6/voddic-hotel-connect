@@ -5,12 +5,14 @@ const hotel=JSON.parse(localStorage.getItem("hotel")||"{}");
 const headers={"Authorization":"Bearer "+token,"Content-Type":"application/json"};
 if(!token)window.location.href="/auth/login.html";
 
-var rooms=[],activityLog=[],qrGenerated={};
+var rooms=[],roomTypes=[],qrGenerated={};
 var maxRooms=5;
 
 document.addEventListener("DOMContentLoaded",function(){
-    document.getElementById("userName").textContent=user.full_name||user.email||"Owner";
-    document.getElementById("userAvatar").textContent=(user.first_name||"O")[0].toUpperCase();
+    var displayName=user.full_name||user.email||"Owner";
+    var initial=(user.first_name||displayName||"O")[0].toUpperCase();
+    document.getElementById("userName").textContent=displayName;
+    document.getElementById("userAvatar").textContent=initial;
     document.getElementById("sidebarHotelName").textContent=hotel.name||"Hotel";
     initTabs();
     loadAllData();
@@ -29,16 +31,38 @@ function initTabs(){
 }
 
 async function loadAllData(){
-    await Promise.all([loadRooms(),loadSubscription()]);
+    await Promise.all([loadRooms(),loadTypes(),loadSubscription()]);
     renderAll();
 }
 
 async function loadRooms(){
-    try{var r=await fetch(API+"/rooms/",{headers:headers});if(r.ok){var d=await r.json();rooms=Array.isArray(d)?d:(d.results||[]);}}catch(e){}
+    try{
+        var r=await fetch(API+"/rooms/",{headers:headers});
+        if(r.ok){
+            var d=await r.json();
+            rooms=Array.isArray(d)?d:(d.results||[]);
+        }
+    }catch(e){}
+}
+
+async function loadTypes(){
+    try{
+        var r=await fetch(API+"/rooms/types/",{headers:headers});
+        if(r.ok){
+            var d=await r.json();
+            roomTypes=Array.isArray(d)?d:(d.results||[]);
+        }
+    }catch(e){}
 }
 
 async function loadSubscription(){
-    try{var r=await fetch(API+"/hotels/subscription/",{headers:headers});if(r.ok){var d=await r.json();maxRooms=d.max_rooms||5;}}catch(e){}
+    try{
+        var r=await fetch(API+"/hotels/subscription/",{headers:headers});
+        if(r.ok){
+            var d=await r.json();
+            maxRooms=d.max_rooms||5;
+        }
+    }catch(e){}
 }
 
 function renderAll(){
@@ -62,22 +86,25 @@ function renderSummary(){
 
 function populateFilters(){
     var floorSel=document.getElementById("filterFloor"),curFloor=floorSel.value;
-    var floors=[];rooms.forEach(function(r){if(r.floor&&floors.indexOf(r.floor)===-1)floors.push(r.floor);});
+    var floors=[];
+    rooms.forEach(function(r){if(r.floor&&floors.indexOf(r.floor)===-1)floors.push(r.floor);});
     floors.sort(function(a,b){return a-b;});
     floorSel.innerHTML='<option value="">All Floors</option>'+floors.map(function(f){return'<option value="'+f+'">Floor '+f+'</option>';}).join("");
     floorSel.value=curFloor;
     populateTypeDropdown();
 }
 
+// FIX: include RoomType entries even if no room uses them yet
 function populateTypeDropdown(){
     var sel=document.getElementById("rmType");if(!sel)return;
-    var types=[];rooms.forEach(function(r){if(r.room_type&&types.indexOf(r.room_type)===-1)types.push(r.room_type);});
-    if(!types.length)types=["Standard","Deluxe","Suite","Executive"];
+    var names=[];
+    roomTypes.forEach(function(t){if(t.name&&names.indexOf(t.name)===-1)names.push(t.name);});
+    rooms.forEach(function(r){if(r.room_type&&names.indexOf(r.room_type)===-1)names.push(r.room_type);});
+    if(!names.length)names=["Standard","Deluxe","Suite","Executive"];
     var cur=sel.value;
-    sel.innerHTML=types.map(function(t){return'<option value="'+t+'"'+(t===cur?' selected':'')+'>'+t+'</option>';}).join("");
+    sel.innerHTML=names.map(function(t){return'<option value="'+t+'"'+(t===cur?' selected':'')+'>'+t+'</option>';}).join("");
 }
 
-// ==================== ROOMS LIST ====================
 function renderRoomsList(filtered){
     var list=filtered||rooms,grid=document.getElementById("roomsGrid");
     if(!list.length){grid.innerHTML='<div class="empty-state"><p>No rooms found.</p></div>';return;}
@@ -101,7 +128,6 @@ function filterRooms(){
     renderRoomsList(rooms.filter(function(r){return(!s||(r.room_number||"").toLowerCase().indexOf(s)!==-1)&&(!f||r.floor==parseInt(f))&&(!st||r.status===st);}));
 }
 
-// ==================== ROOM CRUD ====================
 function openRoomModal(){
     if(rooms.length>=maxRooms){showToast("Room limit reached! "+rooms.length+"/"+maxRooms,"error");return;}
     document.getElementById("roomModalTitle").textContent="Add Room";
@@ -147,23 +173,18 @@ function confirmDeleteRoom(id){
     });
 }
 
-// ==================== ROOM TYPES ====================
 function renderTypeGrid(){
     var grid=document.getElementById("typeGrid");if(!grid)return;
-    grid.innerHTML='<div class="empty-state"><p>Loading...</p></div>';
-    fetch(API+"/rooms/types/",{headers:headers}).then(function(r){return r.json();}).then(function(d){
-        var types=Array.isArray(d)?d:(d.results||[]);
-        if(!types.length){grid.innerHTML='<div class="empty-state"><p>No types yet.</p></div>';return;}
-        grid.innerHTML=types.map(function(t){
-            return '<div class="type-card"><div class="type-name">'+t.name+'</div><div class="type-meta">₦'+(t.price||0)+'/night &bull; '+(t.capacity||2)+' guests</div><div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="editType(\''+t.id+'\')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteType(\''+t.id+'\')">Delete</button></div></div>';
-        }).join("");
-    }).catch(function(){grid.innerHTML='<div class="empty-state"><p>Error loading types</p></div>';});
+    if(!roomTypes.length){grid.innerHTML='<div class="empty-state"><p>No types yet. Add one above.</p></div>';return;}
+    grid.innerHTML=roomTypes.map(function(t){
+        return '<div class="type-card"><div class="type-name">'+t.name+'</div><div class="type-meta">₦'+(t.price||0)+'/night &bull; '+(t.capacity||2)+' guests</div><div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="editType(\''+t.id+'\')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteType(\''+t.id+'\')">Delete</button></div></div>';
+    }).join("");
 }
 
 function deleteType(id){
-    openConfirm("Delete this room type?","",async function(){
+    openConfirm("Delete this room type?","Existing rooms keep their current type name.",async function(){
         try{await fetch(API+"/rooms/types/"+id+"/",{method:"DELETE",headers:headers});}catch(e){}
-        renderTypeGrid();showToast("Type deleted","info");
+        await loadTypes();renderTypeGrid();showToast("Type deleted","info");
     });
 }
 
@@ -189,12 +210,11 @@ async function saveType(){
     var method=editId?"PUT":"POST";
     try{
         var res=await fetch(url,{method,headers,body:JSON.stringify(body)});
-        if(res.ok){showToast(editId?"Type updated!":"Type created!","success");closeModal("typeModal");renderTypeGrid();}
+        if(res.ok){showToast(editId?"Type updated!":"Type created!","success");closeModal("typeModal");await loadTypes();renderAll();}
         else{var d=await res.json();showToast((d.name||d.detail||"Failed"),"error");}
     }catch(e){showToast("Network error","error");}
 }
 
-// ==================== OTHER TABS ====================
 function renderOccupancy(){
     var tbody=document.getElementById("occBody");
     var occ=rooms.filter(function(r){return r.status==="ACTIVE_STAY";});
@@ -207,13 +227,22 @@ function renderQRGrid(){
     grid.innerHTML=active.map(function(r){var qid="qr_"+r.id;return'<div class="qr-card"><div class="qr-box" id="'+qid+'"></div><div class="qr-room-label">Room '+r.room_number+'</div><button class="btn btn-gold btn-sm" onclick="genQR(\''+r.id+'\',\''+qid+'\')">Generate</button></div>';}).join("")||'<div class="empty-state"><p>No rooms.</p></div>';
     Object.keys(qrGenerated).forEach(function(rid){var c=document.getElementById("qr_"+rid);if(c&&!c.innerHTML)new QRCode(c,{text:qrGenerated[rid],width:110,height:110,colorDark:"#0d2149",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});});
 }
-function genQR(rid,qid){var r=rooms.find(function(x){return x.id===rid;});if(!r)return;var slug=hotel.name.toLowerCase().replace(/\s+/g,"-");var url="https://connectapi/guest&room=?hotel="+slug+"&room="+r.room_number;qrGenerated[rid]=url;var c=document.getElementById(qid);if(c){c.innerHTML="";new QRCode(c,{text:url,width:110,height:110,colorDark:"#0d2149",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});}}
+
+// FIX: correct guest URL (was https://connectapi/guest&room=?hotel=...)
+function genQR(rid,qid){
+    var r=rooms.find(function(x){return x.id===rid;});if(!r)return;
+    var slug=(hotel.slug||hotel.name||"hotel").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+    var url="https://connect.voddic.com.ng/guest/room/"+encodeURIComponent(slug)+"/"+encodeURIComponent(r.room_number);
+    qrGenerated[rid]=url;
+    var c=document.getElementById(qid);
+    if(c){c.innerHTML="";new QRCode(c,{text:url,width:110,height:110,colorDark:"#0d2149",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});}
+}
+
 function generateAllQRCodes(){rooms.forEach(function(r){genQR(r.id,"qr_"+r.id);});showToast("Done!","success");}
 
 function renderMaintenance(){document.getElementById("maintBody").innerHTML='<tr><td colspan="6" style="text-align:center;color:#55556e;padding:40px;">No records.</td></tr>';}
 function renderActivityLog(){document.getElementById("roomLogTimeline").innerHTML='<div class="empty-state"><p>No activity yet.</p></div>';}
 
-// ==================== HELPERS ====================
 function openModal(id){document.getElementById(id).classList.add("active");document.body.style.overflow="hidden";}
 function closeModal(id){document.getElementById(id).classList.remove("active");if(!document.querySelector(".modal-overlay.active"))document.body.style.overflow="";}
 var confirmCallback=null;
