@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Staff Management — Voddic Hotel Connect</title>
+    <meta name="theme-color" content="#0f0f1a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0c0c18;
+            color: #eaeaf0;
+            line-height: 1.6;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        h1,h2,h3,h4,h5,h6,p,span,a,button,label,div,li,td,th,input,textarea,select,option {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; font-family: inherit; font-size: inherit; color: inherit; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #12121f; }
+        ::-webkit-scrollbar-thumb { background: #2a2a45; border-radius: 3px; }
+
+        .mobile-header {
+            display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px;
+            background: rgba(12,12,24,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 1000;
+            align-items: center; justify-content: space-between; padding: 0 16px;
+        }
+        .menu-toggle, .mobile-notif {
+            width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem; border-radius: 10px; background: rgba(255,255,255,0.05); color: #eaeaf0;
+            transition: background 0.2s;
+        }
+        .menu-toggle:active, .mobile-notif:active { background: rgba(255,255,255,0.1); }
+        .mobile-title { font-size: 1rem; font-weight: 700; color: #f0f0f5; letter-spacing: -0.01em; }
+
+        .sidebar-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 1100; opacity: 0; transition: opacity 0.3s;
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: 272px; height: 100vh;
+            background: #101020; border-right: 1px solid rgba(255,255,255,0.06);
+            z-index: 1200; display: flex; flex-direction: column; overflow: hidden;
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+        }
+        .sidebar-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0;
+        }
+        .sidebar-logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { font-size: 1.6rem; line-height: 1; }
+        .sidebar-logo h2 { font-size: 0.95rem; font-weight: 800; color: #f5f5fa; letter-spacing: -0.02em; line-height: 1.2; }
+        .hotel-name {
+            font-size: 0.72rem; font-weight: 500; color: #8a8aa8; line-height: 1.3; margin-top: 2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;
+        }
+        .sidebar-close {
+            display: none; width: 32px; height: 32px; align-items: center; justify-content: center;
+            font-size: 1rem; color: #8a8aa8; border-radius: 8px; transition: background 0.2s;
+        }
+        .sidebar-close:hover { background: rgba(255,255,255,0.06); }
+
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+        .nav-section { margin-bottom: 4px; }
+        .nav-section-title {
+            font-size: 0.62rem; font-weight: 700; color: #55556e; letter-spacing: 0.08em;
+            text-transform: uppercase; padding: 14px 20px 6px; line-height: 1.3;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px; padding: 9px 20px;
+            font-size: 0.82rem; font-weight: 500; color: #9a9ab8; line-height: 1.4;
+            transition: all 0.18s; border-left: 3px solid transparent;
+        }
+        .nav-item:hover { color: #e0e0f0; background: rgba(255,255,255,0.03); }
+        .nav-item.active { color: #f0f0f8; background: rgba(228,175,62,0.08); border-left-color: #e4af3e; }
+        .nav-icon { font-size: 0.95rem; line-height: 1; flex-shrink: 0; width: 22px; text-align: center; }
+        .nav-badge {
+            margin-left: auto; font-size: 0.65rem; font-weight: 700; color: #fff; background: #e4af3e;
+            padding: 2px 7px; border-radius: 10px; line-height: 1.4; min-width: 20px; text-align: center;
+        }
+        .nav-badge.emergency { background: #e54545; animation: ePulse 2s ease-in-out infinite; }
+        @keyframes ePulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+        .sidebar-footer { padding: 16px 18px; border-top: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+        .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: linear-gradient(135deg,#e4af3e,#c48a20);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: 800; color: #0c0c18; flex-shrink: 0;
+        }
+        .user-name { font-size: 0.82rem; font-weight: 600; color: #eaeaf0; line-height: 1.3; }
+        .user-role { font-size: 0.7rem; font-weight: 500; color: #6a6a88; line-height: 1.3; }
+        .logout-btn {
+            width: 100%; padding: 9px 14px; font-size: 0.78rem; font-weight: 600; color: #b0b0c8;
+            border-radius: 8px; text-align: left; transition: all 0.2s;
+        }
+        .logout-btn:hover { background: rgba(229,69,69,0.1); color: #e54545; }
+
+        .main-content { margin-left: 272px; min-height: 100vh; padding: 28px 32px 40px; position: relative; }
+        .main-content::before {
+            content: ''; position: fixed; top: -120px; right: -120px; width: 400px; height: 400px;
+            background: radial-gradient(circle,rgba(228,175,62,0.05) 0%,transparent 70%); pointer-events: none; z-index: -1;
+        }
+
+        .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .page-title { font-size: 1.75rem; font-weight: 800; color: #f5f5fa; letter-spacing: -0.03em; line-height: 1.2; }
+        .page-subtitle { font-size: 0.88rem; font-weight: 400; color: #8888a8; line-height: 1.4; margin-top: 4px; }
+
+        .tab-bar {
+            display: flex; gap: 4px; background: #13132a; border-radius: 14px; padding: 4px;
+            margin-bottom: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .tab-bar::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            padding: 10px 18px; font-size: 0.78rem; font-weight: 600; color: #7a7a98;
+            border-radius: 11px; white-space: nowrap; transition: all 0.25s; flex-shrink: 0;
+            line-height: 1.3;
+        }
+        .tab-btn:hover { color: #b0b0c8; }
+        .tab-btn.active { background: linear-gradient(135deg,#e4af3e,#c98e22); color: #0c0c18; font-weight: 700; }
+
+        .search-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .search-box { flex: 1; min-width: 200px; position: relative; }
+        .search-box input {
+            width: 100%; padding: 11px 16px 11px 42px; font-size: 0.84rem; font-weight: 500;
+            color: #eaeaf0; background: #151528; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; outline: none; transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        .search-box input::placeholder { color: #55556e; }
+        .search-box input:focus { border-color: rgba(228,175,62,0.4); }
+        .search-box .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.9rem; color: #55556e; pointer-events: none; }
+        .filter-select {
+            padding: 11px 14px; font-size: 0.78rem; font-weight: 600; color: #c0c0d8;
+            background: #151528; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; outline: none; font-family: inherit; cursor: pointer;
+            -webkit-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='https://www.w3.org/2000/svg' width='12' height='12' fill='%237a7a98' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+        }
+        .filter-select:focus { border-color: rgba(228,175,62,0.4); }
+
+        .btn-gold {
+            padding: 11px 22px; font-size: 0.82rem; font-weight: 700; color: #0c0c18;
+            background: linear-gradient(135deg,#e4af3e,#c98e22); border-radius: 12px;
+            transition: all 0.2s; line-height: 1.3; white-space: nowrap; display: inline-flex;
+            align-items: center; gap: 8px;
+        }
+        .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(228,175,62,0.3); }
+        .btn-gold:active { transform: translateY(0); }
+        .btn-outline {
+            padding: 9px 16px; font-size: 0.76rem; font-weight: 600; color: #9a9ab8;
+            background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+            transition: all 0.2s; line-height: 1.3;
+        }
+        .btn-outline:hover { border-color: rgba(255,255,255,0.2); color: #e0e0f0; }
+        .btn-danger {
+            padding: 9px 16px; font-size: 0.76rem; font-weight: 600; color: #f87171;
+            background: rgba(229,69,69,0.1); border: 1px solid rgba(229,69,69,0.2); border-radius: 10px;
+            transition: all 0.2s; line-height: 1.3;
+        }
+        .btn-danger:hover { background: rgba(229,69,69,0.2); }
+        .btn-sm { padding: 6px 12px; font-size: 0.72rem; border-radius: 8px; }
+
+        .summary-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
+        .summary-card {
+            background: #151528; border: 1px solid rgba(255,255,255,0.05); border-radius: 14px;
+            padding: 18px 16px; position: relative; overflow: hidden; transition: transform 0.2s;
+        }
+        .summary-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: 14px 14px 0 0; }
+        .summary-card:hover { transform: translateY(-2px); }
+        .summary-card.sc-total::before { background: linear-gradient(90deg,#e4af3e,#f0c960); }
+        .summary-card.sc-active::before { background: linear-gradient(90deg,#34d399,#6ee7b7); }
+        .summary-card.sc-dept::before { background: linear-gradient(90deg,#60a5fa,#93c5fd); }
+        .summary-card.sc-emergency::before { background: linear-gradient(90deg,#e54545,#f87171); }
+        .sc-icon { font-size: 1.2rem; margin-bottom: 10px; }
+        .sc-value { font-size: 1.5rem; font-weight: 800; color: #f5f5fa; letter-spacing: -0.03em; line-height: 1.1; }
+        .sc-label { font-size: 0.68rem; font-weight: 600; color: #6e6e8c; text-transform: uppercase; letter-spacing: 0.02em; margin-top: 4px; line-height: 1.3; }
+
+        .staff-list { display: flex; flex-direction: column; gap: 8px; }
+        .staff-card {
+            display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+            background: #151528; border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 14px; transition: all 0.2s; cursor: pointer;
+        }
+        .staff-card:hover { border-color: rgba(255,255,255,0.1); transform: translateX(4px); }
+        .staff-avatar {
+            width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center;
+            justify-content: center; font-size: 0.9rem; font-weight: 800; color: #0c0c18;
+            flex-shrink: 0;
+        }
+        .staff-avatar.av-gold { background: linear-gradient(135deg,#e4af3e,#c98e22); }
+        .staff-avatar.av-green { background: linear-gradient(135deg,#34d399,#059669); }
+        .staff-avatar.av-blue { background: linear-gradient(135deg,#60a5fa,#3b82f6); }
+        .staff-avatar.av-pink { background: linear-gradient(135deg,#f472b6,#db2777); }
+        .staff-avatar.av-purple { background: linear-gradient(135deg,#a78bfa,#7c3aed); }
+        .staff-avatar.av-teal { background: linear-gradient(135deg,#2dd4bf,#0d9488); }
+        .staff-info { flex: 1; min-width: 0; }
+        .staff-name { font-size: 0.88rem; font-weight: 700; color: #f0f0f8; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .staff-meta { font-size: 0.72rem; font-weight: 500; color: #6a6a88; line-height: 1.3; margin-top: 2px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .staff-meta span { display: inline-flex; align-items: center; gap: 4px; }
+        .staff-badge {
+            font-size: 0.62rem; font-weight: 700; padding: 3px 9px; border-radius: 6px;
+            flex-shrink: 0; line-height: 1.3; text-transform: uppercase; letter-spacing: 0.02em;
+        }
+        .staff-badge.active { color: #6ee7b7; background: rgba(52,211,153,0.15); }
+        .staff-badge.inactive { color: #f87171; background: rgba(229,69,69,0.15); }
+        .staff-badge.responder { color: #fde68a; background: rgba(251,191,36,0.15); }
+        .staff-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+        .tab-panel { display: none; animation: panelIn 0.3s ease; }
+        .tab-panel.active { display: block; }
+        @keyframes panelIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+        .dept-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 12px; }
+        .dept-card {
+            background: #151528; border: 1px solid rgba(255,255,255,0.05); border-radius: 14px;
+            padding: 20px 18px; transition: all 0.2s; position: relative;
+        }
+        .dept-card:hover { border-color: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        .dept-name { font-size: 1rem; font-weight: 700; color: #f0f0f8; line-height: 1.3; margin-bottom: 4px; }
+        .dept-count { font-size: 0.76rem; font-weight: 500; color: #6a6a88; line-height: 1.3; margin-bottom: 14px; }
+        .dept-actions { display: flex; gap: 8px; }
+        .dept-color-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
+
+        .perm-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); }
+        .perm-table {
+            width: 100%; border-collapse: collapse; background: #151528; min-width: 600px;
+        }
+        .perm-table th {
+            padding: 14px 16px; font-size: 0.7rem; font-weight: 700; color: #6e6e8c;
+            text-transform: uppercase; letter-spacing: 0.06em; text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.06); background: #13132a;
+            line-height: 1.3; position: sticky; top: 0;
+        }
+        .perm-table td {
+            padding: 12px 16px; font-size: 0.82rem; font-weight: 500; color: #c0c0d8;
+            border-bottom: 1px solid rgba(255,255,255,0.03); line-height: 1.4;
+        }
+        .perm-table tr:last-child td { border-bottom: none; }
+        .perm-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .toggle {
+            width: 40px; height: 22px; border-radius: 11px; background: #2a2a45;
+            position: relative; cursor: pointer; transition: background 0.25s; flex-shrink: 0;
+        }
+        .toggle.on { background: #e4af3e; }
+        .toggle::after {
+            content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+            border-radius: 50%; background: #fff; transition: transform 0.25s;
+        }
+        .toggle.on::after { transform: translateX(18px); }
+
+        .timeline { display: flex; flex-direction: column; gap: 0; }
+        .timeline-item {
+            display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+            position: relative;
+        }
+        .timeline-item:last-child { border-bottom: none; }
+        .timeline-dot {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+            position: relative; z-index: 1;
+        }
+        .timeline-dot::before {
+            content: ''; position: absolute; top: 10px; left: 4px; width: 2px; height: calc(100% + 18px);
+            background: rgba(255,255,255,0.04);
+        }
+        .timeline-item:last-child .timeline-dot::before { display: none; }
+        .timeline-dot.td-green { background: #34d399; }
+        .timeline-dot.td-red { background: #e54545; }
+        .timeline-dot.td-yellow { background: #fbbf24; }
+        .timeline-dot.td-blue { background: #60a5fa; }
+        .timeline-dot.td-purple { background: #a78bfa; }
+        .timeline-content { flex: 1; }
+        .timeline-title { font-size: 0.82rem; font-weight: 600; color: #e0e0f0; line-height: 1.35; }
+        .timeline-desc { font-size: 0.72rem; font-weight: 400; color: #6a6a88; line-height: 1.4; margin-top: 2px; }
+        .timeline-time { font-size: 0.68rem; font-weight: 600; color: #55556e; line-height: 1.3; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 2000; align-items: flex-end; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-sheet {
+            background: #16162c; border-radius: 20px 20px 0 0; width: 100%; max-width: 560px;
+            max-height: 90vh; overflow-y: auto; padding: 0; animation: sheetUp 0.35s cubic-bezier(0.32,0.72,0,1);
+        }
+        @media(min-width:769px) { .modal-overlay { align-items: center; } .modal-sheet { border-radius: 20px; margin-bottom: 0; } }
+        @keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+        .modal-handle { width: 36px; height: 4px; border-radius: 2px; background: #3a3a55; margin: 12px auto 0; }
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .modal-title { font-size: 1.05rem; font-weight: 800; color: #f0f0f8; line-height: 1.2; }
+        .modal-close { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #8a8aa8; border-radius: 8px; transition: background 0.2s; }
+        .modal-close:hover { background: rgba(255,255,255,0.06); }
+        .modal-body { padding: 24px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label {
+            display: block; font-size: 0.72rem; font-weight: 700; color: #8888a8;
+            text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 7px; line-height: 1.3;
+        }
+        .form-input {
+            width: 100%; padding: 11px 14px; font-size: 0.84rem; font-weight: 500;
+            color: #eaeaf0; background: #1a1a34; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; outline: none; transition: border-color 0.2s; font-family: inherit;
+            line-height: 1.4;
+        }
+        .form-input::placeholder { color: #44445e; }
+        .form-input:focus { border-color: rgba(228,175,62,0.5); }
+        .form-input.error { border-color: #e54545; }
+        .form-error { font-size: 0.7rem; font-weight: 600; color: #f87171; margin-top: 5px; line-height: 1.3; display: none; }
+        .form-error.visible { display: block; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-check {
+            display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+            background: #1a1a34; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;
+            cursor: pointer; transition: border-color 0.2s; margin-bottom: 8px;
+        }
+        .form-check:hover { border-color: rgba(255,255,255,0.12); }
+        .form-check input[type="checkbox"] { width: 18px; height: 18px; accent-color: #e4af3e; cursor: pointer; flex-shrink: 0; }
+        .form-check label { font-size: 0.82rem; font-weight: 500; color: #c0c0d8; line-height: 1.3; cursor: pointer; }
+        .modal-footer { padding: 16px 24px 24px; display: flex; gap: 10px; justify-content: flex-end; }
+
+        .empty-state { text-align: center; padding: 48px 24px; color: #55556e; }
+        .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.5; }
+        .empty-state p { font-size: 0.88rem; font-weight: 500; line-height: 1.5; }
+
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+        .toast {
+            padding: 14px 20px; border-radius: 10px; font-size: 0.82rem; font-weight: 600; color: #f0f0f8;
+            line-height: 1.4; background: #1e1e38; border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: tIn 0.35s ease, tOut 0.35s ease 3s forwards;
+            max-width: 340px;
+        }
+        .toast.success { border-left: 3px solid #34d399; }
+        .toast.error { border-left: 3px solid #e54545; }
+        .toast.info { border-left: 3px solid #60a5fa; }
+        @keyframes tIn { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes tOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(40px)} }
+
+        .confirm-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px); z-index: 2500; align-items: center; justify-content: center; padding: 24px;
+        }
+        .confirm-overlay.active { display: flex; }
+        .confirm-box {
+            background: #16162c; border: 1px solid rgba(255,255,255,0.08); border-radius: 18px;
+            padding: 28px; max-width: 380px; width: 100%; text-align: center;
+            animation: panelIn 0.25s ease;
+        }
+        .confirm-icon { font-size: 2rem; margin-bottom: 12px; }
+        .confirm-title { font-size: 1rem; font-weight: 800; color: #f0f0f8; line-height: 1.2; margin-bottom: 8px; }
+        .confirm-desc { font-size: 0.84rem; font-weight: 400; color: #8888a8; line-height: 1.5; margin-bottom: 24px; }
+        .confirm-btns { display: flex; gap: 10px; justify-content: center; }
+
+        @media(max-width:1200px) { .summary-row { grid-template-columns: repeat(2,1fr); } }
+        @media(max-width:768px) {
+            .mobile-header { display: flex; }
+            .sidebar { transform: translateX(-100%); width: 280px; z-index: 1200; }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-close { display: flex; }
+            .main-content { margin-left: 0; padding: 76px 16px 32px; }
+            .page-title { font-size: 1.4rem; }
+            .summary-row { grid-template-columns: repeat(2,1fr); gap: 8px; }
+            .summary-card { padding: 14px 12px; }
+            .sc-value { font-size: 1.2rem; }
+            .staff-card { padding: 14px; gap: 10px; flex-wrap: wrap; }
+            .staff-actions { width: 100%; justify-content: flex-end; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.04); }
+            .search-row { flex-direction: column; }
+            .form-row { grid-template-columns: 1fr; }
+            .dept-grid { grid-template-columns: 1fr; }
+        }
+        @media(max-width:380px) { .summary-row { grid-template-columns: 1fr; } }
+        :focus-visible { outline: 2px solid #e4af3e; outline-offset: 2px; }
+        button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
+        @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; } }
+    </style>
+</head>
+<body>
+    <header class="mobile-header" id="mobileHeader">
+        <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Open menu">&#9776;</button>
+        <span class="mobile-title">Staff Management</span>
+        <button class="mobile-notif" onclick="window.location.href='/hotel-owner/'" aria-label="Back to dashboard">&#127968;</button>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+     <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="logo-icon">&#127976;</div>
+                <div>
+                    <h2>Voddic Connect</h2>
+                    <p class="hotel-name" id="sidebarHotelName">Loading...</p>
+                </div>
+            </div>
+            <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Close menu">&#10005;</button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- Dashboard -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#127968; DASHBOARD</div>
+                <a href="#" class="nav-item active" data-page="overview">
+                    <span class="nav-icon">&#128202;</span> Overview
+                </a>
+                <a href="#" class="nav-item" data-page="stats">
+                    <span class="nav-icon">&#128200;</span> Statistics
+                </a>
+            </div>
+
+            <!-- Operations -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#9881;&#65039; OPERATIONS</div>
+                <a href="#" class="nav-item" data-page="rooms">
+                    <span class="nav-icon">&#128682;</span> Rooms
+                    <span class="nav-badge" id="roomsBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="guests">
+                    <span class="nav-icon">&#128101;</span> Guests / Members
+                    <span class="nav-badge" id="guestsBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="bookings">
+                    <span class="nav-icon">&#128197;</span> Bookings
+                </a>
+                <a href="#" class="nav-item" data-page="emergencies">
+                    <span class="nav-icon">&#128680;</span> Emergencies
+                    <span class="nav-badge emergency" id="emergencyBadge" style="display:none;">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="services">
+                    <span class="nav-icon">&#128203;</span> Service Requests
+                    <span class="nav-badge" id="servicesBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="orders">
+                    <span class="nav-icon">&#128274;</span> Orders
+                </a>
+            </div>
+
+            <!-- Communication -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#128172; COMMUNICATION</div>
+                <a href="#" class="nav-item" data-page="chat">
+                    <span class="nav-icon">&#128172;</span> Live Chat
+                    <span class="nav-badge" id="chatBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="calls">
+                    <span class="nav-icon">&#128222;</span> Calls / WebRTC
+                </a>
+                <a href="#" class="nav-item" data-page="notifications">
+                    <span class="nav-icon">&#128276;</span> Notifications
+                </a>
+            </div>
+
+            <!-- Hotel -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#127976; HOTEL</div>
+                <a href="#" class="nav-item" data-page="staff">
+                    <span class="nav-icon">&#128101;</span> Staff Management
+                </a>
+                <a href="#" class="nav-item" data-page="menu">
+                    <span class="nav-icon">&#127869;</span> Menu
+                </a>
+                <a href="#" class="nav-item" data-page="qrcodes">
+                    <span class="nav-icon">&#128241;</span> QR Codes
+                </a>
+                <a href="#" class="nav-item" data-page="settings">
+                    <span class="nav-icon">&#9881;&#65039;</span> Hotel Settings
+                </a>
+            </div>
+
+            <!-- Finance -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#128176; FINANCE</div>
+                <a href="#" class="nav-item" data-page="payments">
+                    <span class="nav-icon">&#128179;</span> Guest Payments
+                </a>
+                <a href="#" class="nav-item" data-page="transactions">
+                    <span class="nav-icon">&#128220;</span> Transactions
+                </a>
+                <a href="#" class="nav-item" data-page="revenue">
+                    <span class="nav-icon">&#128202;</span> Revenue
+                </a>
+                <a href="#" class="nav-item" data-page="subscription">
+                    <span class="nav-icon">&#128260;</span> Subscription
+                </a>
+            </div>
+
+            <!-- Analytics -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#128202; ANALYTICS</div>
+                <a href="#" class="nav-item" data-page="reports">
+                    <span class="nav-icon">&#128200;</span> Reports
+                </a>
+                <a href="#" class="nav-item" data-page="guest-analytics">
+                    <span class="nav-icon">&#128100;</span> Guest Analytics
+                </a>
+                <a href="#" class="nav-item" data-page="staff-analytics">
+                    <span class="nav-icon">&#128203;</span> Staff Performance
+                </a>
+            </div>
+
+            <!-- System -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#128272; SYSTEM</div>
+                <a href="#" class="nav-item" data-page="audit">
+                    <span class="nav-icon">&#128221;</span> Audit Logs
+                </a>
+                <a href="#" class="nav-item" data-page="system-settings">
+                    <span class="nav-icon">&#128295;</span> System Settings
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <div>
+                    <div class="user-name" id="userName">...</div>
+                    <div class="user-role">Hotel Owner</div>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">&#128682; Sign Out</button>
+        </div>
+    </aside>
+
+
+
+    
+    <main class="main-content" id="mainContent">
+        <div class="page-header"><div><h1 class="page-title">Staff Management</h1><p class="page-subtitle">Manage accounts, departments, roles and permissions</p></div></div>
+
+        <div class="summary-row" id="summaryRow">
+            <div class="summary-card sc-total"><div class="sc-icon">&#128101;</div><div class="sc-value" id="sumTotal">0</div><div class="sc-label">Total Staff</div></div>
+            <div class="summary-card sc-active"><div class="sc-icon">&#9989;</div><div class="sc-value" id="sumActive">0</div><div class="sc-label">Active</div></div>
+            <div class="summary-card sc-dept"><div class="sc-icon">&#127970;&#65039;</div><div class="sc-value" id="sumDepts">0</div><div class="sc-label">Departments</div></div>
+            <div class="summary-card sc-emergency"><div class="sc-icon">&#128680;</div><div class="sc-value" id="sumResponders">0</div><div class="sc-label">Emergency Responders</div></div>
+        </div>
+
+        <div class="tab-bar" id="tabBar">
+            <button class="tab-btn active" data-tab="staff">&#128101; Staff</button>
+            <button class="tab-btn" data-tab="departments">&#127970;&#65039; Departments</button>
+            <button class="tab-btn" data-tab="roles">&#128188; Roles</button>
+            <button class="tab-btn" data-tab="permissions">&#128274; Permissions</button>
+            <button class="tab-btn" data-tab="activity">&#128336; Activity</button>
+            <button class="tab-btn" data-tab="response-history">&#128221; Response History</button>
+        </div>
+
+        <!-- STAFF TAB -->
+        <div class="tab-panel active" id="panel-staff">
+            <div class="search-row">
+                <div class="search-box"><span class="search-icon">&#128269;</span><input type="text" id="staffSearch" placeholder="Search by name, email or role..." oninput="filterStaff()"></div>
+                <select class="filter-select" id="filterDept" onchange="filterStaff()"><option value="">All Departments</option></select>
+                <select class="filter-select" id="filterStatus" onchange="filterStaff()"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+                <button class="btn-gold" onclick="openStaffModal()">+ Add Staff</button>
+            </div>
+            <div class="staff-list" id="staffList"></div>
+        </div>
+
+        <!-- DEPARTMENTS TAB -->
+        <div class="tab-panel" id="panel-departments">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                <p style="font-size:0.84rem;font-weight:500;color:#8888a8;">Organize staff into departments for better coordination.</p>
+                <button class="btn-gold" onclick="openDeptModal()">+ Add Department</button>
+            </div>
+            <div class="dept-grid" id="deptGrid"></div>
+        </div>
+
+        <!-- ROLES TAB -->
+        <div class="tab-panel" id="panel-roles">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                <p style="font-size:0.84rem;font-weight:500;color:#8888a8;">Define roles and assign them to staff members.</p>
+                <button class="btn-gold" onclick="openRoleModal()">+ Add Role</button>
+            </div>
+            <div class="perm-table-wrap"><table class="perm-table" id="rolesTable"><thead><tr><th>Role Name</th><th>Staff Count</th><th>Description</th><th>Actions</th></tr></thead><tbody id="rolesBody"></tbody></table></div>
+        </div>
+
+        <!-- PERMISSIONS TAB -->
+        <div class="tab-panel" id="panel-permissions">
+            <div style="margin-bottom:20px;"><p style="font-size:0.84rem;font-weight:500;color:#8888a8;margin-bottom:14px;">Configure what each role can access. Changes apply immediately.</p></div>
+            <div class="perm-table-wrap"><table class="perm-table" id="permsTable"><thead><tr id="permsHeader"></tr></thead><tbody id="permsBody"></tbody></table></div>
+        </div>
+
+        <!-- ACTIVITY TAB -->
+        <div class="tab-panel" id="panel-activity">
+            <div style="margin-bottom:20px;"><p style="font-size:0.84rem;font-weight:500;color:#8888a8;">Recent staff actions and system events.</p></div>
+            <div class="timeline" id="activityTimeline"></div>
+        </div>
+
+        <!-- RESPONSE HISTORY TAB -->
+        <div class="tab-panel" id="panel-response-history">
+            <div style="margin-bottom:20px;"><p style="font-size:0.84rem;font-weight:500;color:#8888a8;">Emergency and service response tracking for all designated responders.</p></div>
+            <div class="perm-table-wrap"><table class="perm-table" id="responseTable"><thead><tr><th>Responder</th><th>Type</th><th>Location</th><th>Response Time</th><th>Status</th><th>Date</th></tr></thead><tbody id="responseBody"></tbody></table></div>
+        </div>
+    </main>
+
+    <!-- STAFF MODAL -->
+    <div class="modal-overlay" id="staffModal"><div class="modal-sheet"><div class="modal-handle"></div><div class="modal-header"><span class="modal-title" id="staffModalTitle">Add Staff Member</span><button class="modal-close" onclick="closeModal('staffModal')">&#10005;</button></div><div class="modal-body"><input type="hidden" id="editStaffId"><div class="form-row"><div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-input" id="firstName" placeholder="e.g. John"><div class="form-error" id="errFirstName">First name is required</div></div><div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-input" id="lastName" placeholder="e.g. Smith"><div class="form-error" id="errLastName">Last name is required</div></div></div><div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" id="staffEmail" placeholder="e.g. john@hotel.com"><div class="form-error" id="errEmail">Valid email is required</div></div><div class="form-row"><div class="form-group"><label class="form-label">Phone Number</label><input type="tel" class="form-input" id="staffPhone" placeholder="e.g. +1 555 0123"></div><div class="form-group"><label class="form-label">Role</label><select class="form-input" id="staffRole"></select></div></div><div class="form-group"><label class="form-label">Departments</label><div id="deptCheckboxes"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Status</label><select class="form-input" id="staffStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select></div><div class="form-group"><label class="form-label">Password <span style="color:#55556e;font-weight:400;text-transform:none;">(new staff only)</span></label><input type="password" class="form-input" id="staffPassword" placeholder="Min 8 characters"><div class="form-error" id="errPassword">Password must be 8+ characters</div></div></div><div class="form-check" id="responderCheck" style="margin-top:4px;"><input type="checkbox" id="isResponder"><label for="isResponder">&#128680; Designate as Emergency Responder</label></div></div><div class="modal-footer"><button class="btn-outline" onclick="closeModal('staffModal')">Cancel</button><button class="btn-gold" onclick="saveStaff()">Save Staff Member</button></div></div></div>
+
+    <!-- DEPARTMENT MODAL -->
+    <div class="modal-overlay" id="deptModal"><div class="modal-sheet"><div class="modal-handle"></div><div class="modal-header"><span class="modal-title" id="deptModalTitle">Add Department</span><button class="modal-close" onclick="closeModal('deptModal')">&#10005;</button></div><div class="modal-body"><input type="hidden" id="editDeptId"><div class="form-group"><label class="form-label">Department Name</label><input type="text" class="form-input" id="deptName" placeholder="e.g. Front Desk"><div class="form-error" id="errDeptName">Department name is required</div></div><div class="form-group"><label class="form-label">Color Tag</label><input type="color" id="deptColor" value="#e4af3e" style="width:60px;height:40px;border:none;border-radius:8px;cursor:pointer;background:none;"></div></div><div class="modal-footer"><button class="btn-outline" onclick="closeModal('deptModal')">Cancel</button><button class="btn-gold" onclick="saveDept()">Save Department</button></div></div></div>
+
+    <!-- ROLE MODAL -->
+    <div class="modal-overlay" id="roleModal"><div class="modal-sheet"><div class="modal-handle"></div><div class="modal-header"><span class="modal-title" id="roleModalTitle">Add Role</span><button class="modal-close" onclick="closeModal('roleModal')">&#10005;</button></div><div class="modal-body"><input type="hidden" id="editRoleId"><div class="form-group"><label class="form-label">Role Name</label><input type="text" class="form-input" id="roleName" placeholder="e.g. Receptionist"><div class="form-error" id="errRoleName">Role name is required</div></div><div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="roleDesc" rows="3" placeholder="Brief description of responsibilities..."></textarea></div></div><div class="modal-footer"><button class="btn-outline" onclick="closeModal('roleModal')">Cancel</button><button class="btn-gold" onclick="saveRole()">Save Role</button></div></div></div>
+
+    <!-- CONFIRM DIALOG -->
+    <div class="confirm-overlay" id="confirmDialog"><div class="confirm-box"><div class="confirm-icon" id="confirmIcon">&#9888;&#65039;</div><div class="confirm-title" id="confirmTitle">Are you sure?</div><div class="confirm-desc" id="confirmDesc">This action cannot be undone.</div><div class="confirm-btns"><button class="btn-outline" onclick="closeConfirm()">Cancel</button><button class="btn-danger" id="confirmAction" style="padding:10px 24px;">Delete</button></div></div></div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="staff.js"></script>
+</body>
+</html>
