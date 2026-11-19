@@ -53,16 +53,26 @@ function toggleSidebar() {
 }
 
 function initSidebar() {
+    // Only intercept clicks on OLD in-page-tab links (href="#").
+    // Real page links (href="/hotel-owner/pages/...") must be allowed to navigate natively.
     var navItems = document.querySelectorAll('.nav-item[data-page]');
     navItems.forEach(function(item) {
         item.addEventListener('click', function(e) {
+            var href = this.getAttribute('href') || '#';
+            if (href && href !== '#') return; // real link → let browser navigate
+
             e.preventDefault();
             var page = this.getAttribute('data-page');
             if (page === 'qrcodes') return;
             navItems.forEach(function(ni) { ni.classList.remove('active'); });
             this.classList.add('active');
             if (window.innerWidth <= 768) toggleSidebar();
-            showToast('Navigating to ' + this.textContent.trim() + '...', 'info');
+            // In-page tab links → redirect to dashboard tab
+            if (page && page !== 'overview') {
+                window.location.href = '/hotel-owner/#' + page;
+            } else {
+                window.location.href = '/hotel-owner/';
+            }
         });
     });
 }
