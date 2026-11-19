@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Room Management — Voddic Hotel Connect</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#0c0c18;color:#eaeaf0;line-height:1.6;min-height:100vh}
+a{text-decoration:none;color:inherit}button{border:none;background:none;cursor:pointer;font-family:inherit;color:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#12121f}::-webkit-scrollbar-thumb{background:#2a2a45;border-radius:3px}
+
+.mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:60px;background:rgba(12,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06);z-index:1000;align-items:center;justify-content:space-between;padding:0 16px}
+.menu-toggle{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;border-radius:10px;background:rgba(255,255,255,.05);color:#eaeaf0}
+.mobile-title{font-size:1rem;font-weight:700;color:#f0f0f5}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:1100}
+.sidebar-overlay.active{display:block}
+.sidebar{position:fixed;top:0;left:0;width:272px;height:100vh;background:#101020;border-right:1px solid rgba(255,255,255,.06);z-index:1200;display:flex;flex-direction:column;overflow-y:auto;transition:transform .35s}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sidebar-logo{display:flex;align-items:center;gap:12px}.logo-icon{font-size:1.6rem}
+.sidebar-logo h2{font-size:.95rem;font-weight:800;color:#f5f5fa}
+.hotel-name{font-size:.72rem;color:#8a8aa8;margin-top:2px}
+.sidebar-close{display:none;width:32px;height:32px;align-items:center;justify-content:center;font-size:1rem;color:#8a8aa8}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section-title{font-size:.62rem;font-weight:700;color:#55556e;letter-spacing:.08em;text-transform:uppercase;padding:14px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:.82rem;font-weight:500;color:#9a9ab8;transition:all .18s;border-left:3px solid transparent}
+.nav-item:hover{color:#e0e0f0;background:rgba(255,255,255,.03)}
+.nav-item.active{color:#f0f0f8;background:rgba(228,175,62,.08);border-left-color:#e4af3e}
+.nav-icon{font-size:.95rem;width:22px;text-align:center}
+.sidebar-footer{padding:16px 18px;border-top:1px solid rgba(255,255,255,.06)}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#e4af3e,#c48a20);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#0c0c18}
+.user-name{font-size:.82rem;font-weight:600}.user-role{font-size:.7rem;color:#6a6a88}
+.logout-btn{width:100%;padding:9px 14px;font-size:.78rem;font-weight:600;color:#b0b0c8;border-radius:8px;text-align:left}
+.logout-btn:hover{background:rgba(229,69,69,.1);color:#e54545}
+
+.main-content{margin-left:272px;min-height:100vh;padding:28px 32px 40px}
+.page-header{margin-bottom:24px}.page-title{font-size:1.75rem;font-weight:800;color:#f5f5fa}
+.page-subtitle{font-size:.88rem;color:#8888a8;margin-top:4px}
+
+.summary-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.summary-card{background:#151528;border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:16px;position:relative;overflow:hidden}
+.summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sc-total::before{background:#e4af3e}.sc-vacant::before{background:#34d399}.sc-occupied::before{background:#60a5fa}.sc-maintenance::before{background:#fbbf24}.sc-devices::before{background:#a78bfa}
+.sc-value{font-size:1.4rem;font-weight:800;color:#f5f5fa}.sc-label{font-size:.62rem;font-weight:600;color:#6e6e8c;text-transform:uppercase;margin-top:2px}
+
+.tab-bar{display:flex;gap:4px;background:#13132a;border-radius:14px;padding:4px;margin-bottom:20px;overflow-x:auto;border:1px solid rgba(255,255,255,.04)}
+.tab-btn{padding:9px 16px;font-size:.76rem;font-weight:600;color:#7a7a98;border-radius:11px;white-space:nowrap;transition:all .25s}
+.tab-btn.active{background:linear-gradient(135deg,#e4af3e,#c98e22);color:#0c0c18;font-weight:700}
+.tab-panel{display:none;animation:panelIn .3s ease}.tab-panel.active{display:block}
+@keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.search-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-box{flex:1;min-width:180px;position:relative}
+.search-box input{width:100%;padding:10px 16px 10px 40px;font-size:.82rem;color:#eaeaf0;background:#151528;border:1px solid rgba(255,255,255,.06);border-radius:10px;outline:none;font-family:inherit}
+.search-box input:focus{border-color:rgba(228,175,62,.4)}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:.85rem;color:#55556e}
+.filter-select{padding:10px 14px;font-size:.76rem;font-weight:600;color:#c0c0d8;background:#151528;border:1px solid rgba(255,255,255,.06);border-radius:10px;outline:none;font-family:inherit;cursor:pointer}
+
+.btn{padding:9px 18px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;border:none}
+.btn-gold{background:linear-gradient(135deg,#e4af3e,#c98e22);color:#0c0c18}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,.12);color:#9a9ab8}
+.btn-danger{background:rgba(229,69,69,.1);border:1px solid rgba(229,69,69,.2);color:#f87171}
+.btn-sm{padding:5px 10px;font-size:.68rem;border-radius:6px}
+
+/* ROOMS GRID - auto-fill like type grid */
+.rooms-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.room-card{background:#151528;border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:20px;transition:all .2s;position:relative;overflow:hidden}
+.room-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.room-card:hover{border-color:rgba(255,255,255,.1);transform:translateY(-2px)}
+.rs-vacant::before{background:linear-gradient(90deg,#34d399,#6ee7b7)}
+.rs-occupied::before{background:linear-gradient(90deg,#60a5fa,#93c5fd)}
+.rs-maintenance::before{background:linear-gradient(90deg,#fbbf24,#fde68a)}
+.rs-inactive::before{background:linear-gradient(90deg,#6b7280,#9ca3af)}
+.room-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:12px}
+.room-number{font-size:1.5rem;font-weight:800;color:#f5f5fa}
+.room-type-badge{padding:4px 12px;border-radius:14px;font-size:.68rem;font-weight:700;text-transform:uppercase;background:rgba(228,175,62,.15);color:#e4af3e}
+.room-details{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.rd-label{font-size:.62rem;font-weight:600;color:#55556e;text-transform:uppercase}
+.rd-value{font-size:.82rem;font-weight:600;color:#c0c0d8;margin-top:2px}
+.room-actions{display:flex;gap:6px}
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:6px;text-transform:uppercase}
+.sp-vacant{color:#6ee7b7;background:rgba(52,211,153,.12)}.sp-occupied{color:#93c5fd;background:rgba(96,165,250,.12)}
+.sp-maintenance{color:#fde68a;background:rgba(251,191,36,.12)}.sp-inactive{color:#9ca3af;background:rgba(107,114,128,.12)}
+.sp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sp-d-green{background:#34d399}.sp-d-blue{background:#60a5fa}.sp-d-yellow{background:#fbbf24}.sp-d-gray{background:#6b7280}
+
+/* TYPE GRID */
+.type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.type-card{background:#1a1a34;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px}
+.type-name{font-size:.95rem;font-weight:700;color:#f0f0f8;margin-bottom:8px}
+.type-meta{font-size:.76rem;color:#8888a8;margin-bottom:10px}
+
+.perm-table-wrap{overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,.05)}
+.perm-table{width:100%;border-collapse:collapse;background:#151528;min-width:600px}
+.perm-table th{padding:12px 14px;font-size:.65rem;font-weight:700;color:#6e6e8c;text-transform:uppercase;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);background:#13132a}
+.perm-table td{padding:10px 14px;font-size:.78rem;color:#c0c0d8;border-bottom:1px solid rgba(255,255,255,.03)}
+.perm-table tr:hover td{background:rgba(255,255,255,.02)}
+
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.qr-card{background:#151528;border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:14px;text-align:center}
+.qr-box{width:120px;height:120px;margin:0 auto 8px;border:2px solid rgba(255,255,255,.08);border-radius:8px;display:flex;align-items:center;justify-content:center;background:#fff}
+.qr-box canvas,.qr-box img{width:100%!important;height:100%!important}
+.qr-room-label{font-size:.8rem;font-weight:700;color:#f0f0f8}
+
+.timeline{display:flex;flex-direction:column}
+.timeline-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.timeline-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.td-green{background:#34d399}.td-red{background:#e54545}.td-yellow{background:#fbbf24}.td-blue{background:#60a5fa}
+.timeline-content{flex:1}.timeline-title{font-size:.78rem;font-weight:600;color:#e0e0f0}
+.timeline-desc{font-size:.68rem;color:#6a6a88;margin-top:1px}.timeline-time{font-size:.62rem;color:#55556e;white-space:nowrap}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:2000;align-items:flex-end;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal-sheet{background:#16162c;border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;animation:sheetUp .3s ease}
+@media(min-width:769px){.modal-overlay{align-items:center}.modal-sheet{border-radius:16px}}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:32px;height:4px;border-radius:2px;background:#3a3a55;margin:10px auto 0}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
+.modal-title{font-size:1rem;font-weight:800;color:#f0f0f8}.modal-close{font-size:1.1rem;color:#8a8aa8;cursor:pointer}
+.modal-body{padding:18px 20px}.modal-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:8px;justify-content:flex-end}
+.form-group{margin-bottom:14px}.form-label{display:block;font-size:.68rem;font-weight:700;color:#8888a8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.form-input{width:100%;padding:9px 12px;font-size:.82rem;color:#eaeaf0;background:#1a1a34;border:1px solid rgba(255,255,255,.08);border-radius:8px;outline:none;font-family:inherit}
+.form-input:focus{border-color:rgba(228,175,62,.5)}.form-input.error{border-color:#e54545}
+.form-error{font-size:.65rem;color:#f87171;margin-top:3px;display:none}.form-error.visible{display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:2500;align-items:center;justify-content:center;padding:20px}
+.confirm-overlay.active{display:flex}
+.confirm-box{background:#16162c;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:24px;max-width:360px;width:100%;text-align:center}
+.confirm-title{font-size:.95rem;font-weight:800;color:#f0f0f8;margin-bottom:6px}
+.confirm-desc{font-size:.78rem;color:#8888a8;margin-bottom:20px}
+.confirm-btns{display:flex;gap:8px;justify-content:center}
+
+.empty-state{text-align:center;padding:40px;color:#55556e}.empty-icon{font-size:2rem;margin-bottom:8px;opacity:.5}
+
+.toast-container{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:6px;font-size:.72rem;font-weight:600;color:#f0f0f8;background:#1e1e38;border:1px solid rgba(255,255,255,.08);animation:slideIn .3s ease;max-width:260px}
+.toast.success{border-left:3px solid #34d399}.toast.info{border-left:3px solid #60a5fa}.toast.error{border-left:3px solid #e54545}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+@media(max-width:1200px){.summary-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1000px){.rooms-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:650px){.rooms-grid{grid-template-columns:1fr}}@media(max-width:1000px){.rooms-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:650px){.rooms-grid{grid-template-columns:1fr}}@media(max-width:768px){
+    .mobile-header{display:flex}.sidebar{transform:translateX(-100%);width:280px}.sidebar.open{transform:translateX(0)}.sidebar-close{display:flex}
+    .main-content{margin-left:0;padding:76px 16px 32px}.page-title{font-size:1.4rem}
+    .summary-row{grid-template-columns:repeat(2,1fr)}.rooms-grid{grid-template-columns:1fr}.search-row{flex-direction:column}.form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="mobile-header">
+    <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+    <span class="mobile-title">Room Management</span>
+    <button class="menu-toggle" onclick="window.location.href='/hotel-owner/'">&#127968;</button>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="sidebar-logo"><div class="logo-icon">&#127976;</div><div><h2>Voddic Connect</h2><p class="hotel-name" id="sidebarHotelName">Hotel</p></div></div><button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button></div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">&#127968; DASHBOARD</div><a href="/hotel-owner/" class="nav-item"><span class="nav-icon">&#128202;</span> Overview</a>
+        <div class="nav-section-title">&#9881; OPERATIONS</div><a href="rooms.html" class="nav-item active"><span class="nav-icon">&#128682;</span> Rooms</a>
+        <a href="staff.html" class="nav-item"><span class="nav-icon">&#128101;</span> Staff</a>
+        <div class="nav-section-title">&#127976; HOTEL</div><a href="settings.html" class="nav-item"><span class="nav-icon">&#9881;</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer"><div class="user-info"><div class="user-avatar" id="userAvatar">O</div><div><div class="user-name" id="userName">Owner</div><div class="user-role">Hotel Owner</div></div></div><button class="logout-btn" onclick="logout()">&#128682; Sign Out</button></div>
+</aside>
+
+<main class="main-content">
+    <div class="page-header"><div><h1 class="page-title">Room Management</h1><p class="page-subtitle">Manage rooms, types, occupancy and QR codes</p></div></div>
+    <div class="summary-row">
+        <div class="summary-card sc-total"><div class="sc-value" id="sumTotal">0</div><div class="sc-label">Total Rooms</div></div>
+        <div class="summary-card sc-vacant"><div class="sc-value" id="sumVacant">0</div><div class="sc-label">Vacant</div></div>
+        <div class="summary-card sc-occupied"><div class="sc-value" id="sumOccupied">0</div><div class="sc-label">Occupied</div></div>
+        <div class="summary-card sc-maintenance"><div class="sc-value" id="sumMaintenance">0</div><div class="sc-label">Maintenance</div></div>
+        <div class="summary-card sc-devices"><div class="sc-value" id="sumDevices">0</div><div class="sc-label">Active Devices</div></div>
+    </div>
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="rooms">&#127976; Rooms</button>
+        <button class="tab-btn" data-tab="types">&#128188; Room Types</button>
+        <button class="tab-btn" data-tab="occupancy">&#128197; Occupancy</button>
+        <button class="tab-btn" data-tab="qrcodes">&#128241; QR Codes</button>
+        <button class="tab-btn" data-tab="maintenance">&#128295; Maintenance</button>
+        <button class="tab-btn" data-tab="log">&#128221; Room Log</button>
+    </div>
+
+    <div class="tab-panel active" id="panel-rooms">
+        <div class="search-row">
+            <div class="search-box"><span class="search-icon">&#128269;</span><input type="text" id="roomSearch" placeholder="Search rooms..." oninput="filterRooms()"></div>
+            <select class="filter-select" id="filterFloor" onchange="filterRooms()"><option value="">All Floors</option></select>
+            <select class="filter-select" id="filterStatus" onchange="filterRooms()"><option value="">All Status</option><option value="AVAILABLE">Vacant</option><option value="ACTIVE_STAY">Occupied</option><option value="CLEANING">Cleaning</option><option value="MAINTENANCE">Maintenance</option><option value="INACTIVE">Inactive</option></select>
+            <button class="btn btn-gold" onclick="openRoomModal()">+ Add Room</button>
+        </div>
+        <div class="rooms-grid" id="roomsGrid"></div>
+    </div>
+    <div class="tab-panel" id="panel-types">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <p style="font-size:.8rem;color:#8888a8;">Configure room types with pricing and capacity.</p>
+        <button class="btn btn-gold btn-sm" onclick="openTypeModal()">+ Add Room Type</button>
+    </div>
+    <div class="type-grid" id="typeGrid"></div>
+</div>
+    <div class="tab-panel" id="panel-occupancy"><div class="perm-table-wrap"><table class="perm-table"><thead><tr><th>Guest</th><th>Room</th><th>Type</th><th>Checked In</th><th>Device</th><th>Actions</th></tr></thead><tbody id="occBody"></tbody></table></div></div>
+    <div class="tab-panel" id="panel-qrcodes"><div class="qr-grid" id="qrGrid"></div></div>
+    <div class="tab-panel" id="panel-maintenance"><div class="perm-table-wrap"><table class="perm-table"><thead><tr><th>Room</th><th>Issue</th><th>Priority</th><th>Reported</th><th>Status</th><th>Actions</th></tr></thead><tbody id="maintBody"></tbody></table></div></div>
+    <div class="tab-panel" id="panel-log"><div class="timeline" id="roomLogTimeline"></div></div>
+</main>
+
+<div class="modal-overlay" id="roomModal"><div class="modal-sheet"><div class="modal-handle"></div>
+    <div class="modal-header"><span class="modal-title" id="roomModalTitle">Add Room</span><button class="modal-close" onclick="closeModal('roomModal')">&#10005;</button></div>
+    <div class="modal-body"><input type="hidden" id="editRoomId">
+        <div class="form-row"><div class="form-group"><label class="form-label">Room Number *</label><input type="text" class="form-input" id="rmNumber"><div class="form-error" id="errRmNum">Required</div></div>
+        <div class="form-group"><label class="form-label">Floor *</label><input type="number" class="form-input" id="rmFloor" min="1"><div class="form-error" id="errRmFloor">Required</div></div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Room Type</label><select class="form-input" id="rmType"></select></div>
+        <div class="form-group"><label class="form-label">Price</label><input type="number" class="form-input" id="rmPrice" step="0.01"></div></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-input" id="rmStatus"><option value="AVAILABLE">Available</option><option value="ACTIVE_STAY">Active Stay</option><option value="CLEANING">Cleaning</option><option value="MAINTENANCE">Maintenance</option><option value="INACTIVE">Inactive</option></select></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('roomModal')">Cancel</button><button class="btn btn-gold" onclick="saveRoom()">Save Room</button></div>
+</div></div>
+
+<div class="modal-overlay" id="typeModal"><div class="modal-sheet"><div class="modal-handle"></div>
+    <div class="modal-header"><span class="modal-title" id="typeModalTitle">Add Room Type</span><button class="modal-close" onclick="closeModal('typeModal')">&#10005;</button></div>
+    <div class="modal-body"><input type="hidden" id="editTypeId">
+        <div class="form-group"><label class="form-label">Type Name *</label><input type="text" class="form-input" id="tpName"><div class="form-error" id="errTpName">Required</div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Price</label><input type="number" class="form-input" id="tpPrice" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Capacity</label><input type="number" class="form-input" id="tpCapacity" min="1"></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('typeModal')">Cancel</button><button class="btn btn-gold" onclick="saveType()">Save Type</button></div>
+</div></div>
+
+<div class="confirm-overlay" id="confirmDialog"><div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">Are you sure?</div><div class="confirm-desc" id="confirmDesc"></div>
+    <div class="confirm-btns"><button class="btn btn-outline" onclick="closeConfirm()">Cancel</button><button class="btn btn-danger" id="confirmAction">Delete</button></div>
+</div></div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="rooms.js?v=14"></script>
+</body>
+</html>
