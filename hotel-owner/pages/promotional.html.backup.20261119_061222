@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Promotional Messages — Voddic Hotel Connect</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{--bg:#0c0c18;--card:#151528;--gold:#e4af3e;--danger:#e2412c;--success:#2fa06a;--warning:#f59e0b;--info:#3b82f6;--text:#eaeaf0;--text-dim:#8a8aa8;--border:rgba(255,255,255,.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+a{text-decoration:none;color:inherit}button{border:none;background:none;cursor:pointer;font-family:inherit;color:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#12121f}::-webkit-scrollbar-thumb{background:#2a2a45;border-radius:3px}
+
+.mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:60px;background:rgba(12,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:1000;align-items:center;justify-content:space-between;padding:0 16px}
+.menu-toggle{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;border-radius:10px;background:rgba(255,255,255,.05)}
+.mobile-title{font-size:1rem;font-weight:700;color:#f0f0f5}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:1100}
+.sidebar-overlay.active{display:block}
+.sidebar{position:fixed;top:0;left:0;width:272px;height:100vh;background:#101020;border-right:1px solid rgba(255,255,255,.06);z-index:1200;display:flex;flex-direction:column;overflow:hidden;transition:transform .35s}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.sidebar-logo{display:flex;align-items:center;gap:12px}.logo-icon{font-size:1.6rem}
+.sidebar-logo h2{font-size:.95rem;font-weight:800;color:#f5f5fa}
+.hotel-name{font-size:.72rem;color:var(--text-dim);margin-top:2px}
+.sidebar-close{display:none;width:32px;height:32px;align-items:center;justify-content:center;font-size:1rem;color:var(--text-dim);border-radius:8px}
+.sidebar-close:hover{background:rgba(255,255,255,.06)}
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 0}
+.nav-section-title{font-size:.62rem;font-weight:700;color:#55556e;letter-spacing:.08em;text-transform:uppercase;padding:14px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:.82rem;font-weight:500;color:#9a9ab8;transition:all .18s;border-left:3px solid transparent}
+.nav-item:hover{color:#e0e0f0;background:rgba(255,255,255,.03)}
+.nav-item.active{color:#f0f0f8;background:rgba(228,175,62,.08);border-left-color:var(--gold)}
+.nav-icon{font-size:.95rem;width:22px;text-align:center}
+.sidebar-footer{padding:16px 18px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#c48a20);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#000}
+.user-name{font-size:.82rem;font-weight:600}.user-role{font-size:.7rem;color:var(--text-dim)}
+.logout-btn{width:100%;padding:9px 14px;font-size:.78rem;font-weight:600;color:#b0b0c8;border-radius:8px;text-align:left}
+.logout-btn:hover{background:rgba(229,69,69,.1);color:#e54545}
+
+.main-content{margin-left:272px;min-height:100vh;padding:28px 32px 40px}
+.page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.page-title{font-size:1.75rem;font-weight:800;color:#f5f5fa}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap}
+.page-subtitle{font-size:.85rem;color:var(--text-dim);margin-top:4px}
+
+.card{background:var(--card);border-radius:14px;padding:20px;border:1px solid var(--border);margin-bottom:16px}
+.card-title{font-size:1rem;font-weight:700;color:#f5f5fa;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px}
+
+.tabs{display:flex;gap:4px;background:#13132a;border-radius:14px;padding:4px;margin-bottom:20px;overflow-x:auto;border:1px solid var(--border)}
+.tab-btn{padding:10px 18px;font-size:.78rem;font-weight:600;color:#7a7a98;border-radius:11px;white-space:nowrap;transition:all .25s}
+.tab-btn.active{background:linear-gradient(135deg,#e4af3e,#c98e22);color:#0c0c18;font-weight:700}
+.tab-panel{display:none;animation:fadeIn .3s ease}.tab-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.message-item{background:var(--bg);border-radius:10px;padding:16px;margin-bottom:10px;border:1px solid var(--border);transition:all .2s}
+.message-item:hover{border-color:rgba(255,255,255,.1)}
+.message-item .header{display:flex;justify-content:space-between;align-items:start;margin-bottom:8px}
+.message-item .title{font-weight:700;font-size:.95rem;color:#f0f0f8}
+.message-item .status{font-size:.65rem;font-weight:600;padding:2px 10px;border-radius:10px}
+.status-draft{background:rgba(107,114,128,.2);color:#9ca3af}
+.status-scheduled{background:rgba(59,130,246,.2);color:#60a5fa}
+.status-sending{background:rgba(245,158,11,.2);color:#fbbf24}
+.status-sent{background:rgba(52,211,153,.2);color:#34d399}
+.status-cancelled{background:rgba(229,69,69,.2);color:#f87171}
+.message-item .body{font-size:.82rem;color:var(--text-dim);margin-bottom:8px}
+.message-item .meta{font-size:.7rem;color:#55556e;display:flex;gap:12px;flex-wrap:wrap}
+.message-item .actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.message-item .stats{display:flex;gap:12px;font-size:.7rem;color:#55556e;margin-top:6px}
+
+.filter-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-row select,.filter-row input{padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;outline:none;font-family:inherit}
+.filter-row select:focus,.filter-row input:focus{border-color:var(--gold)}
+
+.btn{padding:8px 16px;border-radius:6px;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .2s}
+.btn-gold{background:#e4af3e;color:#000}
+.btn-gold:hover{opacity:.85}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-dim)}
+.btn-danger{background:rgba(226,65,44,.2);color:#e54545}
+.btn-danger:hover{background:rgba(226,65,44,.3)}
+.btn-sm{padding:4px 10px;font-size:.7rem}
+.btn-success{background:rgba(52,211,153,.2);color:#34d399}
+.btn-success:hover{background:rgba(52,211,153,.3)}
+.btn-warning{background:rgba(245,158,11,.2);color:#fbbf24}
+.btn-warning:hover{background:rgba(245,158,11,.3)}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999999;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex !important}
+.modal{background:#1a1a34;border-radius:16px;border:1px solid rgba(255,255,255,.1);max-width:550px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.modal-header h3{font-size:1.1rem;font-weight:700;color:#f5f5fa}
+.modal-close{font-size:1.2rem;color:#8a8aa8;padding:4px 8px;border-radius:6px;cursor:pointer;background:transparent}
+.modal-close:hover{background:rgba(255,255,255,.05)}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:.7rem;font-weight:600;color:#8a8aa8;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.form-group select,.form-group input,.form-group textarea{width:100%;padding:8px 12px;background:#0c0c18;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#eaeaf0;font-size:.85rem;outline:none;font-family:inherit}
+.form-group select:focus,.form-group input:focus,.form-group textarea:focus{border-color:#e4af3e}
+.form-group textarea{min-height:80px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-actions{display:flex;gap:8px;margin-top:12px}
+
+.toast-container{position:fixed;top:16px;right:16px;z-index:9999999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:6px;font-size:.72rem;font-weight:600;color:#f0f0f8;background:#1e1e38;border:1px solid rgba(255,255,255,.08);animation:slideIn .3s ease;max-width:260px}
+.toast.success{border-left:3px solid #34d399}.toast.info{border-left:3px solid #60a5fa}.toast.error{border-left:3px solid #e54545}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+.empty-state{text-align:center;padding:40px;color:#55556e}
+.empty-state .icon{font-size:2.5rem;margin-bottom:12px;opacity:.5}
+.empty-state p{font-size:.9rem}
+
+@media(max-width:768px){
+    .mobile-header{display:flex}.sidebar{transform:translateX(-100%);width:280px}.sidebar.open{transform:translateX(0)}.sidebar-close{display:flex}
+    .main-content{margin-left:0;padding:76px 16px 32px}.page-title{font-size:1.3rem}
+    .form-row{grid-template-columns:1fr}
+    .message-item .header{flex-direction:column;gap:6px}
+}
+</style>
+</head>
+<body>
+
+<header class="mobile-header">
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <span class="mobile-title">Promotional Messages</span>
+    <div style="width:42px"></div>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏨</div>
+            <div><h2 id="sidebarHotel">Hotel</h2><p class="hotel-name" id="sidebarDept">Staff</p></div>
+        </div>
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Hotel Owner</div>
+        <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span> Settings</a>
+        <a class="nav-item active" href="#"><span class="nav-icon">📢</span> Promotional Messages</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-info"><div class="user-avatar" id="userAvatar">S</div><div><div class="user-name" id="userName">Staff</div><div class="user-role" id="userRole">Loading...</div></div></div>
+        <button class="logout-btn" onclick="logout()">🚪 Sign Out</button>
+    </div>
+</aside>
+
+<main class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">📢 Promotional Messages</h1>
+            <p class="page-subtitle">Create and send promotional messages to guests</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-gold" onclick="openCreateModal()"><i class="fas fa-plus"></i> New Message</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('messages')">📋 Messages</button>
+        <button class="tab-btn" onclick="switchTab('subscribers')">👥 Subscribers</button>
+        <button class="tab-btn" onclick="switchTab('analytics')">📊 Analytics</button>
+    </div>
+
+    <!-- MESSAGES TAB -->
+    <div class="tab-panel active" id="panel-messages">
+        <div class="filter-row">
+            <select id="filterStatus" onchange="loadMessages()">
+                <option value="">All Status</option>
+                <option value="draft">Draft</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="sending">Sending</option>
+                <option value="sent">Sent</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="clearMessageFilters()"><i class="fas fa-undo"></i> Reset</button>
+        </div>
+        <div id="messagesList"></div>
+    </div>
+
+    <!-- SUBSCRIBERS TAB -->
+    <div class="tab-panel" id="panel-subscribers">
+        <div class="card">
+            <div class="card-title">Subscriber Statistics</div>
+            <div id="subscriberStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;"></div>
+            <div id="subscribersList"></div>
+        </div>
+    </div>
+
+    <!-- ANALYTICS TAB -->
+    <div class="tab-panel" id="panel-analytics">
+        <div class="card">
+            <div class="card-title">Analytics</div>
+            <div id="analyticsList"></div>
+        </div>
+    </div>
+</main>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" id="messageModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalTitle">Create Promotional Message</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div>
+            <input type="hidden" id="editMessageId">
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="msgTitle" placeholder="e.g., Special Dinner Offer Tonight">
+            </div>
+            <div class="form-group">
+                <label>Message *</label>
+                <textarea id="msgBody" placeholder="Write your message here..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Action Button Text</label>
+                <input type="text" id="msgActionText" placeholder="e.g., Book Now, View Offer" value="View">
+            </div>
+            <div class="form-group">
+                <label>Action Button URL</label>
+                <input type="url" id="msgActionUrl" placeholder="https://your-hotel.com/offer">
+            </div>
+            <div class="form-group">
+                <label>Icon URL (optional)</label>
+                <input type="url" id="msgIcon" placeholder="https://your-hotel.com/icon.png">
+            </div>
+            <div class="form-group">
+                <label>Image URL (optional)</label>
+                <input type="url" id="msgImage" placeholder="https://your-hotel.com/image.png">
+            </div>
+            <div class="form-group">
+                <label>Target Rooms (optional, comma separated)</label>
+                <input type="text" id="msgTargetRooms" placeholder="e.g., 101, 102, 103">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Send Now or Schedule</label>
+                    <select id="msgTiming" onchange="toggleSchedule()">
+                        <option value="now">Send Now</option>
+                        <option value="schedule">Schedule</option>
+                        <option value="draft">Save as Draft</option>
+                    </select>
+                </div>
+                <div class="form-group" id="scheduleGroup" style="display:none;">
+                    <label>Schedule Date & Time</label>
+                    <input type="datetime-local" id="msgScheduleTime">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-gold" onclick="saveMessage()" style="flex:1;" id="saveBtn">Create Message</button>
+                <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API = "https://connectapi.voddic.com.ng/api/v1";
+const token = localStorage.getItem("access_token");
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+const hotel = JSON.parse(localStorage.getItem("hotel") || "{}");
+const staff = JSON.parse(localStorage.getItem("staff") || "{}");
+
+if (!token) window.location.href = "/auth/login.html";
+
+var messages = [];
+var subscribers = [];
+var analytics = [];
+var hasPermission = false;
+
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("userName").textContent = user.full_name || user.email || "Staff";
+    document.getElementById("userAvatar").textContent = (user.first_name || "S")[0].toUpperCase();
+    document.getElementById("userRole").textContent = staff.position || staff.department || "Staff";
+    document.getElementById("sidebarHotel").textContent = hotel.name || "Hotel";
+    document.getElementById("sidebarDept").textContent = staff.department || "Staff";
+    
+    checkPermission();
+    loadMessages();
+    loadSubscribers();
+    loadAnalytics();
+});
+
+async function checkPermission() {
+    try {
+        const res = await fetch(API + "/staff/permissions/check/?feature=Promotional%20Messages", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            hasPermission = data.has_permission || false;
+        } else {
+            hasPermission = true;
+        }
+    } catch(e) {
+        hasPermission = true;
+    }
+    if (!hasPermission) {
+        document.querySelector('.page-actions').innerHTML = '<p style="color:var(--danger);">You don\'t have permission to create promotional messages.</p>';
+    }
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector(`.tab-btn[onclick*="${tab}"]`)?.classList.add('active');
+    document.getElementById(`panel-${tab}`).classList.add('active');
+    
+    if (tab === 'subscribers') loadSubscribers();
+    if (tab === 'analytics') loadAnalytics();
+}
+
+async function loadMessages() {
+    try {
+        const status = document.getElementById('filterStatus').value;
+        let url = API + "/push/messages/";
+        if (status) url += '?status=' + status;
+        const res = await fetch(url, { headers: { "Authorization": "Bearer " + token } });
+        if (res.ok) {
+            messages = await res.json();
+            renderMessages();
+        }
+    } catch(e) {
+        console.error("Error loading messages:", e);
+    }
+}
+
+function renderMessages() {
+    const container = document.getElementById('messagesList');
+    if (!messages.length) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">📢</div><p>No messages yet. Create your first promotional message!</p></div>`;
+        return;
+    }
+    
+    container.innerHTML = messages.map(m => {
+        const statusClass = `status-${m.status}`;
+        const stats = m.delivery_stats || {};
+        return `
+            <div class="message-item">
+                <div class="header">
+                    <div class="title">${m.title}</div>
+                    <span class="status ${statusClass}">${m.status_display || m.status}</span>
+                </div>
+                <div class="body">${m.message}</div>
+                <div class="meta">
+                    <span>Created: ${new Date(m.created_at).toLocaleDateString()}</span>
+                    ${m.scheduled_for ? `<span>Scheduled: ${m.scheduled_for_formatted}</span>` : ''}
+                    ${m.sent_at ? `<span>Sent: ${m.sent_at_formatted}</span>` : ''}
+                    <span>By: ${m.created_by_name || 'Unknown'}</span>
+                </div>
+                ${m.status !== 'draft' ? `
+                <div class="stats">
+                    <span>📤 ${stats.total || 0} sent</span>
+                    <span>✅ ${stats.delivered || 0} delivered</span>
+                    <span>👁️ ${stats.opened || 0} opened</span>
+                    <span>🖱️ ${stats.action_clicked || 0} action clicked</span>
+                    <span>❌ ${stats.failed || 0} failed</span>
+                </div>
+                ` : ''}
+                <div class="actions">
+                    ${m.status === 'draft' ? `<button class="btn btn-success btn-sm" onclick="sendNow('${m.id}')"><i class="fas fa-paper-plane"></i> Send Now</button>` : ''}
+                    ${m.status === 'draft' ? `<button class="btn btn-warning btn-sm" onclick="openScheduleModal('${m.id}')"><i class="fas fa-clock"></i> Schedule</button>` : ''}
+                    ${m.status === 'scheduled' ? `<button class="btn btn-danger btn-sm" onclick="cancelMessage('${m.id}')"><i class="fas fa-ban"></i> Cancel</button>` : ''}
+                    ${m.status === 'draft' ? `<button class="btn btn-outline btn-sm" onclick="editMessage('${m.id}')"><i class="fas fa-edit"></i> Edit</button>` : ''}
+                    ${m.status === 'sent' || m.status === 'scheduled' ? `<button class="btn btn-outline btn-sm" onclick="viewDeliveries('${m.id}')"><i class="fas fa-list"></i> Deliveries</button>` : ''}
+                    ${m.status === 'draft' ? `<button class="btn btn-danger btn-sm" onclick="deleteMessage('${m.id}')"><i class="fas fa-trash"></i></button>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function loadSubscribers() {
+    try {
+        const res = await fetch(API + "/push/subscribers/", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+            subscribers = await res.json();
+            renderSubscribers();
+            
+            // Load stats
+            const statsRes = await fetch(API + "/push/subscribers/stats/", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            if (statsRes.ok) {
+                const stats = await statsRes.json();
+                document.getElementById('subscriberStats').innerHTML = `
+                    <div class="card"><div class="sc-value">${stats.total || 0}</div><div class="sc-label">Total Subscribers</div></div>
+                    <div class="card"><div class="sc-value">${stats.active || 0}</div><div class="sc-label">Active</div></div>
+                    <div class="card"><div class="sc-value">${stats.by_room ? stats.by_room.length : 0}</div><div class="sc-label">Rooms</div></div>
+                `;
+            }
+        }
+    } catch(e) {
+        console.error("Error loading subscribers:", e);
+    }
+}
+
+function renderSubscribers() {
+    const container = document.getElementById('subscribersList');
+    if (!subscribers.length) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">👥</div><p>No subscribers yet. Guests will subscribe when they accept notifications.</p></div>`;
+        return;
+    }
+    container.innerHTML = `
+        <table class="shifts-table">
+            <thead><tr>
+                <th>Room</th>
+                <th>Guest</th>
+                <th>Device</th>
+                <th>Subscribed</th>
+                <th>Last Notification</th>
+                <th>Status</th>
+            </tr></thead>
+            <tbody>
+                ${subscribers.map(s => `
+                    <tr>
+                        <td data-label="Room"><strong>${s.room_number || 'N/A'}</strong></td>
+                        <td data-label="Guest">${s.guest_name || 'Unknown'}</td>
+                        <td data-label="Device">${s.device_id_display || 'N/A'}</td>
+                        <td data-label="Subscribed">${new Date(s.subscribed_at).toLocaleDateString()}</td>
+                        <td data-label="Last Notification">${s.last_notification_at ? new Date(s.last_notification_at).toLocaleDateString() : 'Never'}</td>
+                        <td data-label="Status"><span class="status status-sent">${s.is_active ? 'Active' : 'Inactive'}</span></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+async function loadAnalytics() {
+    try {
+        const res = await fetch(API + "/push/analytics/", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+            analytics = await res.json();
+            renderAnalytics();
+        }
+    } catch(e) {
+        console.error("Error loading analytics:", e);
+    }
+}
+
+function renderAnalytics() {
+    const container = document.getElementById('analyticsList');
+    if (!analytics.length) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">📊</div><p>No analytics data yet.</p></div>`;
+        return;
+    }
+    container.innerHTML = `
+        <table class="shifts-table">
+            <thead><tr>
+                <th>Date</th>
+                <th>Sent</th>
+                <th>Delivered</th>
+                <th>Opened</th>
+                <th>Action Clicked</th>
+            </tr></thead>
+            <tbody>
+                ${analytics.map(a => `
+                    <tr>
+                        <td data-label="Date">${a.date}</td>
+                        <td data-label="Sent">${a.total_sent}</td>
+                        <td data-label="Delivered">${a.total_delivered}</td>
+                        <td data-label="Opened">${a.total_opened}</td>
+                        <td data-label="Action Clicked">${a.total_action_clicked}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function openCreateModal() {
+    if (!hasPermission) { showToast("You don't have permission.", "error"); return; }
+    document.getElementById('modalTitle').textContent = 'Create Promotional Message';
+    document.getElementById('editMessageId').value = '';
+    document.getElementById('msgTitle').value = '';
+    document.getElementById('msgBody').value = '';
+    document.getElementById('msgActionText').value = 'View';
+    document.getElementById('msgActionUrl').value = '';
+    document.getElementById('msgIcon').value = '';
+    document.getElementById('msgImage').value = '';
+    document.getElementById('msgTargetRooms').value = '';
+    document.getElementById('msgTiming').value = 'now';
+    document.getElementById('msgScheduleTime').value = '';
+    document.getElementById('scheduleGroup').style.display = 'none';
+    document.getElementById('saveBtn').textContent = 'Create Message';
+    document.getElementById('messageModal').classList.add('active');
+}
+
+function editMessage(id) {
+    const msg = messages.find(m => m.id === id);
+    if (!msg) return;
+    document.getElementById('modalTitle').textContent = 'Edit Message';
+    document.getElementById('editMessageId').value = msg.id;
+    document.getElementById('msgTitle').value = msg.title;
+    document.getElementById('msgBody').value = msg.message;
+    document.getElementById('msgActionText').value = msg.action_button_text || 'View';
+    document.getElementById('msgActionUrl').value = msg.action_button_url || '';
+    document.getElementById('msgIcon').value = msg.icon || '';
+    document.getElementById('msgImage').value = msg.image || '';
+    document.getElementById('msgTargetRooms').value = msg.target_rooms ? msg.target_rooms.join(', ') : '';
+    document.getElementById('msgTiming').value = 'draft';
+    document.getElementById('msgScheduleTime').value = '';
+    document.getElementById('scheduleGroup').style.display = 'none';
+    document.getElementById('saveBtn').textContent = 'Update Message';
+    document.getElementById('messageModal').classList.add('active');
+}
+
+function openScheduleModal(id) {
+    const msg = messages.find(m => m.id === id);
+    if (!msg) return;
+    document.getElementById('modalTitle').textContent = 'Schedule Message';
+    document.getElementById('editMessageId').value = msg.id;
+    document.getElementById('msgTitle').value = msg.title;
+    document.getElementById('msgBody').value = msg.message;
+    document.getElementById('msgActionText').value = msg.action_button_text || 'View';
+    document.getElementById('msgActionUrl').value = msg.action_button_url || '';
+    document.getElementById('msgIcon').value = msg.icon || '';
+    document.getElementById('msgImage').value = msg.image || '';
+    document.getElementById('msgTargetRooms').value = msg.target_rooms ? msg.target_rooms.join(', ') : '';
+    document.getElementById('msgTiming').value = 'schedule';
+    document.getElementById('msgScheduleTime').value = '';
+    document.getElementById('scheduleGroup').style.display = 'block';
+    document.getElementById('saveBtn').textContent = 'Schedule Message';
+    document.getElementById('messageModal').classList.add('active');
+}
+
+function toggleSchedule() {
+    const val = document.getElementById('msgTiming').value;
+    document.getElementById('scheduleGroup').style.display = val === 'schedule' ? 'block' : 'none';
+}
+
+function closeModal() {
+    document.getElementById('messageModal').classList.remove('active');
+}
+
+async function saveMessage() {
+    const id = document.getElementById('editMessageId').value;
+    const timing = document.getElementById('msgTiming').value;
+    const targetRooms = document.getElementById('msgTargetRooms').value.split(',').map(s => s.trim()).filter(Boolean);
+    
+    const data = {
+        title: document.getElementById('msgTitle').value.trim(),
+        message: document.getElementById('msgBody').value.trim(),
+        action_button_text: document.getElementById('msgActionText').value.trim() || 'View',
+        action_button_url: document.getElementById('msgActionUrl').value.trim(),
+        icon: document.getElementById('msgIcon').value.trim(),
+        image: document.getElementById('msgImage').value.trim(),
+        target_rooms: targetRooms,
+        status: timing === 'draft' ? 'draft' : (timing === 'schedule' ? 'scheduled' : 'draft')
+    };
+    
+    if (timing === 'schedule') {
+        const scheduleTime = document.getElementById('msgScheduleTime').value;
+        if (!scheduleTime) {
+            showToast("Please select a schedule time.", "error");
+            return;
+        }
+        data.scheduled_for = new Date(scheduleTime).toISOString();
+    }
+    
+    if (!data.title || !data.message) {
+        showToast("Title and message are required.", "error");
+        return;
+    }
+    
+    const url = id ? `${API}/push/messages/${id}/` : `${API}/push/messages/`;
+    const method = id ? "PUT" : "POST";
+    
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (res.ok) {
+            showToast(id ? "Message updated!" : "Message created!", "success");
+            closeModal();
+            loadMessages();
+            if (timing === 'now' && result.id) {
+                setTimeout(() => sendNow(result.id), 500);
+            }
+        } else {
+            showToast(result.error || "Failed to save.", "error");
+        }
+    } catch(e) {
+        showToast("Network error: " + e.message, "error");
+    }
+}
+
+async function sendNow(id) {
+    if (!confirm("Send this message now?")) return;
+    try {
+        const res = await fetch(`${API}/push/messages/${id}/send_now/`, {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + token }
+        });
+        const result = await res.json();
+        if (res.ok) {
+            showToast("Message sending started!", "success");
+            loadMessages();
+        } else {
+            showToast(result.error || "Failed to send.", "error");
+        }
+    } catch(e) {
+        showToast("Network error: " + e.message, "error");
+    }
+}
+
+async function cancelMessage(id) {
+    if (!confirm("Cancel this scheduled message?")) return;
+    try {
+        const res = await fetch(`${API}/push/messages/${id}/cancel/`, {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + token }
+        });
+        const result = await res.json();
+        if (res.ok) {
+            showToast("Message cancelled.", "info");
+            loadMessages();
+        } else {
+            showToast(result.error || "Failed to cancel.", "error");
+        }
+    } catch(e) {
+        showToast("Network error: " + e.message, "error");
+    }
+}
+
+async function deleteMessage(id) {
+    if (!confirm("Delete this message?")) return;
+    try {
+        const res = await fetch(`${API}/push/messages/${id}/`, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+            showToast("Message deleted.", "info");
+            loadMessages();
+        } else {
+            showToast("Failed to delete.", "error");
+        }
+    } catch(e) {
+        showToast("Network error: " + e.message, "error");
+    }
+}
+
+function viewDeliveries(id) {
+    const msg = messages.find(m => m.id === id);
+    if (!msg) return;
+    const stats = msg.delivery_stats || {};
+    alert(`📊 Delivery Stats for "${msg.title}":\n\n` +
+          `📤 Total: ${stats.total || 0}\n` +
+          `✅ Delivered: ${stats.delivered || 0}\n` +
+          `👁️ Opened: ${stats.opened || 0}\n` +
+          `🖱️ Action Clicked: ${stats.action_clicked || 0}\n` +
+          `❌ Failed: ${stats.failed || 0}`);
+}
+
+function clearMessageFilters() {
+    document.getElementById('filterStatus').value = '';
+    loadMessages();
+}
+
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("sidebarOverlay").classList.toggle("active");
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = "/auth/login.html";
+}
+
+function showToast(msg, type) {
+    const container = document.getElementById("toastContainer");
+    const toast = document.createElement("div");
+    toast.className = "toast " + (type || "info");
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>
