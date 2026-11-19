@@ -425,37 +425,116 @@
         </div>
 
         <nav class="sidebar-nav">
+            <!-- Dashboard -->
             <div class="nav-section">
                 <div class="nav-section-title">&#127968; DASHBOARD</div>
-                <a href="/hotel-owner/" class="nav-item" data-nav="overview">
+                <a>
                     <span class="nav-icon">&#128202;</span> Overview
                 </a>
+               <!-- <a>
+                    <span class="nav-icon">&#128200;</span> Statistics
+                </a> -->
             </div>
 
+            <!-- Operations -->
             <div class="nav-section">
                 <div class="nav-section-title">&#9881;&#65039; OPERATIONS</div>
-                <a href="rooms.html" class="nav-item" data-nav="rooms">
+                <a>
                     <span class="nav-icon">&#128682;</span> Rooms
+                    <span class="nav-badge" id="roomsBadge">0</span>
                 </a>
-                <a href="finance.html" class="nav-item" data-nav="finance">
-                    <span class="nav-icon">&#128176;</span> Finance
+               <!-- <a>
+                    <span class="nav-icon">&#128101;</span> Guests / Members
+                    <span class="nav-badge" id="guestsBadge">0</span>
+                </a> -->
+                <a>
+                    <span class="nav-icon">&#128197;</span> Bookings
+                </a>
+                <a>
+                    <span class="nav-icon">&#128680;</span> Emergencies
+                    <span class="nav-badge emergency" id="emergencyBadge" style="display:none;">0</span>
+                </a>
+                <a>
+                    <span class="nav-icon">&#128203;</span> Service Requests
+                    <span class="nav-badge" id="servicesBadge">0</span>
+                </a>
+                <a>
+                    <span class="nav-icon">&#128274;</span> Orders
                 </a>
             </div>
 
+            <!-- Communication -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#128172; COMMUNICATION</div>
+                <a>
+                    <span class="nav-icon">&#128172;</span> Live Chat
+                    <span class="nav-badge" id="chatBadge">0</span>
+                </a>
+                <!-- <a>
+                    <span class="nav-icon">&#128222;</span> Calls / WebRTC
+                </a> -->
+                <a>
+                    <span class="nav-icon">&#128276;</span> Notifications
+                </a>
+            </div>
+
+            <!-- Hotel -->
             <div class="nav-section">
                 <div class="nav-section-title">&#127976; HOTEL</div>
-                <a href="staff.html" class="nav-item" data-nav="staff">
+                <a>
                     <span class="nav-icon">&#128101;</span> Staff Management
                 </a>
-                <a href="promotional.html" class="nav-item" data-nav="promotional">
-                    <span class="nav-icon">&#127869;</span> Promotional
+                <a>
+                    <span class="nav-icon">&#127869;</span> promotional
                 </a>
-                <a href="qrcodes.html" class="nav-item" data-nav="qrcodes">
+                <a>
                     <span class="nav-icon">&#128241;</span> QR Codes
                 </a>
-                <a href="settings.html" class="nav-item" data-nav="settings">
+                <a>
                     <span class="nav-icon">&#9881;&#65039;</span> Hotel Settings
                 </a>
+            </div>
+
+            <!-- Finance 
+            <div class="nav-section">
+                <div class="nav-section-title">&#128176; FINANCE</div>
+                <a>
+                    <span class="nav-icon">&#128179;</span> Guest Payments
+                </a>
+                <a>
+                    <span class="nav-icon">&#128220;</span> Transactions
+                </a>
+                <a>
+                    <span class="nav-icon">&#128202;</span> Revenue
+                </a>
+                <a>
+                    <span class="nav-icon">&#128260;</span> Subscription
+                </a>
+            </div> -->
+
+            <!-- Analytics 
+            <div class="nav-section">
+                <div class="nav-section-title">&#128202; ANALYTICS</div>
+                <a>
+                    <span class="nav-icon">&#128200;</span> Reports
+                </a>
+                <a>
+                    <span class="nav-icon">&#128100;</span> Guest Analytics
+                </a>
+                <a>
+                    <span class="nav-icon">&#128203;</span> Staff Performance
+                </a>
+            </div> -->
+
+            <!-- System -->
+            <div class="nav-section">
+                <div class="nav-section-title">&#128272; SYSTEM</div>
+                <a>
+                    <span class="nav-icon">&#128221;</span> Audit Logs
+                </a>
+              <!--  <a>
+                    <span class="nav-icon">&#128295;</span> System Settings
+                </a> -->
             </div>
         </nav>
 
@@ -565,13 +644,15 @@
           'index.html': 'overview',
           'rooms.html': 'rooms',
           'staff.html': 'staff',
-          'finance.html': 'finance',
-          'promotional.html': 'promotional',
+          'hotelStaff.html': 'staff',
+          'finance.html': 'payments',
+          'promotional.html': 'menu',
           'qrcodes.html': 'qrcodes',
           'settings.html': 'settings'
         };
         var current = map[path] || '';
         document.querySelectorAll('.nav-item[data-nav]').forEach(function (a) {
+          a.classList.remove('active');
           if (a.getAttribute('data-nav') === current) a.classList.add('active');
         });
       })();

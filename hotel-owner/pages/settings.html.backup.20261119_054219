@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hotel Settings — Voddic Hotel Connect</title>
+    <meta name="theme-color" content="#0f0f1a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+    <header class="mobile-header">
+        <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+        <span class="mobile-title">Hotel Settings</span>
+        <button class="mobile-notif" onclick="window.location.href='/hotel-owner/'">&#127968;</button>
+    </header>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo"><div class="logo-icon">&#127976;</div><div><h2>Voddic Connect</h2><p class="hotel-name" id="sidebarHotelName">Hotel</p></div></div>
+            <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section"><div class="nav-section-title">&#127968; DASHBOARD</div><a href="/hotel-owner/" class="nav-item"><span class="nav-icon">&#128202;</span> Overview</a></div>
+            <div class="nav-section"><div class="nav-section-title">&#9881; OPERATIONS</div><a href="staff.html" class="nav-item"><span class="nav-icon">&#128101;</span> Staff</a></div>
+            <div class="nav-section"><div class="nav-section-title">&#127976; HOTEL</div><a href="settings.html" class="nav-item active"><span class="nav-icon">&#9881;</span> Settings</a></div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info"><div class="user-avatar" id="userAvatar">O</div><div><div class="user-name" id="userName">Owner</div><div class="user-role">Hotel Owner</div></div></div>
+            <button class="logout-btn" onclick="logout()">&#128682; Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header"><div><h1 class="page-title">Hotel Settings</h1><p class="page-subtitle">Configure your hotel information, branding, and preferences</p></div></div>
+        
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="general">&#127976; General</button>
+            <button class="tab-btn" data-tab="branding">&#127912; Branding</button>
+            <button class="tab-btn" data-tab="departments">&#127970; Departments</button>
+            <button class="tab-btn" data-tab="emergency">&#128680; Emergency</button>
+            <button class="tab-btn" data-tab="notifications">&#128276; Notifications</button>
+            <button class="tab-btn" data-tab="policies">&#128220; Policies</button>
+            <button class="tab-btn" data-tab="regional">&#127760; Regional</button>
+            <button class="tab-btn" data-tab="qr-config">&#128241; QR Config</button>
+        </div>
+
+        <!-- GENERAL TAB -->
+        <div class="tab-panel active" id="panel-general">
+            <div class="settings-card">
+                <div class="sc-header"><div class="sc-title">&#127976; Hotel Information</div></div>
+                <div class="form-grid">
+                    <div class="form-group"><label class="form-label">Hotel Name</label><input type="text" class="form-input" id="sHotelName"></div>
+                    <div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-input" id="sPhone"></div>
+                    <div class="form-group full"><label class="form-label">Address</label><input type="text" class="form-input" id="sAddress"></div>
+
+                    <div class="form-group"><label class="form-label">Latitude</label><input type="text" class="form-input" id="sLatitude" placeholder="Auto-captured"></div>
+                    <div class="form-group"><label class="form-label">Longitude</label><input type="text" class="form-input" id="sLongitude" placeholder="Auto-captured"></div>
+                    <div class="form-group full"><button class="btn-outline btn-sm" onclick="captureLocation()" style="width:100%;">📍 Capture GPS Location</button></div>
+                    <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="sEmail"></div>
+                    <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-input" id="sWebsite"></div>
+                    <div class="form-group"><label class="form-label">Customer Care Phone</label><input type="tel" class="form-input" id="sCarePhone"></div>
+                    <div class="form-group"><label class="form-label">Country</label><input type="text" class="form-input" id="sCountry"></div>
+                    <div class="form-group"><label class="form-label">State</label><input type="text" class="form-input" id="sState"></div>
+                    <div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" id="sCity"></div>
+                    <div class="form-group full"><label class="form-label">Welcome Message</label><textarea class="form-input" id="sWelcome" rows="3"></textarea></div>
+                </div>
+                <div style="margin-top:20px;"><button class="btn-gold" onclick="saveGeneral()">&#128190; Save Changes</button></div>
+            </div>
+            <div class="settings-card">
+                <div class="sc-header"><div class="sc-title">&#128274; Change Password</div></div>
+                <div class="form-grid">
+                    <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-input" id="pwCurrent"></div>
+                    <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-input" id="pwNew"></div>
+                </div>
+                <div style="margin-top:16px;"><button class="btn-gold" onclick="changePassword()">&#128274; Change Password</button></div>
+            </div>
+        </div>
+
+        <!-- BRANDING TAB -->
+        <div class="tab-panel" id="panel-branding">
+            <div class="settings-card">
+                <div class="sc-header"><div class="sc-title">&#127912; Color Scheme</div></div>
+                <div class="form-grid">
+                    <div class="form-group"><label class="form-label">Primary Color</label><input type="color" id="colorPrimary" oninput="updateColorPreview()" style="width:60px;height:40px;"></div>
+                    <div class="form-group"><label class="form-label">Secondary Color</label><input type="color" id="colorSecondary" oninput="updateColorPreview()" style="width:60px;height:40px;"></div>
+                    <div class="form-group"><label class="form-label">Background</label><input type="color" id="colorBg" oninput="updateColorPreview()" style="width:60px;height:40px;"></div>
+                    <div class="form-group"><label class="form-label">Text Color</label><input type="color" id="colorText" oninput="updateColorPreview()" style="width:60px;height:40px;"></div>
+                </div>
+                <div style="margin-top:20px;"><button class="btn-gold" onclick="saveBranding()">&#128190; Save Branding</button></div>
+            </div>
+            <div class="settings-card">
+                <div class="sc-header"><div class="sc-title">&#128247; Hotel Images</div></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Hotel Logo</label>
+                        <div class="logo-preview" id="logoPreview" style="width:120px;height:120px;border:2px dashed rgba(228,175,62,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#127976;</div>
+                        <input type="file" id="logoFileInput" accept="image/*" style="display:none;" onchange="uploadLogo()">
+                        <div style="display:flex;gap:8px;margin-top:10px;">
+                            <button class="btn-outline btn-sm" onclick="document.getElementById('logoFileInput').click()">&#128193; Upload Logo</button>
+                            <button class="btn-outline btn-sm" onclick="captureFromCamera('logoFileInput')">&#128247; Camera</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Hotel Exterior / Rear View</label>
+                        <div class="logo-preview" id="hotelImgPreview" style="width:120px;height:120px;border:2px dashed rgba(228,175,62,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#127976;</div>
+                        <input type="file" id="hotelImgInput" accept="image/*" style="display:none;" onchange="uploadHotelImage()">
+                        <div style="display:flex;gap:8px;margin-top:10px;">
+                            <button class="btn-outline btn-sm" onclick="document.getElementById('hotelImgInput').click()">&#128193; Upload Image</button>
+                            <button class="btn-outline btn-sm" onclick="captureFromCamera('hotelImgInput')">&#128247; Camera</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEPARTMENTS TAB -->
+        <div class="tab-panel" id="panel-departments">
+            <div class="settings-card">
+                <div class="sc-header"><div class="sc-title">&#127970; Hotel Departments</div></div>
+                <p class="sc-desc">Current departments from the database.</p>
+                <div class="dept-grid" id="deptGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;"></div>
+                <div style="margin-top:16px;"><button class="btn-gold btn-sm" onclick="loadDepartments()">&#128260; Refresh List</button></div>
+            </div>
+        </div>
+
+        <!-- EMERGENCY TAB -->
+        <div class="tab-panel" id="panel-emergency"><p style="color:var(--text-dim);text-align:center;padding:40px;">Emergency contacts coming soon</p></div>
+
+        <!-- NOTIFICATIONS TAB -->
+        <div class="tab-panel" id="panel-notifications"><p style="color:var(--text-dim);text-align:center;padding:40px;">Notification settings coming soon</p></div>
+
+        <!-- POLICIES TAB -->
+        <div class="tab-panel" id="panel-policies">
+            <div class="settings-card">
+                <div class="sc-header"><div class="sc-title">&#128220; Guest Policies</div></div>
+                <p class="sc-desc">These policies are displayed to guests. Edit and save each one below.</p>
+                <div class="policy-item"><div class="policy-label">Check-In Policy</div><textarea class="form-input" id="policyCheckin" rows="3"></textarea></div>
+                <div class="policy-item"><div class="policy-label">Check-Out Policy</div><textarea class="form-input" id="policyCheckout" rows="3"></textarea></div>
+                <div class="policy-item"><div class="policy-label">Cancellation Policy</div><textarea class="form-input" id="policyCancel" rows="3"></textarea></div>
+                <div class="policy-item"><div class="policy-label">Pet Policy</div><textarea class="form-input" id="policyPets" rows="2"></textarea></div>
+                <div class="policy-item"><div class="policy-label">Smoking Policy</div><textarea class="form-input" id="policySmoking" rows="2"></textarea></div>
+                <div class="policy-item"><div class="policy-label">Additional Rules</div><textarea class="form-input" id="policyOther" rows="3"></textarea></div>
+                <div style="margin-top:20px;display:flex;gap:10px;">
+                    <button class="btn-gold" onclick="savePolicies()">&#128190; Save Policies</button>
+                    <button class="btn-outline" onclick="loadPolicies()">&#128260; Refresh</button>
+                </div>
+            </div>
+            <div class="settings-card">
+                <div class="sc-header"><div class="sc-title">&#128214; Current Saved Policies</div></div>
+                <div id="savedPolicies" style="color:#6a6a88;font-size:0.82rem;line-height:1.8;"><p>Loading...</p></div>
+            </div>
+        </div>
+
+        <!-- REGIONAL TAB -->
+        <div class="tab-panel" id="panel-regional"><p style="color:var(--text-dim);text-align:center;padding:40px;">Regional settings coming soon</p></div>
+
+        <!-- QR CONFIG TAB -->
+        <div class="tab-panel" id="panel-qr-config">
+            <div class="settings-card" style="background:transparent;border:none;padding:0;">
+                <div class="sc-header" style="margin-bottom:16px;">
+                    <div class="sc-title">&#128241; QR Code Room Cards</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn-gold btn-sm" onclick="generateAllQR()">&#128241; Generate All</button>
+                        <button class="btn-outline btn-sm" onclick="downloadAllQR()">&#128229; Download All</button>
+                        <button class="btn-outline btn-sm" onclick="window.print()">&#128424; Print All</button>
+                    </div>
+                </div>
+                <div class="summary-row" style="margin-bottom:16px;">
+                    <div class="summary-card sc-total"><div class="sc-value" id="sumTotal">0</div><div class="sc-label">Total Rooms</div></div>
+                    <div class="summary-card sc-active"><div class="sc-value" id="sumActive">0</div><div class="sc-label">Active</div></div>
+                    <div class="summary-card sc-qr"><div class="sc-value" id="sumQR">0</div><div class="sc-label">QR Generated</div></div>
+                    <div class="summary-card sc-vacant"><div class="sc-value" id="sumVacant">0</div><div class="sc-label">Vacant</div></div>
+                </div>
+                <div class="search-row" style="margin-bottom:16px;">
+                    <div class="search-box" style="flex:1;min-width:150px;position:relative;">
+                        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:0.9rem;color:#55556e;">&#128269;</span>
+                        <input type="text" id="roomSearch" placeholder="Search rooms..."  style="width:100%;padding:10px 16px 10px 40px;font-size:0.82rem;color:#eaeaf0;background:#1a1a34;border:1px solid rgba(255,255,255,0.08);border-radius:10px;outline:none;font-family:inherit;">
+                    </div>
+                    <select id="filterStatus"  style="padding:10px 14px;font-size:0.78rem;font-weight:600;color:#c0c0d8;background:#1a1a34;border:1px solid rgba(255,255,255,0.08);border-radius:10px;outline:none;font-family:inherit;cursor:pointer;">
+                        <option value="">All Rooms</option>
+                        <option value="ACTIVE_STAY">Active</option>
+                        <option value="AVAILABLE">Vacant</option>
+                        <option value="CLEANING">Cleaning</option>
+                    </select>
+                </div>
+                <div class="qr-cards-grid" id="roomsGrid"></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="settings.js"></script>
+</body>
+</html>
