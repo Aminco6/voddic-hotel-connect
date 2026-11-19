@@ -396,8 +396,14 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("userName").textContent = user.full_name || user.email || "Staff";
     document.getElementById("userAvatar").textContent = (user.first_name || "S")[0].toUpperCase();
     document.getElementById("userRole").textContent = staff.position || staff.department || "Staff";
-    document.getElementById("sidebarHotel").textContent = hotel.name || "Hotel";
-    document.getElementById("sidebarDept").textContent = staff.department || "Staff";
+    var _sh = document.getElementById("sidebarHotel");
+    if (_sh) _sh.textContent = hotel.name || "Hotel";
+    var _shn = document.getElementById("sidebarHotelName");
+    if (_shn) _shn.textContent = hotel.name || "Hotel";
+    var _sd = document.getElementById("sidebarDept");
+    if (_sd) _sd.textContent = staff.department || "Staff";
+    var _ur = document.getElementById("userRole");
+    if (_ur) _ur.textContent = staff.position || staff.department || "Hotel Owner";
     
     checkPermission();
     loadMessages();
