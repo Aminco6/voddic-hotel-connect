@@ -19,7 +19,8 @@
     emergency:    '/emergency/',
     services:     '/services/',
     chat:         '/chat/',
-    subscription: '/hotels/subscription/'
+    subscription: '/hotels/subscription/',
+    activity:     '/staff/activity/'
   };
 
   var CTA = {
@@ -132,7 +133,8 @@
       safeGet(EP.emergency),
       safeGet(EP.services),
       safeGet(EP.chat),
-      safeGet(EP.subscription)
+      safeGet(EP.subscription),
+      safeGet(EP.activity)
     ]).then(function (results) {
       var rooms        = toList(results[0]);
       var staff        = toList(results[1]);
@@ -140,9 +142,10 @@
       var services     = toList(results[3]);
       var chats        = toList(results[4]);
       var subscription = (results[5] && !Array.isArray(results[5])) ? results[5] : {};
+      var activities   = toList(results[6]);
 
       computeStats(rooms, staff, emergencies, services, chats, subscription);
-      computeActivity(rooms, emergencies, services);
+      computeActivityFromLog(activities);
       renderDashboard();
       setShimmerState(false);
     }).catch(function (err) {
@@ -203,56 +206,29 @@
     };
   }
 
-  function computeActivity(rooms, emergencies, services) {
-    var items = [];
+  function computeActivityFromLog(activities) {
+    // Build Recent Activity from /staff/activity/ (immutable audit log)
+    var ICONS = {
+      create: '\u2795',
+      update: '\u270F\uFE0F',
+      delete: '\uD83D\uDDD1\uFE0F'
+    };
+    var STATUS = {
+      create: 'success',
+      update: 'info',
+      delete: 'danger'
+    };
 
-    emergencies.forEach(function (e) {
-      items.push({
-        icon: '🚨',
-        title: 'Emergency: ' + (e.title || e.message || e.type || 'Alert') +
-               (e.room_number ? ' — Room ' + e.room_number : ''),
-        time: e.created_at || '',
-        status: 'danger',
-        statusText: (e.status || 'ACTIVE').toUpperCase()
-      });
+    dashboardData.activity = activities.slice(0, 8).map(function (a) {
+      return {
+        icon: ICONS[a.activity_type] || '\uD83D\uDCCB',
+        title: a.title || a.activity_type || 'Activity',
+        time: a.created_at || '',
+        status: STATUS[a.activity_type] || 'info',
+        statusText: (a.activity_type || '').toUpperCase(),
+        who: a.staff_name || 'System'
+      };
     });
-
-    rooms.filter(function (r) { return r.status === 'ACTIVE_STAY'; }).forEach(function (r) {
-      items.push({
-        icon: '✅',
-        title: 'Room ' + r.room_number + ' occupied',
-        time: r.updated_at || r.created_at || '',
-        status: 'success',
-        statusText: 'ACTIVE'
-      });
-    });
-
-    rooms.filter(function (r) { return r.status === 'MAINTENANCE'; }).forEach(function (r) {
-      items.push({
-        icon: '🔧',
-        title: 'Room ' + r.room_number + ' in maintenance',
-        time: r.updated_at || r.created_at || '',
-        status: 'warning',
-        statusText: 'MAINTENANCE'
-      });
-    });
-
-    services.forEach(function (s) {
-      items.push({
-        icon: '📋',
-        title: (s.title || s.name || 'Service request') +
-               (s.room_number ? ' — Room ' + s.room_number : ''),
-        time: s.created_at || '',
-        status: 'info',
-        statusText: (s.status || 'OPEN').toUpperCase()
-      });
-    });
-
-    items.sort(function (a, b) {
-      return (b.time || '').localeCompare(a.time || '');
-    });
-
-    dashboardData.activity = items.slice(0, 6);
   }
 
   function renderDashboard() {
@@ -314,7 +290,7 @@
         '<div class="activity-icon">' + item.icon + '</div>' +
         '<div class="activity-info">' +
           '<div class="activity-title">' + escapeHtml(item.title) + '</div>' +
-          '<div class="activity-time">' + relativeTime(item.time) + '</div>' +
+          '<div class="activity-time">' + relativeTime(item.time) + (item.who ? ' \u00B7 ' + escapeHtml(item.who) : '') + '</div>' +
         '</div>' +
         '<span class="activity-status ' + item.status + '">' + escapeHtml(item.statusText) + '</span>' +
       '</div>';
