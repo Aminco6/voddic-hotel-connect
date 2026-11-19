@@ -18,140 +18,18 @@
         <button class="mobile-notif" onclick="window.location.href='/hotel-owner/'">&#127968;</button>
     </header>
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <div class="logo-icon">&#127976;</div>
-                <div>
-                    <h2>Voddic Connect</h2>
-                    <p class="hotel-name" id="sidebarHotelName">Loading...</p>
-                </div>
-            </div>
-            <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Close menu">&#10005;</button>
+            <div class="sidebar-logo"><div class="logo-icon">&#127976;</div><div><h2>Voddic Connect</h2><p class="hotel-name" id="sidebarHotelName">Hotel</p></div></div>
+            <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
         </div>
-
         <nav class="sidebar-nav">
-            <!-- Dashboard -->
-            <div class="nav-section">
-                <div class="nav-section-title">&#127968; DASHBOARD</div>
-                <a>
-                    <span class="nav-icon">&#128202;</span> Overview
-                </a>
-               <!-- <a>
-                    <span class="nav-icon">&#128200;</span> Statistics
-                </a> -->
-            </div>
-
-            <!-- Operations -->
-            <div class="nav-section">
-                <div class="nav-section-title">&#9881;&#65039; OPERATIONS</div>
-                <a>
-                    <span class="nav-icon">&#128682;</span> Rooms
-                    <span class="nav-badge" id="roomsBadge">0</span>
-                </a>
-               <!-- <a>
-                    <span class="nav-icon">&#128101;</span> Guests / Members
-                    <span class="nav-badge" id="guestsBadge">0</span>
-                </a> -->
-                <a>
-                    <span class="nav-icon">&#128197;</span> Bookings
-                </a>
-                <a>
-                    <span class="nav-icon">&#128680;</span> Emergencies
-                    <span class="nav-badge emergency" id="emergencyBadge" style="display:none;">0</span>
-                </a>
-                <a>
-                    <span class="nav-icon">&#128203;</span> Service Requests
-                    <span class="nav-badge" id="servicesBadge">0</span>
-                </a>
-                <a>
-                    <span class="nav-icon">&#128274;</span> Orders
-                </a>
-            </div>
-
-            <!-- Communication -->
-            <div class="nav-section">
-                <div class="nav-section-title">&#128172; COMMUNICATION</div>
-                <a>
-                    <span class="nav-icon">&#128172;</span> Live Chat
-                    <span class="nav-badge" id="chatBadge">0</span>
-                </a>
-                <!-- <a>
-                    <span class="nav-icon">&#128222;</span> Calls / WebRTC
-                </a> -->
-                <a>
-                    <span class="nav-icon">&#128276;</span> Notifications
-                </a>
-            </div>
-
-            <!-- Hotel -->
-            <div class="nav-section">
-                <div class="nav-section-title">&#127976; HOTEL</div>
-                <a>
-                    <span class="nav-icon">&#128101;</span> Staff Management
-                </a>
-                <a>
-                    <span class="nav-icon">&#127869;</span> promotional
-                </a>
-                <a>
-                    <span class="nav-icon">&#128241;</span> QR Codes
-                </a>
-                <a>
-                    <span class="nav-icon">&#9881;&#65039;</span> Hotel Settings
-                </a>
-            </div>
-
-            <!-- Finance 
-            <div class="nav-section">
-                <div class="nav-section-title">&#128176; FINANCE</div>
-                <a>
-                    <span class="nav-icon">&#128179;</span> Guest Payments
-                </a>
-                <a>
-                    <span class="nav-icon">&#128220;</span> Transactions
-                </a>
-                <a>
-                    <span class="nav-icon">&#128202;</span> Revenue
-                </a>
-                <a>
-                    <span class="nav-icon">&#128260;</span> Subscription
-                </a>
-            </div> -->
-
-            <!-- Analytics 
-            <div class="nav-section">
-                <div class="nav-section-title">&#128202; ANALYTICS</div>
-                <a>
-                    <span class="nav-icon">&#128200;</span> Reports
-                </a>
-                <a>
-                    <span class="nav-icon">&#128100;</span> Guest Analytics
-                </a>
-                <a>
-                    <span class="nav-icon">&#128203;</span> Staff Performance
-                </a>
-            </div> -->
-
-            <!-- System -->
-            <div class="nav-section">
-                <div class="nav-section-title">&#128272; SYSTEM</div>
-                <a>
-                    <span class="nav-icon">&#128221;</span> Audit Logs
-                </a>
-              <!--  <a>
-                    <span class="nav-icon">&#128295;</span> System Settings
-                </a> -->
-            </div>
+            <div class="nav-section"><div class="nav-section-title">&#127968; DASHBOARD</div><a href="/hotel-owner/" class="nav-item"><span class="nav-icon">&#128202;</span> Overview</a></div>
+            <div class="nav-section"><div class="nav-section-title">&#9881; OPERATIONS</div><a href="staff.html" class="nav-item"><span class="nav-icon">&#128101;</span> Staff</a></div>
+            <div class="nav-section"><div class="nav-section-title">&#127976; HOTEL</div><a href="settings.html" class="nav-item active"><span class="nav-icon">&#9881;</span> Settings</a></div>
         </nav>
-
         <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">?</div>
-                <div>
-                    <div class="user-name" id="userName">...</div>
-                    <div class="user-role">Hotel Owner</div>
-                </div>
-            </div>
+            <div class="user-info"><div class="user-avatar" id="userAvatar">O</div><div><div class="user-name" id="userName">Owner</div><div class="user-role">Hotel Owner</div></div></div>
             <button class="logout-btn" onclick="logout()">&#128682; Sign Out</button>
         </div>
     </aside>
@@ -317,27 +195,5 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script src="settings.js"></script>
-
-    <script>
-      (function () {
-        var path = window.location.pathname.split('/').pop() || 'index.html';
-        var map = {
-          '': 'overview',
-          'index.html': 'overview',
-          'rooms.html': 'rooms',
-          'staff.html': 'staff',
-          'hotelStaff.html': 'staff',
-          'finance.html': 'payments',
-          'promotional.html': 'menu',
-          'qrcodes.html': 'qrcodes',
-          'settings.html': 'settings'
-        };
-        var current = map[path] || '';
-        document.querySelectorAll('.nav-item[data-nav]').forEach(function (a) {
-          a.classList.remove('active');
-          if (a.getAttribute('data-nav') === current) a.classList.add('active');
-        });
-      })();
-    </script>
 </body>
 </html>
