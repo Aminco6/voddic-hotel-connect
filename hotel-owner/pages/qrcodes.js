@@ -293,66 +293,10 @@ async function loadRooms() {
                 console.log("📋 No rooms found in API response");
             }
             
-            // Filter rooms - try multiple ways to match
-            if (hotelId && allRooms.length > 0) {
-                rooms = allRooms.filter(function(r) {
-                    // Check multiple possible field names for hotel ID
-                    var roomHotelId = r.hotel || r.hotel_id || r.hotelId || r.hotelID;
-                    
-                    // If roomHotelId is an object with an id property
-                    if (roomHotelId && typeof roomHotelId === 'object') {
-                        roomHotelId = roomHotelId.id || roomHotelId;
-                    }
-                    
-                    // Compare as strings to handle UUID format
-                    var match = String(roomHotelId) === String(hotelId);
-                    
-                    // Also check if the room has a hotel object with name
-                    if (!match && r.hotel && typeof r.hotel === 'object' && r.hotel.name) {
-                        match = r.hotel.name === hotelName;
-                    }
-                    
-                    // Also check if room has a hotel_name field
-                    if (!match && r.hotel_name) {
-                        match = r.hotel_name === hotelName;
-                    }
-                    
-                    return match;
-                });
-                console.log("📊 Rooms for hotel " + hotelName + ":", rooms.length);
-            } else {
-                rooms = allRooms;
-                console.log("📊 All rooms (no hotel filter or no rooms):", rooms.length);
-            }
-            
-            // If no rooms found but there are rooms in the API, try a fallback
-            if (rooms.length === 0 && allRooms.length > 0) {
-                console.log("⚠️ No rooms matched. Debugging room hotel IDs:");
-                allRooms.forEach(function(r) {
-                    console.log("Room:", r.room_number, "Hotel ID:", r.hotel || r.hotel_id || "null", "Type:", typeof (r.hotel || r.hotel_id));
-                });
-                console.log("🔍 Expected Hotel ID:", hotelId, "Type:", typeof hotelId);
-                
-                // Check if the first room has a hotel object with id
-                if (allRooms[0] && allRooms[0].hotel && typeof allRooms[0].hotel === 'object') {
-                    var firstHotelId = allRooms[0].hotel.id || allRooms[0].hotel;
-                    console.log("💡 First room's hotel ID format:", firstHotelId);
-                    
-                    // If the hotel ID format is different, try to match by the hotel name from the room
-                    if (allRooms[0].hotel && allRooms[0].hotel.name) {
-                        rooms = allRooms.filter(function(r) {
-                            return r.hotel && r.hotel.name === hotelName;
-                        });
-                        console.log("📊 Rooms matched by hotel name:", rooms.length);
-                    }
-                }
-                
-                // If still no rooms, show all rooms as fallback
-                if (rooms.length === 0) {
-                    console.log("💡 Showing all rooms as fallback (no filter)");
-                    rooms = allRooms;
-                }
-            }
+            // Backend already scopes /rooms/ to the current hotel.
+            // No client-side filter needed.
+            rooms = allRooms;
+            console.log("📊 Rooms loaded (server already hotel-scoped):", rooms.length);
             
             var rb = document.getElementById('roomsBadge');
             if (rb) rb.textContent = rooms.length;
