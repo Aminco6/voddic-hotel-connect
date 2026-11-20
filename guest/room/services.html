@@ -278,6 +278,8 @@ var callStartTime = null;
 var callTimerInterval = null;
 var currentDepartmentId = null;
 var currentDepartmentName = null;
+var currentThreadId = null;
+var currentThreadMessages = [];
 var isCallMode = false;
 var callState = 'idle'; // idle, dialing, ringing, connected, ended
 
@@ -1083,16 +1085,115 @@ function endCall() {
 // Chat System
 // ============================================================
 
-function openChat(dept) {
+async function openChat(dept) {
     if (sessionExpired) {
         showExpiredOverlay();
         return;
     }
     currentDepartmentId = dept.id;
     currentDepartmentName = dept.name;
+    currentThreadId = null;
+    currentThreadMessages = [];
     document.getElementById("chatTitle").textContent = dept.name + " Chat";
-    document.getElementById("chatBody").innerHTML = '<div class="bubble in">Welcome! How can ' + dept.name + ' help you today?</div>';
+    document.getElementById("chatBody").innerHTML = '<div class="bubble in">Loading chat…</div>';
     goTo("chat");
+
+    try {
+        // Ask backend to open-or-create this guest's thread with this department
+        const res = await fetch(API + "/chat/guest/open-thread/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                device_id: deviceId,
+                room_number: roomNumber,
+                department_id: dept.id
+            })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(function() { return {}; });
+            document.getElementById("chatBody").innerHTML =
+                '<div class="bubble in" style="color:#e54545;">Could not open chat: ' +
+                (err.error || res.status) + '</div>';
+            return;
+        }
+
+        const data = await res.json();
+        currentThreadId = data.thread.id;
+        currentThreadMessages = data.messages || [];
+        renderGuestThread();
+    } catch (e) {
+        document.getElementById("chatBody").innerHTML =
+            '<div class="bubble in" style="color:#e54545;">Network error: ' + e.message + '</div>';
+    }
+}
+
+function escapeGuestHtml(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function formatGuestTime(iso) {
+    if (!iso) return '';
+    try {
+        var d = new Date(iso);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return ''; }
+}
+
+function renderGuestThread() {
+    var b = document.getElementById("chatBody");
+    if (!currentThreadMessages.length) {
+        b.innerHTML = '<div class="bubble in">👋 Hi! How can ' + currentDepartmentName + ' help you today?</div>';
+        return;
+    }
+    b.innerHTML = currentThreadMessages.map(function(m) {
+        var isGuest = m.sender_type === 'guest';
+        return '<div class="bubble ' + (isGuest ? 'out' : 'in') + '">' +
+            escapeGuestHtml(m.content) +
+            '<div class="meta">' + escapeGuestHtml(m.sender_name || '') +
+                ' · ' + formatGuestTime(m.created_at) + '</div>' +
+        '</div>';
+    }).join('');
+    b.scrollTop = b.scrollHeight;
+}
+
+async function sendGuestMessage() {
+    if (sessionExpired) { showExpiredOverlay(); return; }
+    var inp = document.getElementById("chatInput");
+    var t = inp.value.trim();
+    if (!t || !currentThreadId) return;
+
+    var b = document.getElementById("chatBody");
+    var bubble = document.createElement("div");
+    bubble.className = "bubble out";
+    bubble.innerHTML = escapeGuestHtml(t) + '<div class="meta">Sending…</div>';
+    b.appendChild(bubble);
+    b.scrollTop = b.scrollHeight;
+    inp.value = "";
+
+    try {
+        var url = API + "/chat/guest/threads/" + currentThreadId + "/messages/" +
+                  "?device_id=" + encodeURIComponent(deviceId) +
+                  "&room_number=" + encodeURIComponent(roomNumber);
+        var res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: t })
+        });
+        if (!res.ok) {
+            var err = await res.json().catch(function() { return {}; });
+            bubble.querySelector('.meta').textContent = '❌ ' + (err.error || 'Failed to send');
+            return;
+        }
+        var msg = await res.json();
+        currentThreadMessages.push(msg);
+        bubble.querySelector('.meta').textContent =
+            escapeGuestHtml(msg.sender_name || '') + ' · ' + formatGuestTime(msg.created_at);
+    } catch (e) {
+        bubble.querySelector('.meta').textContent = '❌ Network error';
+    }
 }
 
 function initChat() {
@@ -1104,44 +1205,10 @@ function initChat() {
         }
         goTo("departments");
     });
-    
-    function sendMsg() {
-        if (sessionExpired) {
-            showExpiredOverlay();
-            return;
-        }
-        var inp = document.getElementById("chatInput");
-        var t = inp.value.trim();
-        if (!t) return;
-        var b = document.getElementById("chatBody");
-        b.innerHTML += '<div class="bubble out">' + t + '<div class="meta">Just now</div></div>';
-        inp.value = "";
-        b.scrollTop = b.scrollHeight;
-        
-        if (currentDepartmentId) {
-            fetch(API + "/services/request/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    room_number: roomNumber,
-                    department_id: currentDepartmentId,
-                    request_type: "Service Request",
-                    description: t,
-                    device_id: deviceId
-                })
-            }).catch(function(e) { console.error("Error creating service request:", e); });
-        }
-        
-        setTimeout(function() {
-            if (sessionExpired) return;
-            b.innerHTML += '<div class="bubble in">Thank you! Someone will attend to you shortly.</div>';
-            b.scrollTop = b.scrollHeight;
-        }, 1000);
-    }
-    
-    document.getElementById("chatSend").addEventListener("click", sendMsg);
+
+    document.getElementById("chatSend").addEventListener("click", sendGuestMessage);
     document.getElementById("chatInput").addEventListener("keydown", function(e) {
-        if (e.key === "Enter") sendMsg();
+        if (e.key === "Enter") sendGuestMessage();
     });
 }
 
