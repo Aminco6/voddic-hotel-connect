@@ -280,6 +280,9 @@ var currentDepartmentId = null;
 var currentDepartmentName = null;
 var currentThreadId = null;
 var currentThreadMessages = [];
+var guestChatSocket = null;
+var guestChatReconnectTimer = null;
+
 var isCallMode = false;
 var callState = 'idle'; // idle, dialing, ringing, connected, ended
 
@@ -1159,6 +1162,99 @@ function renderGuestThread() {
     b.scrollTop = b.scrollHeight;
 }
 
+// ============================================================
+// Guest Chat WebSocket
+// ============================================================
+
+function buildGuestChatWSURL() {
+    var wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var host = 'connectapi.voddic.com.ng';
+    // Local dev fallback
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+        host = window.location.hostname + ':8000';
+    }
+    return wsProto + '//' + host + '/ws/chat/guest/?device_id=' +
+        encodeURIComponent(deviceId) + '&room_number=' + encodeURIComponent(roomNumber);
+}
+
+function connectGuestChatWS() {
+    if (guestChatSocket && (guestChatSocket.readyState === WebSocket.OPEN || guestChatSocket.readyState === WebSocket.CONNECTING)) {
+        return;
+    }
+
+    try {
+        var url = buildGuestChatWSURL();
+        console.log('[guest-ws] connecting to', url);
+        guestChatSocket = new WebSocket(url);
+
+        guestChatSocket.onopen = function() {
+            console.log('[guest-ws] connected');
+        };
+
+        guestChatSocket.onmessage = function(ev) {
+            try {
+                var data = JSON.parse(ev.data);
+                if (data.event === 'chat_message') {
+                    handleIncomingChatMessage(data);
+                }
+                // thread_update events not used by guest (only staff/owner inboxes)
+            } catch (e) {
+                console.error('[guest-ws] parse error', e);
+            }
+        };
+
+        guestChatSocket.onclose = function() {
+            console.log('[guest-ws] closed — will retry in 5s');
+            guestChatSocket = null;
+            if (guestChatReconnectTimer) clearTimeout(guestChatReconnectTimer);
+            guestChatReconnectTimer = setTimeout(connectGuestChatWS, 5000);
+        };
+
+        guestChatSocket.onerror = function(err) {
+            console.error('[guest-ws] error', err);
+        };
+    } catch (e) {
+        console.error('[guest-ws] connect failed', e);
+    }
+}
+
+function handleIncomingChatMessage(data) {
+    // Only render if this is the thread the guest is currently viewing
+    if (!currentThreadId || data.thread_id !== currentThreadId) {
+        return;
+    }
+
+    // Dedupe: skip if message already in currentThreadMessages
+    var incoming = data.message;
+    for (var i = 0; i < currentThreadMessages.length; i++) {
+        if (currentThreadMessages[i].id === incoming.id) return;
+    }
+
+    currentThreadMessages.push(incoming);
+
+    // Append only the new bubble (avoid full re-render flicker)
+    var b = document.getElementById("chatBody");
+    var isGuest = incoming.sender_type === 'guest';
+    var div = document.createElement("div");
+    div.className = "bubble " + (isGuest ? "out" : "in");
+    div.innerHTML = escapeGuestHtml(incoming.content) +
+        '<div class="meta">' + escapeGuestHtml(incoming.sender_name || '') +
+        ' · ' + formatGuestTime(incoming.created_at) + '</div>';
+    b.appendChild(div);
+    b.scrollTop = b.scrollHeight;
+}
+
+function closeGuestChatWS() {
+    if (guestChatReconnectTimer) {
+        clearTimeout(guestChatReconnectTimer);
+        guestChatReconnectTimer = null;
+    }
+    if (guestChatSocket) {
+        try { guestChatSocket.close(); } catch (e) {}
+        guestChatSocket = null;
+    }
+}
+
 async function sendGuestMessage() {
     if (sessionExpired) { showExpiredOverlay(); return; }
     var inp = document.getElementById("chatInput");
@@ -1345,6 +1441,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     loadDepartments();
     initChat();
     initEmergencyButton();
+    
+    // Real-time chat: connect WebSocket after DOM ready
+    setTimeout(connectGuestChatWS, 500);
     
     // Call button - opens departments in CALL mode
     document.getElementById("quickCall").addEventListener("click", function(e) {
