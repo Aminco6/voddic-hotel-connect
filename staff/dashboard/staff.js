@@ -230,8 +230,10 @@ function initTabs() {
             switchTab(this.getAttribute("data-tab")); 
         });
     });
-    document.querySelectorAll(".nav-item[data-tab]").forEach(function(item) {
-        item.addEventListener("click", function(e) { 
+        document.querySelectorAll(".nav-item[data-tab]").forEach(function(item) {
+        item.addEventListener("click", function(e) {
+            var href = this.getAttribute("href") || "#";
+            if (href && href !== "#") return;  // real link → allow browser navigation
             e.preventDefault();
             switchTab(this.getAttribute("data-tab")); 
         });
