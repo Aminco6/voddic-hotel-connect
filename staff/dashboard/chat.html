@@ -463,16 +463,22 @@ function handleIncomingMessage(data) {
     var msg = data.message;
     var threadId = data.thread_id;
 
-    // If current thread → append live
+    // If current thread → append live, BUT skip if it's my own message
+    // (the REST response already added it; WS echo would duplicate)
     if (threadId === activeThreadId) {
+        if (msg.sender_type === 'staff' || msg.sender_type === 'manager' || msg.sender_type === 'owner') {
+            return;  // my own message coming back — already rendered by sendMessage
+        }
         appendMessage(msg);
     }
 
-    // Beep if message is from guest AND not the currently open thread
+    // Beep if message is from guest AND not currently open thread
     if (msg.sender_type === 'guest' && threadId !== activeThreadId) {
         beep();
         showToast('New message from ' + (msg.sender_name || 'guest'), 'info');
     }
+
+
 }
 
 function handleThreadUpdate(data) {
