@@ -78,7 +78,9 @@
       item.addEventListener('click', function (e) {
         var href = this.getAttribute('href') || '#';
         var page = this.getAttribute('data-page');
-        if (href && href !== '#' && (href.indexOf('pages/') !== -1 || href.charAt(0) === '/')) return;
+        // Real page link → allow browser navigation
+        if (href && href !== '#' && href.indexOf('.html') !== -1) return;
+        if (href && href.charAt(0) === '/') return;
         if (page) {
           e.preventDefault();
           showPage(page);
