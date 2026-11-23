@@ -1219,29 +1219,34 @@ function connectGuestChatWS() {
 }
 
 function handleIncomingChatMessage(data) {
-    // Only render if this is the thread the guest is currently viewing
+    // Only render if this is the current thread
     if (!currentThreadId || data.thread_id !== currentThreadId) {
         return;
     }
 
-    // Dedupe: skip if message already in currentThreadMessages
     var incoming = data.message;
+
+    // Skip own-message echo — sendGuestMessage() already rendered it via REST response
+    if (incoming.sender_type === 'guest') {
+        return;
+    }
+
+    // Dedupe by message id
     for (var i = 0; i < currentThreadMessages.length; i++) {
         if (currentThreadMessages[i].id === incoming.id) return;
     }
 
     currentThreadMessages.push(incoming);
 
-    // Append only the new bubble (avoid full re-render flicker)
     var b = document.getElementById("chatBody");
-    var isGuest = incoming.sender_type === 'guest';
     var div = document.createElement("div");
-    div.className = "bubble " + (isGuest ? "out" : "in");
+    div.className = "bubble in";
     div.innerHTML = escapeGuestHtml(incoming.content) +
         '<div class="meta">' + escapeGuestHtml(incoming.sender_name || '') +
         ' · ' + formatGuestTime(incoming.created_at) + '</div>';
     b.appendChild(div);
     b.scrollTop = b.scrollHeight;
+
 }
 
 function closeGuestChatWS() {
