@@ -418,6 +418,65 @@
   window.viewNotifications = function () { showPage('notifications'); };
   window.logout = function () { V.logout(); };
 
+  // ============================================================
+  // Owner chat WebSocket — real-time unread badge
+  // ============================================================
+  (function initOwnerChatWS() {
+    if (!V.token) return;
+    var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var host = 'connectapi.voddic.com.ng';
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ||
+        window.location.hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+      host = window.location.hostname + ':8000';
+    }
+    var url = proto + '//' + host + '/ws/chat/owner/?token=' + encodeURIComponent(V.token);
+
+    function connect() {
+      try {
+        var ws = new WebSocket(url);
+        ws.onopen = function () { console.log('[owner-dashboard-ws] connected'); };
+        ws.onmessage = function (ev) {
+          try {
+            var data = JSON.parse(ev.data);
+            if (data.event === 'thread_update') {
+              var unread = data.thread.unread_by_owner || 0;
+              // Update badge by re-fetching unread total occasionally (simple approach)
+              refreshOwnerChatBadge();
+            }
+          } catch (e) {}
+        };
+        ws.onclose = function () {
+          setTimeout(connect, 5000);
+        };
+        ws.onerror = function () {};
+      } catch (e) {
+        setTimeout(connect, 5000);
+      }
+    }
+    connect();
+
+    async function refreshOwnerChatBadge() {
+      try {
+        var res = await V.authFetch('/chat/owner/threads/?status=open');
+        if (!res.ok) return;
+        var threads = await res.json();
+        var total = threads.reduce(function (s, t) { return s + (t.unread_by_owner || 0); }, 0);
+        var badge = document.getElementById('chatBadge');
+        if (badge) {
+          if (total > 0) {
+            badge.textContent = total;
+            badge.style.display = 'inline-block';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Initial load
+    refreshOwnerChatBadge();
+  })();
+
   setInterval(function () {
     if (document.visibilityState === 'visible') loadDashboardData();
   }, 30000);
