@@ -257,7 +257,8 @@ function switchChatTab(tab) {
 // ============================================================
 async function loadThreads() {
   try {
-    var res = await fetch(API + "/chat/owner/threads/?status=" + currentTab, {
+    var statusParam = (currentTab === 'live') ? 'open' : currentTab;
+    var res = await fetch(API + "/chat/owner/threads/?status=" + statusParam, {
       headers: { "Authorization": "Bearer " + token }
     });
     if (!res.ok) {
