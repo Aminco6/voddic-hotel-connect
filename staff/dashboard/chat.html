@@ -139,6 +139,10 @@ a{text-decoration:none;color:inherit}button{border:none;background:none;cursor:p
 </aside>
 
 <main class="main" id="main">
+  <div class="chat-tabs">
+    <button class="chat-tab active" data-tab="live" onclick="switchChatTab('live')">🟢 Live</button>
+    <button class="chat-tab" data-tab="archived" onclick="switchChatTab('archived')">📁 Archived</button>
+  </div>
   <div class="threads-pane">
     <div class="threads-header">
       <h2>Inbox</h2>
@@ -236,7 +240,7 @@ function showToast(msg, type) {
 // ============================================================
 async function loadThreads() {
     try {
-        var res = await fetch(API + "/chat/staff/threads/", {
+        var res = await fetch(API + "/chat/staff/threads/?status=" + ((currentTab === "live") ? "open" : currentTab) + "", {
             headers: { "Authorization": "Bearer " + token }
         });
         if (!res.ok) {
