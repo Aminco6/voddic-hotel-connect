@@ -44,6 +44,10 @@ a{text-decoration:none;color:inherit}button{border:none;background:none;cursor:p
 .menu-toggle{width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;border-radius:10px;background:rgba(255,255,255,.05)}
 
 /* Left pane — threads */
+.chat-tabs{display:flex;gap:6px;padding:12px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.chat-tab{padding:8px 16px;font-size:.8rem;font-weight:600;color:var(--text-dim);border-radius:8px;transition:all .2s}
+.chat-tab.active{background:rgba(228,175,62,.15);color:var(--gold)}
+.chat-tab:hover{color:var(--text)}
 .threads-pane{width:320px;background:#101020;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .threads-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .threads-header h2{font-size:1rem;font-weight:800;color:#f5f5fa}
@@ -181,6 +185,7 @@ const staff = JSON.parse(localStorage.getItem("staff") || "{}");
 if (!token) window.location.href = "/auth/login.html";
 
 var threads = [];
+var currentTab = 'live';
 var activeThreadId = null;
 var activeThreadMessages = [];
 var ws = null;
@@ -305,6 +310,22 @@ function updateUnreadTotal() {
 // ============================================================
 // Open thread
 // ============================================================
+function switchChatTab(tab) {
+  currentTab = tab;
+  activeThreadId = null;
+  activeThreadMessages = [];
+  document.getElementById("convoHeader").style.display = "none";
+  document.getElementById("convoInput").style.display = "none";
+  document.getElementById("convoMessages").innerHTML =
+    '<div class="convo-empty"><div class="icon">💬</div><p>Select a conversation.</p></div>';
+  var cb = document.getElementById("chatBody");
+  if (cb) cb.classList.remove("show-thread");
+  document.querySelectorAll(".chat-tab").forEach(function(t) {
+    t.classList.toggle("active", t.getAttribute("data-tab") === tab);
+  });
+  loadThreads();
+}
+
 async function openThread(threadId) {
     activeThreadId = threadId;
     activeThreadMessages = [];
@@ -313,7 +334,7 @@ async function openThread(threadId) {
     if (!t) return;
 
     document.getElementById("convoHeader").style.display = "flex";
-    document.getElementById("convoInput").style.display = "flex";
+    document.getElementById("convoInput").style.display = (currentTab === "live") ? "flex" : "none";
     document.getElementById("convoTitle").textContent = t.guest_display_name || ('Room ' + (t.room_number || '?'));
     document.getElementById("convoSubtitle").textContent = t.department_name || '';
     document.getElementById("convoMessages").innerHTML = '<div class="convo-empty"><div class="icon">⌛</div><p>Loading messages…</p></div>';
@@ -328,9 +349,11 @@ async function openThread(threadId) {
         activeThreadMessages = await res.json();
         renderMessages();
         // Clear unread locally
-        t.unread_by_staff = 0;
-        updateUnreadTotal();
-        renderThreads();
+        if (currentTab === "live") {
+      t.unread_by_staff = 0;
+      updateUnreadTotal();
+      renderThreads();
+    }
     } catch (e) {
         console.error("openThread", e);
         document.getElementById("convoMessages").innerHTML = '<div class="convo-empty"><div class="icon">⚠️</div><p>Could not load messages</p></div>';
@@ -376,7 +399,7 @@ function appendMessage(m) {
 // Send message
 // ============================================================
 async function sendMessage() {
-    if (!activeThreadId) return;
+    if (!activeThreadId || currentTab !== "live") return;
     var inp = document.getElementById("msgInput");
     var text = inp.value.trim();
     if (!text) return;
