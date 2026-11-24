@@ -81,6 +81,55 @@
 .menu-modal-btn.primary:disabled{opacity:.5}
 .menu-modal-btn.ghost{background:transparent;border:1px solid var(--line);color:rgba(250,246,236,.7)}
 
+
+/* ===== MY ORDERS VIEW ===== */
+#view-my-orders{background:var(--ink);overflow:hidden;display:flex;flex-direction:column}
+.mo-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--ink-2);flex-shrink:0}
+.mo-back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.mo-back:active{background:rgba(250,246,236,.08)}
+.mo-title{font-weight:700;font-size:1rem;flex:1}
+.mo-list{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.mo-card{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.mo-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.mo-card-id{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:rgba(250,246,236,.55)}
+.mo-card-time{font-size:.68rem;color:rgba(250,246,236,.45);margin-top:2px}
+.mo-status-chip{font-size:.62rem;font-weight:700;padding:3px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
+.mo-status-PENDING{background:rgba(201,130,42,.2);color:#e8b75e}
+.mo-status-CONFIRMED{background:rgba(62,127,168,.2);color:#6fb3d9}
+.mo-status-PREPARING{background:rgba(122,95,176,.2);color:#a890d6}
+.mo-status-READY{background:rgba(76,122,94,.25);color:#8fc4a5}
+.mo-status-DELIVERED{background:rgba(76,122,94,.15);color:#6fa582}
+.mo-status-CANCELLED{background:rgba(193,58,42,.2);color:#e86a52}
+
+.mo-items{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.mo-item-row{display:flex;justify-content:space-between;font-size:.8rem;color:rgba(250,246,236,.85)}
+.mo-item-row span:first-child{color:rgba(250,246,236,.7)}
+.mo-total-row{display:flex;justify-content:space-between;font-weight:700;font-size:.95rem}
+.mo-total-row span:last-child{color:var(--brass-light)}
+
+.mo-timeline{display:flex;justify-content:space-between;gap:4px;margin-top:4px;position:relative}
+.mo-timeline::before{content:'';position:absolute;top:8px;left:8px;right:8px;height:2px;background:rgba(250,246,236,.1);z-index:0}
+.mo-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;z-index:1}
+.mo-dot{width:16px;height:16px;border-radius:50%;background:rgba(250,246,236,.15);border:2px solid var(--ink);transition:all .3s}
+.mo-step.done .mo-dot{background:var(--sage)}
+.mo-step.current .mo-dot{background:var(--brass);animation:pulse-dot 1.5s ease-in-out infinite}
+.mo-step.cancelled .mo-dot{background:var(--brick)}
+.mo-step-label{font-size:.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:rgba(250,246,236,.4);text-align:center}
+.mo-step.done .mo-step-label,.mo-step.current .mo-step-label{color:rgba(250,246,236,.8)}
+
+.mo-cancel-btn{margin-top:8px;padding:8px 14px;background:rgba(193,58,42,.15);border:1px solid rgba(193,58,42,.3);color:var(--brick-light);border-radius:8px;font-size:.72rem;font-weight:700}
+.mo-empty{text-align:center;padding:60px 20px;color:rgba(250,246,236,.5)}
+.mo-empty .icon{font-size:3rem;margin-bottom:14px;opacity:.4}
+
+/* Home screen active order banner */
+.active-order-banner{position:absolute;top:90px;left:16px;right:16px;z-index:5;background:linear-gradient(135deg,rgba(76,122,94,.95),rgba(62,127,168,.95));color:#fff;border-radius:12px;padding:12px 16px;display:none;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.3);animation:slideDown .3s ease}
+.active-order-banner.show{display:flex}
+.active-order-banner .aob-info{flex:1;min-width:0}
+.active-order-banner .aob-title{font-size:.78rem;font-weight:700;line-height:1.2}
+.active-order-banner .aob-sub{font-size:.68rem;opacity:.85;margin-top:2px}
+.active-order-banner .aob-btn{background:rgba(255,255,255,.2);padding:6px 12px;border-radius:6px;font-size:.7rem;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
 </style>
 
 
@@ -233,6 +282,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
     <!-- HOME -->
     <div class="view" id="view-home">
+        <div class="active-order-banner" id="activeOrderBanner" onclick="openMyOrders()">
+            <div class="aob-info">
+                <div class="aob-title" id="aobTitle">🍽️ Active order</div>
+                <div class="aob-sub" id="aobSub">Tap to track</div>
+            </div>
+            <span class="aob-btn">View →</span>
+        </div>
         <div class="grid-bg"></div>
         
         <button class="notif-bell" id="notifBell" onclick="toggleNotifications()" title="Push Notifications">
@@ -305,12 +361,24 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     </div>
 
 
+
+    <!-- MY ORDERS -->
+    <div class="view hidden-right" id="view-my-orders">
+        <div class="mo-header">
+            <button class="mo-back" id="myOrdersBack">←</button>
+            <div class="mo-title">My Orders</div>
+        </div>
+        <div class="mo-list" id="myOrdersList">
+            <div class="mo-empty"><div class="icon">🛒</div><p>Loading orders…</p></div>
+        </div>
+    </div>
+
     <!-- MENU -->
     <div class="view hidden-right" id="view-menu">
         <div class="menu-header">
             <button class="menu-back" id="menuBack">←</button>
             <div class="menu-title" id="menuTitle">Menu</div>
-            <span class="menu-active-badge" id="menuActiveBadge">0 active</span>
+            <button class="menu-active-badge" id="menuActiveBadge" onclick="openMyOrders()" style="cursor:pointer;border:none">🛒 My Orders</button>
         </div>
         <div class="menu-categories" id="menuCategories">
             <button class="menu-cat-tab active" data-cat="all" onclick="filterMenu('all')">All</button>
@@ -1310,6 +1378,7 @@ function connectGuestChatWS() {
                     handleIncomingChatMessage(data);
                 } else if (data.event === 'order.created' || data.event === 'order.updated') {
                     handleOrderEvent(data);
+                    loadMyOrders(false);
                 }
                 // thread_update events not used by guest (only staff/owner inboxes)
             } catch (e) {
@@ -1563,6 +1632,11 @@ document.addEventListener("DOMContentLoaded", async function() {
     
     // Real-time chat: connect WebSocket after DOM ready
     setTimeout(connectGuestChatWS, 500);
+
+    // Load active orders for banner
+    setTimeout(loadMyOrders, 1000);
+    // Refresh every 30s as fallback
+    setInterval(loadMyOrders, 30000);
     
     // Menu button - opens the menu view
     var _qmBtn = document.getElementById("quickMenu");
@@ -1593,6 +1667,14 @@ document.addEventListener("DOMContentLoaded", async function() {
             loadMenu();
         });
     }
+    var myOrdersBackBtn = document.getElementById("myOrdersBack");
+    if (myOrdersBackBtn) {
+        myOrdersBackBtn.addEventListener("click", function(e) {
+            if (sessionExpired) { e.preventDefault(); showExpiredOverlay(); return; }
+            goTo("menu");
+        });
+    }
+
     var menuBackBtn = document.getElementById("menuBack");
     if (menuBackBtn) {
         menuBackBtn.addEventListener("click", function(e) {
@@ -1861,6 +1943,143 @@ function handleOrderEvent(data) {
             osc.start(); osc.stop(ctx.currentTime + 0.25);
         } catch (e) {}
         loadActiveOrders();
+    }
+}
+
+
+// ============================================================
+// Guest My Orders
+// ============================================================
+var myOrdersCache = [];
+var myOrdersLoadTimer = null;
+
+function openMyOrders() {
+    if (sessionExpired) { showExpiredOverlay(); return; }
+    goTo("my-orders");
+    loadMyOrders(true);
+}
+
+async function loadMyOrders(showLoading) {
+    var list = document.getElementById("myOrdersList");
+    if (showLoading && list) {
+        list.innerHTML = '<div class="mo-empty"><div class="icon">🛒</div><p>Loading orders…</p></div>';
+    }
+    try {
+        var res = await fetch(API + "/menu/guest/orders/?device_id=" +
+            encodeURIComponent(deviceId) + "&room_number=" + encodeURIComponent(roomNumber));
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        myOrdersCache = await res.json();
+        renderMyOrders();
+        updateActiveOrderBanner();
+        updateMenuActiveBadge();
+    } catch (e) {
+        console.error("loadMyOrders", e);
+        if (list && showLoading) {
+            list.innerHTML = '<div class="mo-empty"><div class="icon">⚠️</div><p>Could not load orders</p></div>';
+        }
+    }
+}
+
+function renderMyOrders() {
+    var list = document.getElementById("myOrdersList");
+    if (!list) return;
+    if (!myOrdersCache.length) {
+        list.innerHTML = '<div class="mo-empty"><div class="icon">🛒</div><p>No orders yet. Browse the menu to order!</p></div>';
+        return;
+    }
+    list.innerHTML = myOrdersCache.map(function(o) {
+        var createdTime = new Date(o.created_at);
+        var timeStr = createdTime.toLocaleString();
+        var itemsHtml = o.lines.map(function(l) {
+            return '<div class="mo-item-row"><span>' + l.quantity + '× ' + escapeMenuHtml(l.item_name_snapshot) + '</span><span>₦' + Number(l.line_total).toLocaleString() + '</span></div>';
+        }).join("");
+        var timeline = renderTimeline(o.status);
+        var canCancel = o.status === 'PENDING';
+        return '<div class="mo-card">' +
+            '<div class="mo-card-head">' +
+                '<div>' +
+                    '<div class="mo-card-id">Order #' + String(o.id).slice(0, 8) + '</div>' +
+                    '<div class="mo-card-time">' + timeStr + '</div>' +
+                '</div>' +
+                '<span class="mo-status-chip mo-status-' + o.status + '">' + o.status + '</span>' +
+            '</div>' +
+            '<div class="mo-items">' + itemsHtml + '</div>' +
+            '<div class="mo-total-row"><span>Total</span><span>₦' + Number(o.total).toLocaleString() + '</span></div>' +
+            timeline +
+            (canCancel ? '<button class="mo-cancel-btn" onclick="cancelMyOrder(\'' + o.id + '\')">Cancel Order</button>' : '') +
+        '</div>';
+    }).join("");
+}
+
+function renderTimeline(status) {
+    var steps = ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED'];
+    var labels = { PENDING: 'Placed', CONFIRMED: 'Confirmed', PREPARING: 'Preparing', READY: 'Ready', DELIVERED: 'Delivered' };
+    if (status === 'CANCELLED') {
+        return '<div class="mo-timeline">' +
+            '<div class="mo-step cancelled"><div class="mo-dot"></div><div class="mo-step-label">Cancelled</div></div>' +
+        '</div>';
+    }
+    var currentIdx = steps.indexOf(status);
+    var html = '<div class="mo-timeline">';
+    steps.forEach(function(step, idx) {
+        var cls = '';
+        if (idx < currentIdx) cls = 'done';
+        else if (idx === currentIdx) cls = 'current';
+        html += '<div class="mo-step ' + cls + '">' +
+            '<div class="mo-dot"></div>' +
+            '<div class="mo-step-label">' + labels[step] + '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    return html;
+}
+
+async function cancelMyOrder(orderId) {
+    if (!confirm("Cancel this order? Staff may already be preparing it.")) return;
+    try {
+        var res = await fetch(API + "/menu/guest/orders/" + orderId + "/cancel/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ device_id: deviceId, room_number: roomNumber })
+        });
+        if (!res.ok) {
+            var e = await res.json();
+            showOrderBanner(e.error || "Could not cancel", "error");
+            return;
+        }
+        showOrderBanner("Order cancelled", "info");
+        loadMyOrders(false);
+    } catch (e) {
+        showOrderBanner("Network error", "error");
+    }
+}
+
+function updateActiveOrderBanner() {
+    var banner = document.getElementById("activeOrderBanner");
+    if (!banner) return;
+    var active = myOrdersCache.filter(function(o) {
+        return ["PENDING", "CONFIRMED", "PREPARING", "READY"].indexOf(o.status) !== -1;
+    });
+    if (active.length === 0) {
+        banner.classList.remove("show");
+        return;
+    }
+    var top = active[0];
+    document.getElementById("aobTitle").textContent = "🍽️ Order #" + String(top.id).slice(0, 8) + " — " + top.status;
+    document.getElementById("aobSub").textContent = active.length + " active order" + (active.length > 1 ? "s" : "") + " · Tap to track";
+    banner.classList.add("show");
+}
+
+function updateMenuActiveBadge() {
+    var badge = document.getElementById("menuActiveBadge");
+    if (!badge) return;
+    var active = myOrdersCache.filter(function(o) {
+        return ["PENDING", "CONFIRMED", "PREPARING", "READY"].indexOf(o.status) !== -1;
+    });
+    if (active.length > 0) {
+        badge.textContent = "🛒 My Orders (" + active.length + ")";
+    } else {
+        badge.textContent = "🛒 My Orders";
     }
 }
 
