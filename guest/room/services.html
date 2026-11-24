@@ -1564,18 +1564,24 @@ document.addEventListener("DOMContentLoaded", async function() {
     // Real-time chat: connect WebSocket after DOM ready
     setTimeout(connectGuestChatWS, 500);
     
-    // Call button - opens departments in CALL mode
-    document.getElementById("quickCall").addEventListener("click", function(e) {
-        if (sessionExpired) {
-            e.preventDefault();
-            showExpiredOverlay();
-            return;
-        }
-        isCallMode = true;
-        document.getElementById("deptTitle").textContent = "📞 Select Department to Call";
-        goTo("departments");
-        loadDepartments();
-    });
+    // Menu button - opens the menu view
+    var _qmBtn = document.getElementById("quickMenu");
+    if (_qmBtn) {
+        _qmBtn.addEventListener("click", function(e) {
+            if (sessionExpired) { e.preventDefault(); showExpiredOverlay(); return; }
+            goTo("menu");
+            loadMenu();
+        });
+    }
+
+    // Menu back button
+    var _mBack = document.getElementById("menuBack");
+    if (_mBack) {
+        _mBack.addEventListener("click", function(e) {
+            if (sessionExpired) { e.preventDefault(); showExpiredOverlay(); return; }
+            goTo("home");
+        });
+    }
     
     // Chat button - opens departments in CHAT mode
     // Menu button replaces old call button
@@ -1595,20 +1601,20 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     }
 
-    document.getElementById("quickChat").addEventListener("click", function(e) {
-        if (sessionExpired) {
-            e.preventDefault();
-            showExpiredOverlay();
-            return;
-        }
-        isCallMode = false;
-        document.getElementById("deptTitle").textContent = "💬 Select Department to Chat";
-        goTo("departments");
-        loadDepartments();
-    });
+    var _qcBtn = document.getElementById("quickChat");
+    if (_qcBtn) {
+        _qcBtn.addEventListener("click", function(e) {
+            if (sessionExpired) { e.preventDefault(); showExpiredOverlay(); return; }
+            isCallMode = false;
+            document.getElementById("deptTitle").textContent = "💬 Select Department to Chat";
+            goTo("departments");
+            loadDepartments();
+        });
+    }
     
     // Department back button
-    document.getElementById("deptBack").addEventListener("click", function(e) {
+    var _dB = document.getElementById("deptBack");
+    if (_dB) _dB.addEventListener("click", function(e) {
         if (sessionExpired) {
             e.preventDefault();
             showExpiredOverlay();
@@ -1618,7 +1624,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
     
     // Call back button
-    document.getElementById("callBack").addEventListener("click", function() {
+    var _cB = document.getElementById("callBack");
+    if (_cB) _cB.addEventListener("click", function() {
         if (callState === 'connected' || callState === 'ringing' || callState === 'dialing') {
             endCall();
         } else {
@@ -1627,7 +1634,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
     
     // End call button
-    document.getElementById("endCallBtn").addEventListener("click", function() {
+    var _eCB = document.getElementById("endCallBtn");
+    if (_eCB) _eCB.addEventListener("click", function() {
         endCall();
     });
     
