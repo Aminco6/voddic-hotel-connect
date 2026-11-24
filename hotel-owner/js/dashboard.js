@@ -441,9 +441,9 @@
           try {
             var data = JSON.parse(ev.data);
             if (data.event === 'thread_update') {
-              var unread = data.thread.unread_by_owner || 0;
-              // Update badge by re-fetching unread total occasionally (simple approach)
               refreshOwnerChatBadge();
+            } else if (data.event === 'order.created' || data.event === 'order.updated') {
+              refreshOwnerMenuBadge();
             }
           } catch (e) {}
         };
@@ -475,8 +475,27 @@
       } catch (e) {}
     }
 
+    async function refreshOwnerMenuBadge() {
+      try {
+        var res = await V.authFetch('/menu/owner/orders/?status=PENDING');
+        if (!res.ok) return;
+        var orders = await res.json();
+        var count = Array.isArray(orders) ? orders.length : 0;
+        var badge = document.getElementById('menuBadge');
+        if (badge) {
+          if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'inline-block';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      } catch (e) {}
+    }
+
     // Initial load
     refreshOwnerChatBadge();
+    refreshOwnerMenuBadge();
   })();
 
   setInterval(function () {
