@@ -18,6 +18,69 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
 }
+
+/* ===== MENU VIEW ===== */
+#view-menu{background:var(--ink);overflow:hidden}
+.menu-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--ink-2);flex-shrink:0}
+.menu-back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.menu-back:active{background:rgba(250,246,236,.08)}
+.menu-title{font-weight:700;font-size:1rem;flex:1}
+.menu-active-badge{font-size:.65rem;font-weight:700;background:var(--brass);color:#241B02;padding:3px 10px;border-radius:10px;display:none}
+.menu-active-badge.show{display:inline-block}
+
+.menu-categories{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;border-bottom:1px solid var(--line);flex-shrink:0;background:var(--ink-2)}
+.menu-categories::-webkit-scrollbar{height:0}
+.menu-cat-tab{padding:6px 14px;font-size:.72rem;font-weight:600;color:rgba(250,246,236,.55);border:1px solid rgba(250,246,236,.12);border-radius:999px;background:transparent;white-space:nowrap;flex-shrink:0;transition:all .2s}
+.menu-cat-tab.active{background:linear-gradient(160deg,var(--brass-light),var(--brass));color:#241B02;border-color:transparent}
+
+.menu-grid-wrap{flex:1;overflow-y:auto;padding:16px}
+.menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:768px){
+    .menu-grid{grid-template-columns:repeat(4,1fr);gap:16px}
+    .menu-grid-wrap{padding:20px}
+}
+
+.menu-card{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .2s}
+.menu-card:active{border-color:var(--brass)}
+.menu-card-img{width:100%;aspect-ratio:1;background:#0c0c18 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:rgba(250,246,236,.3)}
+.menu-card-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.menu-card-name{font-size:.85rem;font-weight:700;color:#f0e9d2;line-height:1.3}
+.menu-card-desc{font-size:.68rem;color:rgba(250,246,236,.55);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.menu-card-price{font-size:.9rem;font-weight:800;color:var(--brass-light);margin-top:2px}
+.menu-card-actions{display:flex;gap:6px;margin-top:auto;padding-top:8px}
+.menu-card-btn{flex:1;padding:7px 8px;border-radius:8px;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px}
+.menu-card-btn.order{background:linear-gradient(160deg,var(--brass-light),var(--brass));color:#241B02}
+.menu-card-btn.order:active{transform:scale(.96)}
+.menu-card-btn.call{background:rgba(143,196,165,.2);color:#8fc4a5;border:1px solid rgba(143,196,165,.35)}
+
+.menu-empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(250,246,236,.5)}
+.menu-empty .icon{font-size:3rem;margin-bottom:14px;opacity:.4}
+
+/* Order confirm modal */
+.menu-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:2100;display:none;align-items:center;justify-content:center;padding:20px}
+.menu-modal.active{display:flex}
+.menu-modal-box{background:var(--ink-2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;display:flex;flex-direction:column}
+.menu-modal-header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.menu-modal-title{font-size:1rem;font-weight:700;color:#f0e9d2}
+.menu-modal-close{font-size:1.2rem;color:rgba(250,246,236,.7);padding:4px 8px;border-radius:6px;background:transparent}
+.menu-modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.menu-modal-item{display:flex;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.menu-modal-item-img{width:70px;height:70px;border-radius:10px;background:#0c0c18 center/cover no-repeat;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:rgba(250,246,236,.3)}
+.menu-modal-item-info{flex:1;display:flex;flex-direction:column;justify-content:center}
+.menu-modal-item-name{font-size:.9rem;font-weight:700;color:#f0e9d2}
+.menu-modal-item-price{font-size:1rem;font-weight:800;color:var(--brass-light);margin-top:2px}
+.menu-modal-field{display:flex;flex-direction:column;gap:4px}
+.menu-modal-field label{font-size:.68rem;font-weight:700;color:rgba(250,246,236,.6);text-transform:uppercase;letter-spacing:.04em}
+.menu-modal-field textarea{width:100%;padding:9px 12px;background:var(--ink);border:1px solid var(--line);border-radius:8px;color:var(--paper);font-size:.82rem;font-family:inherit;outline:none;resize:vertical;min-height:60px}
+.menu-modal-field textarea:focus{border-color:var(--brass)}
+.menu-modal-total{display:flex;justify-content:space-between;align-items:center;font-size:1rem;font-weight:700;padding-top:8px}
+.menu-modal-total span:last-child{color:var(--brass-light)}
+.menu-modal-footer{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:8px}
+.menu-modal-btn{flex:1;padding:12px;border-radius:10px;font-weight:700;font-size:.85rem}
+.menu-modal-btn.primary{background:linear-gradient(160deg,var(--brass-light),var(--brass));color:#241B02}
+.menu-modal-btn.primary:disabled{opacity:.5}
+.menu-modal-btn.ghost{background:transparent;border:1px solid var(--line);color:rgba(250,246,236,.7)}
+
 </style>
 
 
@@ -193,7 +256,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
         </div>
         <div class="quick-icons">
             <button class="quick-icon chat" id="quickChat">💬</button>
-            <button class="quick-icon call" id="quickCall">📞</button>
+            <button class="quick-icon call" id="quickMenu">🍽️</button>
         </div>
         <div class="checkout-timer">
             <span class="ct-label">Checkout in</span>
@@ -239,6 +302,55 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
         <div class="nav-header"><button class="back-btn" id="chatBack">←</button><div class="nav-title" id="chatTitle">Chat</div></div>
         <div class="chat-body" id="chatBody"></div>
         <div class="chat-input"><input type="text" id="chatInput" placeholder="Message..."><button class="send-btn" id="chatSend">➤</button></div>
+    </div>
+
+
+    <!-- MENU -->
+    <div class="view hidden-right" id="view-menu">
+        <div class="menu-header">
+            <button class="menu-back" id="menuBack">←</button>
+            <div class="menu-title" id="menuTitle">Menu</div>
+            <span class="menu-active-badge" id="menuActiveBadge">0 active</span>
+        </div>
+        <div class="menu-categories" id="menuCategories">
+            <button class="menu-cat-tab active" data-cat="all" onclick="filterMenu('all')">All</button>
+        </div>
+        <div class="menu-grid-wrap">
+            <div class="menu-grid" id="menuGrid">
+                <div class="menu-empty"><div class="icon">🍽️</div><p>Loading menu…</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ORDER CONFIRM MODAL -->
+    <div class="menu-modal" id="orderModal">
+        <div class="menu-modal-box">
+            <div class="menu-modal-header">
+                <div class="menu-modal-title">Confirm Order</div>
+                <button class="menu-modal-close" onclick="closeOrderModal()">✕</button>
+            </div>
+            <div class="menu-modal-body">
+                <div class="menu-modal-item">
+                    <div class="menu-modal-item-img" id="omImg"></div>
+                    <div class="menu-modal-item-info">
+                        <div class="menu-modal-item-name" id="omName">—</div>
+                        <div class="menu-modal-item-price" id="omPrice">₦0</div>
+                    </div>
+                </div>
+                <div class="menu-modal-field">
+                    <label>Special requests (optional)</label>
+                    <textarea id="omNotes" placeholder="e.g. No pepper, extra sauce..."></textarea>
+                </div>
+                <div class="menu-modal-total">
+                    <span>Total</span>
+                    <span id="omTotal">₦0</span>
+                </div>
+            </div>
+            <div class="menu-modal-footer">
+                <button class="menu-modal-btn ghost" onclick="closeOrderModal()">Cancel</button>
+                <button class="menu-modal-btn primary" id="omPlaceBtn" onclick="placeOrder()">Place Order</button>
+            </div>
+        </div>
     </div>
 
     <!-- EMERGENCY -->
@@ -1196,6 +1308,8 @@ function connectGuestChatWS() {
                 var data = JSON.parse(ev.data);
                 if (data.event === 'chat_message') {
                     handleIncomingChatMessage(data);
+                } else if (data.event === 'order.created' || data.event === 'order.updated') {
+                    handleOrderEvent(data);
                 }
                 // thread_update events not used by guest (only staff/owner inboxes)
             } catch (e) {
@@ -1464,6 +1578,23 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
     
     // Chat button - opens departments in CHAT mode
+    // Menu button replaces old call button
+    var qmBtn = document.getElementById("quickMenu");
+    if (qmBtn) {
+        qmBtn.addEventListener("click", function(e) {
+            if (sessionExpired) { e.preventDefault(); showExpiredOverlay(); return; }
+            goTo("menu");
+            loadMenu();
+        });
+    }
+    var menuBackBtn = document.getElementById("menuBack");
+    if (menuBackBtn) {
+        menuBackBtn.addEventListener("click", function(e) {
+            if (sessionExpired) { e.preventDefault(); showExpiredOverlay(); return; }
+            goTo("home");
+        });
+    }
+
     document.getElementById("quickChat").addEventListener("click", function(e) {
         if (sessionExpired) {
             e.preventDefault();
@@ -1505,6 +1636,226 @@ document.addEventListener("DOMContentLoaded", async function() {
         if (!sessionExpired) checkSessionStatus();
     }, 15000);
 });
+
+// ============================================================
+// Menu System
+// ============================================================
+var menuCategories = [];
+var menuItemsFlat = {};
+var menuActiveOrderItem = null;
+var menuOrderInFlight = false;
+
+async function loadMenu() {
+    var grid = document.getElementById("menuGrid");
+    if (!grid) return;
+    grid.innerHTML = '<div class="menu-empty"><div class="icon">🍽️</div><p>Loading menu…</p></div>';
+
+    try {
+        var res = await fetch(API + "/menu/public/" + encodeURIComponent(hotelSlug) + "/");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        var data = await res.json();
+        menuCategories = data.categories || [];
+
+        menuItemsFlat = {};
+        menuCategories.forEach(function(c) {
+            (c.items || []).forEach(function(it) { menuItemsFlat[it.id] = it; });
+        });
+
+        document.getElementById("menuTitle").textContent = (data.hotel && data.hotel.name) || "Menu";
+
+        var tabs = document.getElementById("menuCategories");
+        tabs.innerHTML = '<button class="menu-cat-tab active" data-cat="all" onclick="filterMenu(\'all\')">All</button>';
+        menuCategories.forEach(function(c) {
+            tabs.innerHTML += '<button class="menu-cat-tab" data-cat="' + c.id + '" onclick="filterMenu(\'' + c.id + '\')">' + escapeMenuHtml(c.name) + '</button>';
+        });
+
+        renderMenuGrid("all");
+    } catch (e) {
+        console.error("loadMenu", e);
+        grid.innerHTML = '<div class="menu-empty"><div class="icon">⚠️</div><p>Could not load menu. Please try again.</p></div>';
+    }
+}
+
+function renderMenuGrid(filterCat) {
+    var grid = document.getElementById("menuGrid");
+    var items = [];
+    if (filterCat === "all") {
+        menuCategories.forEach(function(c) { (c.items || []).forEach(function(it) { items.push(it); }); });
+    } else {
+        var cat = menuCategories.find(function(c) { return c.id === filterCat; });
+        if (cat) items = cat.items || [];
+    }
+
+    if (!items.length) {
+        grid.innerHTML = '<div class="menu-empty"><div class="icon">🍽️</div><p>No items available right now.</p></div>';
+        return;
+    }
+
+    grid.innerHTML = items.map(function(it) {
+        var img = it.image || "";
+        var imgHtml = img
+            ? '<div class="menu-card-img" style="background-image:url(\'' + escapeMenuHtml(img) + '\')"></div>'
+            : '<div class="menu-card-img">🍽️</div>';
+        return '<div class="menu-card">' +
+            imgHtml +
+            '<div class="menu-card-body">' +
+                '<div class="menu-card-name">' + escapeMenuHtml(it.name) + '</div>' +
+                (it.description ? '<div class="menu-card-desc">' + escapeMenuHtml(it.description) + '</div>' : '') +
+                '<div class="menu-card-price">₦' + Number(it.price).toLocaleString() + '</div>' +
+                '<div class="menu-card-actions">' +
+                    '<button class="menu-card-btn order" onclick="openOrderModal(\'' + it.id + '\')">🛒 Order</button>' +
+                    '<button class="menu-card-btn call" onclick="callFromMenu()">📞 Call</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }).join("");
+}
+
+function filterMenu(catId) {
+    document.querySelectorAll(".menu-cat-tab").forEach(function(t) {
+        t.classList.toggle("active", t.getAttribute("data-cat") === catId);
+    });
+    renderMenuGrid(catId);
+}
+
+function openOrderModal(itemId) {
+    var it = menuItemsFlat[itemId];
+    if (!it) return;
+    menuActiveOrderItem = it;
+
+    document.getElementById("omName").textContent = it.name;
+    document.getElementById("omPrice").textContent = "₦" + Number(it.price).toLocaleString();
+    document.getElementById("omTotal").textContent = "₦" + Number(it.price).toLocaleString();
+    document.getElementById("omNotes").value = "";
+
+    var imgBox = document.getElementById("omImg");
+    if (it.image) {
+        imgBox.style.backgroundImage = "url('" + it.image + "')";
+        imgBox.textContent = "";
+    } else {
+        imgBox.style.backgroundImage = "";
+        imgBox.textContent = "🍽️";
+    }
+
+    document.getElementById("orderModal").classList.add("active");
+}
+
+function closeOrderModal() {
+    document.getElementById("orderModal").classList.remove("active");
+    menuActiveOrderItem = null;
+}
+
+async function placeOrder() {
+    if (!menuActiveOrderItem || menuOrderInFlight) return;
+    menuOrderInFlight = true;
+    var btn = document.getElementById("omPlaceBtn");
+    btn.disabled = true;
+    btn.textContent = "Placing order…";
+
+    var notes = (document.getElementById("omNotes").value || "").trim();
+
+    try {
+        var res = await fetch(API + "/menu/guest/orders/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                device_id: deviceId,
+                room_number: roomNumber,
+                notes: notes,
+                items: [{ menu_item_id: menuActiveOrderItem.id, quantity: 1, notes: notes }]
+            })
+        });
+
+        var data = await res.json();
+        if (!res.ok) {
+            showToast(data.error || "Could not place order", "error");
+            return;
+        }
+
+        showToast("✅ Order placed! #" + String(data.id).slice(0, 8), "success");
+        closeOrderModal();
+        loadActiveOrders();
+        showOrderBanner("Order #" + String(data.id).slice(0, 8) + " placed — waiting for confirmation", "info");
+    } catch (e) {
+        console.error("placeOrder", e);
+        showToast("Network error. Please try again.", "error");
+    } finally {
+        menuOrderInFlight = false;
+        btn.disabled = false;
+        btn.textContent = "Place Order";
+    }
+}
+
+async function loadActiveOrders() {
+    try {
+        var res = await fetch(API + "/menu/guest/orders/?device_id=" +
+            encodeURIComponent(deviceId) + "&room_number=" + encodeURIComponent(roomNumber));
+        if (!res.ok) return;
+        var orders = await res.json();
+        var active = orders.filter(function(o) {
+            return ["PENDING", "CONFIRMED", "PREPARING", "READY"].indexOf(o.status) !== -1;
+        });
+        var badge = document.getElementById("menuActiveBadge");
+        if (badge) {
+            if (active.length > 0) { badge.textContent = active.length + " active"; badge.classList.add("show"); }
+            else badge.classList.remove("show");
+        }
+    } catch (e) {}
+}
+
+function showOrderBanner(msg, type) {
+    var existing = document.getElementById("orderBanner");
+    if (existing) existing.remove();
+    var banner = document.createElement("div");
+    banner.id = "orderBanner";
+    banner.style.cssText = "position:fixed;top:20px;left:50%;transform:translateX(-50%);max-width:90%;padding:12px 18px;background:" +
+        (type === "error" ? "var(--brick)" : "var(--sage)") +
+        ";color:#fff;border-radius:10px;font-size:.82rem;font-weight:600;z-index:3000;box-shadow:0 6px 24px rgba(0,0,0,.4);text-align:center";
+    banner.textContent = msg;
+    document.body.appendChild(banner);
+    setTimeout(function() { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 4000);
+}
+
+function callFromMenu() {
+    // Placeholder — WebRTC integration later. For now, use phone if available.
+    if (hotelPhone) {
+        window.location.href = "tel:" + hotelPhone.replace(/\s/g, "");
+    } else {
+        showToast("Call feature coming soon", "info");
+    }
+}
+
+function escapeMenuHtml(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function handleOrderEvent(data) {
+    if (data.event === 'order.updated') {
+        var order = data.order;
+        var statusMap = {
+            'CONFIRMED': '✅ Confirmed by staff',
+            'PREPARING': '🍳 Being prepared',
+            'READY':      '🔔 Ready — on the way',
+            'DELIVERED':  '✅ Delivered — enjoy!',
+            'CANCELLED':  '❌ Order cancelled'
+        };
+        var msg = statusMap[order.status] || ('Status: ' + order.status);
+        showOrderBanner('Order #' + String(order.id).slice(0, 8) + ': ' + msg, order.status === 'CANCELLED' ? 'error' : 'info');
+        try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var osc = ctx.createOscillator(); var gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = 660;
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+            osc.start(); osc.stop(ctx.currentTime + 0.25);
+        } catch (e) {}
+        loadActiveOrders();
+    }
+}
+
 </script>
 </body>
 </html>
