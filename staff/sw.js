@@ -1,6 +1,6 @@
 // staff/sw.js - Service Worker for Staff Push Notifications
 
-const CACHE_NAME = 'voddic-staff-v1';
+const CACHE_NAME = 'voddic-staff-v2';
 const ASSETS_TO_CACHE = [
     '/staff/dashboard/index.html',
     '/staff/dashboard/call.html',
@@ -74,76 +74,81 @@ self.addEventListener('fetch', function(event) {
 // Push Event - Handle incoming push notifications
 // ============================================================
 self.addEventListener('push', function(event) {
-    console.log('📨 Push notification received:', event);
-    
+    console.log('📨 Push received');
+
     let data = {};
-    let callData = {};
-    
     try {
-        if (event.data) {
-            data = event.data.json();
-            console.log('📨 Push data parsed:', data);
-            callData = data.data || {};
-        }
-    } catch(e) {
-        console.log('❌ Error parsing push data:', e);
-        // Use fallback data
-        data = {
-            title: '📞 Incoming Call',
-            body: 'A guest is calling',
-            data: {}
-        };
-        callData = {};
+        if (event.data) data = event.data.json();
+    } catch (e) {
+        console.log('❌ parse error', e);
+        data = { title: 'Voddic', body: 'New notification' };
     }
-    
-    // Extract call information
-    const callId = callData.call_id || 'unknown';
-    const roomNumber = callData.room_number || 'Guest';
-    const department = callData.department || 'Reception';
-    const callerName = callData.caller_name || 'Guest';
-    const title = data.title || '📞 Incoming Call';
-    const body = data.body || `Room ${roomNumber} is calling ${department}`;
-    
-    console.log('📞 Call Info:', { callId, roomNumber, department, callerName });
-    
-    const options = {
+
+    var payload = data.data || {};
+    var isCall = (payload.type === 'incoming_call' || payload.call_id);
+
+    if (isCall) {
+        // ===== INCOMING CALL =====
+        var callId = payload.call_id || 'unknown';
+        var roomNumber = payload.room_number || 'Guest';
+        var department = payload.department || 'Reception';
+        var callerName = payload.caller_name || 'Guest';
+        var title = data.title || '📞 Incoming Call';
+        var body = data.body || ('Room ' + roomNumber + ' is calling ' + department);
+
+        var callOptions = {
+            body: body,
+            icon: '/static/icons/phone-icon.png',
+            badge: '/static/icons/badge-icon.png',
+            vibrate: [200, 100, 200, 100, 200, 100, 200],
+            tag: 'incoming-call-' + callId,
+            requireInteraction: true,
+            renotify: true,
+            silent: false,
+            data: {
+                type: 'incoming_call',
+                call_id: callId,
+                room_number: roomNumber,
+                department: department,
+                department_id: payload.department_id,
+                caller_name: callerName,
+                timestamp: Date.now()
+            },
+            actions: [
+                { action: 'answer', title: '✅ Answer' },
+                { action: 'decline', title: '❌ Decline' }
+            ]
+        };
+        event.waitUntil(
+            self.registration.showNotification(title, callOptions)
+                .then(function(){ console.log('✅ Call notification shown:', callId); })
+                .catch(function(err){ console.log('❌ showNotification error:', err); })
+        );
+        return;
+    }
+
+    // ===== CHAT / ORDER / GENERAL =====
+    var title = data.title || 'Voddic';
+    var body = data.body || '';
+    var url = (payload.url) || '/staff/dashboard/';
+    var icon = data.icon || '/static/icons/icon-192.png';
+
+    var options = {
         body: body,
-        icon: '/static/icons/phone-icon.png',
+        icon: icon,
         badge: '/static/icons/badge-icon.png',
-        vibrate: [200, 100, 200, 100, 200, 100, 200],
-        tag: 'incoming-call-' + callId,
-        requireInteraction: true,
-        renotify: true,
-        silent: false,
-        data: {
-            type: 'incoming_call',
-            call_id: callId,
-            room_number: roomNumber,
-            department: department,
-            department_id: callData.department_id,
-            caller_name: callerName,
-            timestamp: Date.now()
-        },
-        actions: [
-            { action: 'answer', title: '✅ Answer', icon: '/static/icons/answer-icon.png' },
-            { action: 'decline', title: '❌ Decline', icon: '/static/icons/decline-icon.png' }
-        ]
+        vibrate: [200, 100, 200],
+        tag: 'notification-' + Date.now(),
+        data: { url: url, type: payload.type || 'general' }
     };
-    
+
     event.waitUntil(
         self.registration.showNotification(title, options)
-            .then(function() {
-                console.log('✅ Notification shown for call:', callId);
-            })
-            .catch(function(err) {
-                console.log('❌ Error showing notification:', err);
-            })
+            .then(function(){ console.log('✅ Notification shown:', title); })
+            .catch(function(err){ console.log('❌ showNotification error:', err); })
     );
 });
 
-// ============================================================
-// Notification Click Event - Handle notification interactions
-// ============================================================
 self.addEventListener('notificationclick', function(event) {
     console.log('🔔 Notification clicked:', event);
     
