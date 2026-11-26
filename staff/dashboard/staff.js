@@ -804,3 +804,59 @@ self.addEventListener('message', function(event) {
         });
     }
 });
+
+// ============================================================
+// Staff Push Notifications
+// ============================================================
+async function enableStaffPush() {
+    try {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            alert('Push notifications not supported on this browser');
+            return;
+        }
+
+        var perm = await Notification.requestPermission();
+        if (perm !== 'granted') {
+            alert('Please allow notifications in your browser settings');
+            return;
+        }
+
+        var reg = await navigator.serviceWorker.register('/staff/sw.js');
+        await new Promise(function(r){ setTimeout(r, 500); });
+
+        // Fetch VAPID public key
+        var pkRes = await fetch('https://connectapi.voddic.com.ng/api/v1/push/vapid-public-key/');
+        var pk = (await pkRes.json()).public_key;
+        var key = Uint8Array.from(atob(pk.replace(/-/g, '+').replace(/_/g, '/')), function(c) { return c.charCodeAt(0); });
+
+        var sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+        var authKey = btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth'))));
+        var p256dhKey = btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh'))));
+
+        var token = localStorage.getItem('access_token');
+        var res = await fetch('https://connectapi.voddic.com.ng/api/v1/staff/push/subscribe/', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                endpoint: sub.endpoint,
+                auth_key: authKey,
+                p256dh_key: p256dhKey
+            })
+        });
+
+        if (res.ok) {
+            alert('✅ Push notifications enabled!');
+            var btn = document.getElementById('enableNotifBtn');
+            if (btn) { btn.textContent = '🔔 Notifications Enabled'; btn.style.color = '#34d399'; btn.disabled = true; }
+        } else {
+            alert('Failed to enable notifications: ' + (await res.text()).slice(0, 100));
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+        console.error('[enableStaffPush]', e);
+    }
+}
+

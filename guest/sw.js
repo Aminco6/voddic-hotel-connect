@@ -1,5 +1,5 @@
 // Service Worker for Voddic Hotel Connect Push Notifications
-const CACHE_NAME = 'voddic-guest-v1';
+const CACHE_NAME = 'voddic-guest-v2';
 
 self.addEventListener('install', function(event) {
     console.log('Service Worker installed');
@@ -58,6 +58,18 @@ self.addEventListener('push', function(event) {
         }
     }
     
+    // Use stable tag based on URL/type so updates REPLACE the previous notification
+    // instead of creating new ones — prevents Chrome spam detection.
+    var stableTag = 'voddic';
+    if (data.data && data.data.url) {
+        // Extract order id or thread id from URL
+        var orderMatch = data.data.url.match(/order=([a-f0-9-]+)/);
+        var threadMatch = data.data.url.match(/thread=([a-f0-9-]+)/);
+        if (orderMatch) stableTag = 'order-' + orderMatch[1];
+        else if (threadMatch) stableTag = 'thread-' + threadMatch[1];
+        else stableTag = 'voddic-' + data.data.url.replace(/[^a-z0-9]/gi, '-').slice(0, 40);
+    }
+
     const options = {
         body: data.body,
         icon: data.icon,
@@ -67,7 +79,8 @@ self.addEventListener('push', function(event) {
         actions: data.actions,
         image: data.image,
         requireInteraction: true,
-        tag: 'notification-' + Date.now()
+        tag: stableTag,
+        renotify: true
     };
     
     event.waitUntil(
