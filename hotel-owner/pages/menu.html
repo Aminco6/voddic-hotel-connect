@@ -310,6 +310,22 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("sidebarHotelName").textContent = hotel.name || "Hotel";
   loadAll();
   connectWS();
+
+  // Deep link: ?tab=orders&order=<id>
+  var params = new URLSearchParams(window.location.search);
+  var deepTab = params.get('tab');
+  var deepOrderId = params.get('order');
+  if (deepTab === 'orders') {
+    setTimeout(function() {
+      switchTab('orders');
+      if (deepOrderId) {
+        setTimeout(function() {
+          var found = orders.find(function(o) { return o.id === deepOrderId; });
+          if (found) openOrder(deepOrderId);
+        }, 800);
+      }
+    }, 800);
+  }
 });
 
 function loadAll() {

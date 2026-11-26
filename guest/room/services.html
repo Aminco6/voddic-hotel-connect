@@ -1637,6 +1637,35 @@ document.addEventListener("DOMContentLoaded", async function() {
     setTimeout(loadMyOrders, 1000);
     // Refresh every 30s as fallback
     setInterval(loadMyOrders, 30000);
+
+    // ---- Deep link from push notification ----
+    var _params = new URLSearchParams(window.location.search);
+    var _view = _params.get('view');
+    var _order = _params.get('order');
+    if (_view === 'my-orders') {
+        setTimeout(function() {
+            openMyOrders();
+            // After loading orders, if order id, scroll to / highlight that order
+            if (_order) {
+                setTimeout(function() {
+                    var cards = document.querySelectorAll('.mo-card');
+                    cards.forEach(function(c) {
+                        if (c.querySelector('.mo-card-id') && c.querySelector('.mo-card-id').textContent.indexOf(_order.slice(0, 8)) !== -1) {
+                            c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            c.style.border = '2px solid var(--brass)';
+                        }
+                    });
+                }, 800);
+            }
+        }, 800);
+    } else if (_view === 'departments') {
+        setTimeout(function() {
+            isCallMode = false;
+            document.getElementById("deptTitle").textContent = "💬 Select Department to Chat";
+            goTo("departments");
+            loadDepartments();
+        }, 800);
+    }
     
     // Menu button - opens the menu view
     var _qmBtn = document.getElementById("quickMenu");

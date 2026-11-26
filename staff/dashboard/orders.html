@@ -194,6 +194,28 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("sidebarDept").textContent = staff.department || "Staff";
   loadOrders();
   connectWS();
+
+  // Deep link: ?order=<id> → open that order
+  var params = new URLSearchParams(window.location.search);
+  var deepOrderId = params.get('order');
+  if (deepOrderId) {
+    setTimeout(function() {
+      var found = orders.find(function(o) { return o.id === deepOrderId; });
+      if (found) {
+        openOrder(deepOrderId);
+      } else {
+        // Order not in current filter — switch to 'all' and retry
+        currentFilter = 'all';
+        document.querySelectorAll(".filter-btn").forEach(function(b) {
+          b.classList.toggle("active", b.getAttribute("data-filter") === 'all');
+        });
+        loadOrders().then(function() {
+          var found2 = orders.find(function(o) { return o.id === deepOrderId; });
+          if (found2) openOrder(deepOrderId);
+        });
+      }
+    }, 1200);
+  }
 });
 
 function toggleSidebar() {
