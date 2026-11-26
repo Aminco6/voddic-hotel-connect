@@ -228,6 +228,27 @@ document.addEventListener("DOMContentLoaded", function() {
 
   switchChatTab('live');
   connectWS();
+
+  // Deep link: ?thread=<id>
+  var _params = new URLSearchParams(window.location.search);
+  var deepThreadId = _params.get('thread');
+  if (deepThreadId) {
+    setTimeout(function() {
+      var found = threads.find(function(t) { return t.id === deepThreadId; });
+      if (found) {
+        openThread(deepThreadId);
+      } else {
+        currentTab = 'archived';
+        document.querySelectorAll(".chat-tab").forEach(function(t) {
+          t.classList.toggle("active", t.getAttribute("data-tab") === 'archived');
+        });
+        loadThreads().then(function() {
+          var found2 = threads.find(function(t) { return t.id === deepThreadId; });
+          if (found2) openThread(deepThreadId);
+        });
+      }
+    }, 1200);
+  }
 });
 
 // ============================================================
