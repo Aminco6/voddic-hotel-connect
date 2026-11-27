@@ -809,32 +809,113 @@ self.addEventListener('message', function(event) {
 // Staff Push Notifications
 // ============================================================
 async function enableStaffPush() {
+    const API = 'https://connectapi.voddic.com.ng/api/v1';
+    const log = (n, msg) => console.log('[enableStaffPush] step ' + n + ': ' + msg);
+    let step = 0;
+
     try {
+        // ---- step 1: capability ----
+        step = 1;
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            alert('Push notifications not supported on this browser');
+            alert('Push not supported on this browser');
             return;
         }
+        log(step, 'capability OK');
 
-        var perm = await Notification.requestPermission();
+        // ---- step 2: permission ----
+        step = 2;
+        let perm = Notification.permission;
+        if (perm !== 'granted') perm = await Notification.requestPermission();
         if (perm !== 'granted') {
-            alert('Please allow notifications in your browser settings');
+            alert('Please allow notifications in browser settings');
             return;
         }
+        log(step, 'permission = granted');
 
-        var reg = await navigator.serviceWorker.register('/staff/sw.js');
-        await new Promise(function(r){ setTimeout(r, 500); });
+        // ---- step 3: register SW (with scope) ----
+        step = 3;
+        let reg;
+        try {
+            reg = await navigator.serviceWorker.register('/staff/sw.js', { scope: '/staff/' });
+            log(step, 'registered scope=/staff/');
+        } catch (e) {
+            if (e.name === 'InvalidStateError') {
+                console.warn('[enableStaffPush] invalid SW state — unregistering all + retry');
+                const regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map(r => r.unregister()));
+                reg = await navigator.serviceWorker.register('/staff/sw.js', { scope: '/staff/' });
+                log(step, 're-registered after cleanup');
+            } else {
+                throw e;
+            }
+        }
 
-        // Fetch VAPID public key
-        var pkRes = await fetch('https://connectapi.voddic.com.ng/api/v1/push/vapid-public-key/');
-        var pk = (await pkRes.json()).public_key;
-        var key = Uint8Array.from(atob(pk.replace(/-/g, '+').replace(/_/g, '/')), function(c) { return c.charCodeAt(0); });
+        // ---- step 4: wait for activation (THE FIX) ----
+        step = 4;
+        await navigator.serviceWorker.ready;
+        log(step, 'serviceWorker.ready resolved');
 
-        var sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
-        var authKey = btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth'))));
-        var p256dhKey = btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh'))));
+        // ---- step 5: VAPID key ----
+        step = 5;
+        const pkRes = await fetch(API + '/push/vapid-public-key/');
+        if (!pkRes.ok) throw new Error('vapid-public-key HTTP ' + pkRes.status);
+        const { public_key } = await pkRes.json();
+        const appServerKey = Uint8Array.from(
+            atob(public_key.replace(/-/g, '+').replace(/_/g, '/')),
+            c => c.charCodeAt(0)
+        );
+        log(step, 'VAPID fetched');
 
-        var token = localStorage.getItem('access_token');
-        var res = await fetch('https://connectapi.voddic.com.ng/api/v1/staff/push/subscribe/', {
+        // ---- step 6: existing subscription check ----
+        step = 6;
+        let sub = await reg.pushManager.getSubscription();
+        if (sub) {
+            const existingKey = sub.options && sub.options.applicationServerKey
+                ? new Uint8Array(sub.options.applicationServerKey)
+                : null;
+            const sameKey = existingKey && existingKey.length === appServerKey.length &&
+                existingKey.every((v, i) => v === appServerKey[i]);
+            if (!sameKey) {
+                log(step, 'existing sub uses different VAPID key — unsubscribing');
+                await sub.unsubscribe();
+                sub = null;
+            } else {
+                log(step, 'reusing existing subscription');
+            }
+        }
+        if (!sub) {
+            sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appServerKey });
+            log(step, 'new subscription created');
+        }
+
+        const authKey = btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth'))));
+        const p256dhKey = btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh'))));
+
+        // ---- step 7: refresh token if near expiry ----
+        step = 7;
+        let token = localStorage.getItem('access_token');
+        try {
+            const p = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            const now = Math.floor(Date.now() / 1000);
+            if (p.exp - now < 120) {
+                const rt = localStorage.getItem('refresh_token');
+                if (rt) {
+                    const r = await fetch(API + '/auth/token/refresh/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ refresh: rt })
+                    });
+                    if (r.ok) {
+                        const j = await r.json();
+                        if (j.access) { token = j.access; localStorage.setItem('access_token', j.access); log(step, 'token refreshed'); }
+                    } else { log(step, 'token refresh HTTP ' + r.status + ' — proceeding with old'); }
+                }
+            } else { log(step, 'token still valid, exp in ' + (p.exp - now) + 's'); }
+        } catch (e) { console.warn('[enableStaffPush] token decode failed', e); }
+
+        // ---- step 8: POST to backend ----
+        step = 8;
+        const res = await fetch(API + '/staff/push/subscribe/', {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token,
@@ -848,15 +929,18 @@ async function enableStaffPush() {
         });
 
         if (res.ok) {
+            log(step, 'POST subscribe OK');
             alert('✅ Push notifications enabled!');
-            var btn = document.getElementById('enableNotifBtn');
+            const btn = document.getElementById('enableNotifBtn');
             if (btn) { btn.textContent = '🔔 Notifications Enabled'; btn.style.color = '#34d399'; btn.disabled = true; }
         } else {
-            alert('Failed to enable notifications: ' + (await res.text()).slice(0, 100));
+            const body = await res.text();
+            log(step, 'POST subscribe FAILED HTTP ' + res.status);
+            alert('Backend rejected subscription (HTTP ' + res.status + '): ' + body.slice(0, 150));
         }
     } catch (e) {
-        alert('Error: ' + e.message);
-        console.error('[enableStaffPush]', e);
+        alert('Error at step ' + step + ': ' + e.message);
+        console.error('[enableStaffPush] FAILED at step ' + step, e);
     }
 }
 
