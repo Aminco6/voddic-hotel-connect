@@ -10,10 +10,9 @@ const ASSETS_TO_CACHE = [
 // Install Event - Cache assets
 // ============================================================
 self.addEventListener('install', function(event) {
-    console.log('[sw] installing');
+    console.log('[sw] install start');
     event.waitUntil(
         caches.open(CACHE_NAME).then(function(cache) {
-            // Cache each asset individually — one 404 must not fail install
             return Promise.all(
                 ASSETS_TO_CACHE.map(function(url) {
                     return cache.add(url).catch(function(err) {
@@ -22,10 +21,10 @@ self.addEventListener('install', function(event) {
                 })
             );
         }).then(function() {
+            console.log('[sw] install complete, skipWaiting');
             return self.skipWaiting();
         }).catch(function(err) {
-            console.error('[sw] install FAILED:', err);
-            // Never reject install — let it proceed without cache
+            console.error('[sw] install FATAL:', err);
         })
     );
 });
@@ -34,19 +33,21 @@ self.addEventListener('install', function(event) {
 // Activate Event - Clean old caches
 // ============================================================
 self.addEventListener('activate', function(event) {
-    console.log('⚡ Service Worker activating...');
+    console.log('[sw] activate start');
     event.waitUntil(
-        caches.keys().then(function(cacheNames) {
+        caches.keys().then(function(names) {
             return Promise.all(
-                cacheNames.map(function(cacheName) {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('🗑️ Removing old cache:', cacheName);
-                        return caches.delete(cacheName);
+                names.map(function(n) {
+                    if (n !== CACHE_NAME) {
+                        console.log('[sw] deleting old cache:', n);
+                        return caches.delete(n);
                     }
                 })
             );
         }).then(function() {
             return self.clients.claim();
+        }).catch(function(err) {
+            console.error('[sw] activate error (non-fatal):', err);
         })
     );
 });
@@ -55,16 +56,10 @@ self.addEventListener('activate', function(event) {
 // Fetch Event - Serve from cache when offline
 // ============================================================
 self.addEventListener('fetch', function(event) {
-    // Network-first for API calls; cache-first for static assets
     var url = event.request.url || '';
     var isApi = url.indexOf('/api/') !== -1 || url.indexOf('connectapi.') !== -1;
-    var isNavigation = event.request.mode === 'navigate';
-
-    if (isApi || isNavigation) {
-        // Pass-through — never fake a 503 for network requests
-        return;   // let the browser handle it natively
-    }
-
+    var isNav = event.request.mode === 'navigate';
+    if (isApi || isNav) return;   // pass-through, never fake errors
     event.respondWith(
         caches.match(event.request).then(function(response) {
             return response || fetch(event.request).catch(function() {
