@@ -1,29 +1,32 @@
 // staff/sw.js - Service Worker for Staff Push Notifications
 
-const CACHE_NAME = 'voddic-staff-v2';
+const CACHE_NAME = 'voddic-staff-v3';
 const ASSETS_TO_CACHE = [
     '/staff/dashboard/index.html',
-    '/staff/dashboard/call.html',
-    '/staff/dashboard/call-interface.html',
-    '/staff/dashboard/staff.js',
-    '/static/icons/phone-icon.png',
-    '/static/icons/badge-icon.png'
+    '/staff/dashboard/staff.js'
 ];
 
 // ============================================================
 // Install Event - Cache assets
 // ============================================================
 self.addEventListener('install', function(event) {
-    console.log('📦 Service Worker installing...');
+    console.log('[sw] installing');
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(function(cache) {
-                console.log('📦 Caching assets...');
-                return cache.addAll(ASSETS_TO_CACHE);
-            })
-            .then(function() {
-                return self.skipWaiting();
-            })
+        caches.open(CACHE_NAME).then(function(cache) {
+            // Cache each asset individually — one 404 must not fail install
+            return Promise.all(
+                ASSETS_TO_CACHE.map(function(url) {
+                    return cache.add(url).catch(function(err) {
+                        console.warn('[sw] cache miss (safe):', url, err && err.message);
+                    });
+                })
+            );
+        }).then(function() {
+            return self.skipWaiting();
+        }).catch(function(err) {
+            console.error('[sw] install FAILED:', err);
+            // Never reject install — let it proceed without cache
+        })
     );
 });
 
@@ -52,21 +55,22 @@ self.addEventListener('activate', function(event) {
 // Fetch Event - Serve from cache when offline
 // ============================================================
 self.addEventListener('fetch', function(event) {
+    // Network-first for API calls; cache-first for static assets
+    var url = event.request.url || '';
+    var isApi = url.indexOf('/api/') !== -1 || url.indexOf('connectapi.') !== -1;
+    var isNavigation = event.request.mode === 'navigate';
+
+    if (isApi || isNavigation) {
+        // Pass-through — never fake a 503 for network requests
+        return;   // let the browser handle it natively
+    }
+
     event.respondWith(
-        caches.match(event.request)
-            .then(function(response) {
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request);
-            })
-            .catch(function() {
-                // If offline and not cached, return a fallback
-                return new Response('Offline', {
-                    status: 503,
-                    statusText: 'Service Unavailable'
-                });
-            })
+        caches.match(event.request).then(function(response) {
+            return response || fetch(event.request).catch(function() {
+                return new Response('', { status: 504, statusText: 'Offline' });
+            });
+        })
     );
 });
 
